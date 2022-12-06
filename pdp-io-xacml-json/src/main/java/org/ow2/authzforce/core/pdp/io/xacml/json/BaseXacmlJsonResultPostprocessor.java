@@ -18,17 +18,18 @@
 package org.ow2.authzforce.core.pdp.io.xacml.json;
 
 import com.google.common.collect.ImmutableList;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCode;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusDetail;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.xacml.Xacml3JaxbHelper;
+import org.w3c.dom.Element;
 
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
@@ -41,27 +42,61 @@ import java.util.stream.Collectors;
 public class BaseXacmlJsonResultPostprocessor implements DecisionResultPostprocessor<IndividualXacmlJsonRequest, JSONObject>
 {
 
-	private static final RuntimeException ILLEGAL_ATTRIBUTE_ASSIGNMENT_RUNTIME_EXCEPTION = new RuntimeException(
-	        "Unsupported AttributeAssignment value for JSON output: no content");
+	private static final RuntimeException ILLEGAL_ATTRIBUTE_VALUE_RUNTIME_EXCEPTION = new RuntimeException(
+	        "Unsupported AttributeValue for JSON output: no content or mixed content (more than one JAXB Serializable node)");
 
-	private static JSONObject toJson(final Status status)
-	{
-		/*
-		 * Weirdness: StatusCode is optional in XACML/JSON Status although mandatory in XACML/XML Status
-		 */
-		final Map<String, Object> statusJsonObject = HashCollections.newUpdatableMap(3);
-		statusJsonObject.put("StatusCode", toJson(status.getStatusCode()));
-		final String statusMsg = status.getStatusMessage();
-		if (statusMsg != null)
-		{
-			statusJsonObject.put("StatusMessage", statusMsg);
+	private static Object toJson(Serializable contentItem) {
+		if(contentItem instanceof SerializableJSONObject) {
+			return ((SerializableJSONObject) contentItem).get();
 		}
 
-		final StatusDetail statusDetail = status.getStatusDetail();
-		assert statusDetail == null;
-		// FIXME: StatusDetail not supported for the moment
+		return contentItem.toString();
+	}
 
-		return new JSONObject(statusJsonObject);
+	private static Object toJson(AttributeValue attributeValue) {
+		if (!attributeValue.getXmlAttributes().isEmpty())
+		{
+			throw ILLEGAL_ATTRIBUTE_VALUE_RUNTIME_EXCEPTION;
+		}
+
+		final List<Serializable> contentItems = attributeValue.getContent();
+		if (contentItems.size() != 1)
+		{
+			throw ILLEGAL_ATTRIBUTE_VALUE_RUNTIME_EXCEPTION;
+		}
+
+		return toJson(contentItems.get(0));
+	}
+
+	private static Object toJson(AttributeValueType attributeValue) {
+		if (!attributeValue.getOtherAttributes().isEmpty())
+		{
+			throw ILLEGAL_ATTRIBUTE_VALUE_RUNTIME_EXCEPTION;
+		}
+
+		final List<Serializable> contentItems = attributeValue.getContent();
+		if (contentItems.size() != 1)
+		{
+			throw ILLEGAL_ATTRIBUTE_VALUE_RUNTIME_EXCEPTION;
+		}
+
+		return toJson(contentItems.get(0));
+	}
+
+	/*
+	Used for both MissingAttributeDetail (attributeValues may be empty) and AttributeAssignment (category is optional)
+	 */
+	private static JSONObject attributeToJson(final String attributeId, final Optional<String> category, final Optional<String> issuer, final String datatypeId, final List<Object> jsonAttributeValues)
+	{
+		final Map<String, Object> jsonPropertiesMap = HashCollections.newUpdatableMap(5);
+		jsonPropertiesMap.put("AttributeId", attributeId);
+		category.ifPresent(c -> jsonPropertiesMap.put("Category", c));
+		jsonPropertiesMap.put("DataType", datatypeId);
+		issuer.ifPresent(i -> jsonPropertiesMap.put("Issuer", i));
+		if(!jsonAttributeValues.isEmpty()) {
+			jsonPropertiesMap.put("Value", jsonAttributeValues.size() == 1? jsonAttributeValues.get(0) : new JSONArray(jsonAttributeValues));
+		}
+		return new JSONObject(jsonPropertiesMap);
 	}
 
 	private static JSONObject toJson(final StatusCode statusCode)
@@ -77,41 +112,52 @@ public class BaseXacmlJsonResultPostprocessor implements DecisionResultPostproce
 		return new JSONObject(resultJsonObject);
 	}
 
-	private static Object toJson(Serializable contentItem) {
-		if(contentItem instanceof SerializableJSONObject) {
-			return ((SerializableJSONObject) contentItem).get();
+	private static JSONObject toJson(final Status status)
+	{
+		/*
+		 * Weirdness: StatusCode is optional in XACML/JSON Status although mandatory in XACML/XML Status
+		 */
+		final Map<String, Object> statusJsonObject = HashCollections.newUpdatableMap(3);
+		statusJsonObject.put("StatusCode", toJson(status.getStatusCode()));
+		final String statusMsg = status.getStatusMessage();
+		if (statusMsg != null)
+		{
+			statusJsonObject.put("StatusMessage", statusMsg);
 		}
 
-		return contentItem.toString();
+		final StatusDetail statusDetail = status.getStatusDetail();
+		if(statusDetail != null) {
+			final List<Element> statusDetailContent = statusDetail.getAnies();
+			/*
+			AuthzForce only allows/supports StatusDetail containing one and only one MissingAttributeDetail
+			 */
+			assert statusDetailContent.size() == 1;
+			final Element statusDetailElement = statusDetailContent.get(0);
+			/*
+			This is probably not optimal performance-wise (unmarshalling from DOM Element a JAXB-annotated MissingAttributeDetail that was initially marshalled to the DOM Element), but keeps the code simple.
+			 */
+			final MissingAttributeDetail missingAttDetail;
+			final Unmarshaller unmarshaller;
+			try
+			{
+				unmarshaller = Xacml3JaxbHelper.createXacml3Unmarshaller();
+				missingAttDetail = unmarshaller.unmarshal(statusDetailElement, MissingAttributeDetail.class).getValue();
+			} catch (JAXBException e)
+			{
+				throw new RuntimeException("Error instantiating XACML3.0 JAXB unmarshaller or DOM document builder or or unmarshalling MissingAttributeDetail from DOM Element in StatusDetail", e);
+			}
+
+			final List<Object> jsonAttributeValues = missingAttDetail.getAttributeValues().stream().map(BaseXacmlJsonResultPostprocessor::toJson).collect(Collectors.toList());
+			final JSONObject missingAttDetailJson = attributeToJson(missingAttDetail.getAttributeId(), Optional.ofNullable(missingAttDetail.getCategory()), Optional.ofNullable(missingAttDetail.getIssuer()), missingAttDetail.getDataType(), jsonAttributeValues);
+			statusJsonObject.put("StatusDetail", new JSONObject(Map.of("MissingAttributeDetail", missingAttDetailJson)));
+		}
+
+		return new JSONObject(statusJsonObject);
 	}
 
 	private static JSONObject toJson(final PepActionAttributeAssignment<?> aa)
 	{
-		final Map<String, Object> aaJsonPropMap = HashCollections.newUpdatableMap(5);
-		aaJsonPropMap.put("AttributeId", aa.getAttributeId());
-		final AttributeValue aaVal = aa.getValue();
-		if (!aaVal.getXmlAttributes().isEmpty())
-		{
-			throw ILLEGAL_ATTRIBUTE_ASSIGNMENT_RUNTIME_EXCEPTION;
-		}
-
-		final List<Serializable> contentItems = aaVal.getContent();
-		if (contentItems.isEmpty())
-		{
-			throw ILLEGAL_ATTRIBUTE_ASSIGNMENT_RUNTIME_EXCEPTION;
-		}
-
-		aaJsonPropMap.put("Value", contentItems.size() == 1? toJson(contentItems.get(0)): new JSONArray(contentItems.stream().map(BaseXacmlJsonResultPostprocessor::toJson)));
-
-		final Optional<String> category = aa.getCategory();
-		category.ifPresent(s -> aaJsonPropMap.put("Category", s));
-
-		aaJsonPropMap.put("DataType", aa.getDatatype().getId());
-
-		final Optional<String> issuer = aa.getIssuer();
-		issuer.ifPresent(s -> aaJsonPropMap.put("Issuer", s));
-
-		return new JSONObject(aaJsonPropMap);
+		return attributeToJson(aa.getAttributeId(), aa.getCategory(), aa.getIssuer(), aa.getDatatype().getId(), List.of(toJson(aa.getValue())));
 	}
 
 	private static JSONObject toJson(final String obligationOrAdviceId, final List<PepActionAttributeAssignment<?>> aaList)

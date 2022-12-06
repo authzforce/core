@@ -1,24 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Request  ReturnPolicyIdList="false" CombinedDecision="true" xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Attributes Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject">
-    <Attribute IncludeInResult="false" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id">
-      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">Julius Hibbert</AttributeValue>
+<Request xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" ReturnPolicyIdList="false"
+         CombinedDecision="false"
+         xmlns:test="http://authzforce.github.io/core/xmlns/test/3">
+  <Attributes Category="access-subject">
+    <Attribute AttributeId="subject-location" IncludeInResult="false">
+      <AttributeValue DataType="urn:ow2:authzforce:feature:pdp:data-type:test-extensible-value" test:some-required-xml-attribute="4326"
+      >Point (47 11)</AttributeValue>
     </Attribute>
   </Attributes>
-  <Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource">
-    <Attribute IncludeInResult="false" AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id">
-      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#anyURI">http://medico.com/record/patient/BartSimpson</AttributeValue>
-    </Attribute>
-  </Attributes>
-  <Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action">
-    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id">
-      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">read</AttributeValue>
-    </Attribute>
-  </Attributes>
-  <Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action">
-    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id">
-      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">write</AttributeValue>
-    </Attribute>
-  </Attributes>
-  <Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" />
 </Request>
