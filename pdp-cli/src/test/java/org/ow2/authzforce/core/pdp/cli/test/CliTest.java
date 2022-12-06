@@ -39,84 +39,77 @@ import static org.junit.Assert.assertSame;
 public class CliTest
 {
 
-	private static final String TEST_DATA_DIR = "src/test/resources/conformance/xacml-3.0-core/mandatory";
+    private static final String TEST_DATA_DIR = "src/test/resources/conformance/xacml-3.0-core/mandatory";
 
-	@Test
-	public void testXml() throws JAXBException
-	{
-		final CommandLine cmd = new CommandLine(new PdpCommandLineCallable());
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		try (PrintStream ps = new PrintStream(baos, true, StandardCharsets.UTF_8))
-		{
-			/*
-			 * Should throw IllegalArgumentException for invalid pdp config, not NPE (because of relative path with no parent path which used to cause NPE when trying to get the parent directory path)
-			 */
-			cmd.setOut(new PrintWriter(ps));
-			cmd.execute("-p", TEST_DATA_DIR + "/pdp.xml", TEST_DATA_DIR + "/IIA001/Request.xml");
-		}
+    @Test
+    public void testXml() throws JAXBException
+    {
+        final CommandLine cmdLine = new CommandLine(new PdpCommandLineCallable());
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (PrintStream ps = new PrintStream(baos, true, StandardCharsets.UTF_8))
+        {
+            /*
+             * Redirect system.out to the byte stream
+             */
+            System.setOut(ps);
+            cmdLine.execute("-p", TEST_DATA_DIR + "/pdp.xml", TEST_DATA_DIR + "/IIA001/Request.xml");
+        }
+        System.setOut(System.out);
+        final String output = baos.toString(StandardCharsets.UTF_8);
+        final Response expectedXacmlJaxbObj = (Response) Xacml3JaxbHelper.createXacml3Unmarshaller().unmarshal(new File(TEST_DATA_DIR + "/IIA001/Response.xml"));
+        final Response actualXacmlJaxbObj;
+        try
+        {
+            actualXacmlJaxbObj = (Response) Xacml3JaxbHelper.createXacml3Unmarshaller().unmarshal(new StringReader(output));
+            TestUtils.assertNormalizedEquals(TEST_DATA_DIR + "/IIA001", expectedXacmlJaxbObj, actualXacmlJaxbObj, true);
+        } catch (final JAXBException e)
+        {
+            Assert.fail("Invalid XACML/XML Response returned", e);
+        }
 
-		final String output = baos.toString(StandardCharsets.UTF_8);
-		System.out.println(output);
-		final Response expectedXacmlJaxbObj = (Response) Xacml3JaxbHelper.createXacml3Unmarshaller().unmarshal(new File(TEST_DATA_DIR + "/IIA001/Response.xml"));
+    }
 
-		final Response actualXacmlJaxbObj;
-		try
-		{
-			actualXacmlJaxbObj = (Response) Xacml3JaxbHelper.createXacml3Unmarshaller().unmarshal(new StringReader(output));
-			TestUtils.assertNormalizedEquals(TEST_DATA_DIR + "/IIA001", expectedXacmlJaxbObj, actualXacmlJaxbObj, true);
-		}
-		catch (final JAXBException e)
-		{
-			Assert.fail("Invalid XACML/XML Response returned", e);
-		}
+    @Test
+    public void testJson() throws IOException
+    {
+        final CommandLine cmd = new CommandLine(new PdpCommandLineCallable());
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (PrintStream ps = new PrintStream(baos, true, StandardCharsets.UTF_8))
+        {
+            /*
+             * Redirect system.out to the byte stream
+             */
+            System.setOut(ps);
+            cmd.execute("-p", "-tXACML_JSON", TEST_DATA_DIR + "/pdp.xml", TEST_DATA_DIR + "/IIA001/Request.json");
+        }
+        System.setOut(System.out);
+        final String output = baos.toString(StandardCharsets.UTF_8);
+        final JSONObject normalizedExpectedResponse;
+        try (final BufferedReader reader = Files.newBufferedReader(Paths.get(TEST_DATA_DIR + "/IIA001/Response.json"), StandardCharsets.UTF_8))
+        {
+            normalizedExpectedResponse = XacmlJsonUtils.canonicalizeResponse(new JSONObject(new JSONTokener(reader)), true);
+        }
+        final JSONObject normalizedActualResponse = XacmlJsonUtils.canonicalizeResponse(new JSONObject(output), true);
+        Assert.assertTrue(normalizedActualResponse.similar(normalizedExpectedResponse), "Actual XACML/JSON Response does not match expected");
+    }
 
-	}
-
-	@Test
-	public void testJson() throws IOException
-	{
-		final CommandLine cmd = new CommandLine(new PdpCommandLineCallable());
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		try (PrintStream ps = new PrintStream(baos, true, StandardCharsets.UTF_8))
-		{
-			/*
-			 * Should throw IllegalArgumentException for invalid pdp config, not NPE (because of relative path with no parent path which used to cause NPE when trying to get the parent directory path)
-			 */
-			cmd.setOut(new PrintWriter(ps));
-			cmd.execute("-p", "-tXACML_JSON", TEST_DATA_DIR + "/pdp.xml", TEST_DATA_DIR + "/IIA001/Request.json");
-		}
-
-		final String output = baos.toString(StandardCharsets.UTF_8);
-		System.out.println(output);
-
-		final JSONObject normalizedExpectedResponse;
-		try (final BufferedReader reader = Files.newBufferedReader(Paths.get(TEST_DATA_DIR + "/IIA001/Response.json"), StandardCharsets.UTF_8))
-		{
-			normalizedExpectedResponse = XacmlJsonUtils.canonicalizeResponse(new JSONObject(new JSONTokener(reader)), true);
-		}
-		final JSONObject normalizedActualResponse = XacmlJsonUtils.canonicalizeResponse(new JSONObject(output), true);
-		Assert.assertTrue(normalizedActualResponse.similar(normalizedExpectedResponse), "Actual XACML/JSON Response does not match expected");
-	}
-
-	/**
-	 * Non-regression test for <a href="https://github.com/authzforce/core/issues/9">Issue GH-9: Getting Started Problem</a>
-	 */
-	@Test
-	public void IssueGH9()
-	{
-		final CommandLine cmd = new CommandLine(new PdpCommandLineCallable());
-		cmd.setOut(new PrintWriter(System.out));
-		/*
-		 * Should throw IllegalArgumentException for invalid pdp config, not NPE (because of relative path with no parent path which used to cause NPE when trying to get the parent directory path)
-		 */
-		try
-		{
-			cmd.execute("pom.xml", TEST_DATA_DIR + "/IIA001/Request.json");
-		}
-		catch (final CommandLine.ExecutionException e)
-		{
-			assertSame(e.getCause().getClass(), IllegalArgumentException.class);
-		}
-	}
+    /**
+     * Non-regression test for <a href="https://github.com/authzforce/core/issues/9">Issue GH-9: Getting Started Problem</a>
+     */
+    @Test
+    public void IssueGH9()
+    {
+        final CommandLine cmd = new CommandLine(new PdpCommandLineCallable());
+        /*
+         * Should throw IllegalArgumentException for invalid pdp config, not NPE (because of relative path with no parent path which used to cause NPE when trying to get the parent directory path)
+         */
+        try
+        {
+            cmd.execute("pom.xml", TEST_DATA_DIR + "/IIA001/Request.json");
+        } catch (final CommandLine.ExecutionException e)
+        {
+            assertSame(e.getCause().getClass(), IllegalArgumentException.class);
+        }
+    }
 
 }

@@ -27,19 +27,21 @@ import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFuncti
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
-import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
-import java.util.*;
+import java.util.Deque;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Custom function used for testing resolution of issue: <a href="https://github.com/authzforce/core/issues/69">GitHub issue #69</a>
  */
 public class TestExtensibleSimpleValueEqualFunction extends SingleParameterTypedFirstOrderFunction<BooleanValue, TestExtensibleSimpleValue>
 {
-        public static final String ID = TestExtensibleSimpleValue.DATATYPE.getFunctionIdPrefix() +"equals";
+        public static final String ID = TestExtensibleSimpleValue.DATATYPE.getFunctionIdPrefix() +"equal";
 
         public TestExtensibleSimpleValueEqualFunction() {
-            super(ID, StandardDatatypes.BOOLEAN, false, List.of(TestExtensibleSimpleValue.DATATYPE));
+            super(ID, StandardDatatypes.BOOLEAN, false, List.of(TestExtensibleSimpleValue.DATATYPE, TestExtensibleSimpleValue.DATATYPE));
         }
 
     @Override
@@ -51,22 +53,20 @@ public class TestExtensibleSimpleValueEqualFunction extends SingleParameterTyped
             @Override
             protected BooleanValue evaluate(final Deque<TestExtensibleSimpleValue> args) throws IndeterminateEvaluationException
             {
-                if (args.size() != 2)
-                {
-                    throw new IndeterminateEvaluationException("Function " + ID + " requires exactly two arguments but given " + args.size(), XacmlStatusCode.PROCESSING_ERROR.name());
-                }
-
+                /*
+                 Number of arguments is already known and checked based on the list of parameter types passed to the super constructor in #TestExtensibleSimpleValueEqualFunction()                */
                 final TestExtensibleSimpleValue arg1 = args.poll();
                 final TestExtensibleSimpleValue arg2 = args.poll();
-
-                if (arg1.getRequiredXmlAttributeValue() == null || !arg1.getRequiredXmlAttributeValue().equals(arg2.getRequiredXmlAttributeValue()))
+                assert arg1 != null && arg2 != null;
+                final String arg1XmlAttVal = arg1.getRequiredXmlAttributeValue();
+                if (arg1XmlAttVal == null || !arg1XmlAttVal.equals(arg2.getRequiredXmlAttributeValue()))
                 {
-                    final String categoryId = arg1.getXmlAttributes().get(CustomTestRequestPreprocessorFactory.XACML_CATEGORY_ID_QNAME);
-                    final String attributeId = arg1.getXmlAttributes().get(CustomTestRequestPreprocessorFactory.XACML_ATTRIBUTE_ID_QNAME);
+                    final String categoryId = arg2.getXmlAttributes().get(CustomTestRequestPreprocessorFactory.XACML_CATEGORY_ID_QNAME);
+                    final String attributeId = arg2.getXmlAttributes().get(CustomTestRequestPreprocessorFactory.XACML_ATTRIBUTE_ID_QNAME);
                     /*
                      Do not include the Category/AttributeId XML attributes injected by the custom Request Preprocessor in the MissingAttributeDetail/AttributeValue since they will be included as XML attributes of <MissingAttributeDetail> element.
                      */
-                    final AttributeValueType expectedValue = new AttributeValueType(List.of(""), TestExtensibleSimpleValue.DATATYPE.getId(), Map.of(TestExtensibleSimpleValue.REQUIRED_XML_ATTRIBUTE_QNAME, arg1.getRequiredXmlAttributeValue()));
+                    final AttributeValueType expectedValue = new AttributeValueType(List.of(""), TestExtensibleSimpleValue.DATATYPE.getId(), arg1XmlAttVal == null? Map.of(): Map.of(TestExtensibleSimpleValue.REQUIRED_XML_ATTRIBUTE_QNAME, arg1XmlAttVal));
                     final MissingAttributeDetail detail = new MissingAttributeDetail(List.of(expectedValue), categoryId, attributeId, TestExtensibleSimpleValue.DATATYPE.getId(), null);
                     throw new IndeterminateEvaluationException("Function " + ID + " expects same SRS for both geometry parameters", detail, Optional.of("urn:ogc:def:function:geoxacml:3.0:crs-error"));
                 }
