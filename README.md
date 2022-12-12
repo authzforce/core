@@ -124,7 +124,7 @@ To give you an example on how to test a XACML Policy (or PolicySet) and Request,
 $ ./authzforce-ce-core-pdp-cli-14.0.0.jar pdp.xml IIA001/Request.xml
 ```
 
-* `pdp.xml`: PDP configuration file in XML format, that defines the location(s) of XACML policy(ies) and more; for more information about PDP configuration parameters, the configuration format is fully specified and documented in the [XML schema `pdp.xsd`](pdp-engine/src/main/resources/pdp.xsd), also available in a [more user-friendly HTML form](https://authzforce.github.io/pdp.xsd/7.1) (start with the `pdp` element as the root element in a PDP configuration). **Feel free to change the policy location to point to your own for testing.**
+* `pdp.xml`: PDP configuration file in XML format, that defines the location(s) of XACML policy(ies) and more; for more information about PDP configuration parameters, the configuration format is fully specified and documented in the [XML schema `pdp.xsd`](pdp-engine/src/main/resources/pdp.xsd), also available in a [more user-friendly HTML form](https://authzforce.github.io/pdp.xsd/8.1) (start with the `pdp` element as the root element in a PDP configuration). **Feel free to change the policy location to point to your own for testing.**
 * `Request.xml`: XACML request in XACML 3.0/XML (core specification) format. **Feel free to replace with your own for testing.**
 
 If you want to test the JSON Profile of XACML 3.0, run it with extra option `-t XACML_JSON`:
