@@ -17,6 +17,7 @@
  */
 package org.ow2.authzforce.core.pdp.impl.rule;
 
+import com.google.common.base.Preconditions;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
@@ -27,6 +28,7 @@ import org.ow2.authzforce.core.pdp.api.expression.XPathCompilerProxy;
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.impl.BooleanEvaluator;
+import org.ow2.authzforce.core.pdp.impl.BooleanEvaluators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,15 +51,6 @@ public final class ConditionEvaluators
 
 	private static final IllegalArgumentException NULL_EXPR_FACTORY_ARGUMENT_EXCEPTION = new IllegalArgumentException(
 			"Cannot create Condition evaluator: undefined input XACML expression parser (expressionFactory)");
-
-	/**
-	 * Condition that always evaluates to True
-	 */
-	public static final BooleanEvaluator TRUE_CONDITION = (context, mdpContext) ->
-	{
-		LOGGER.debug("Condition is null or Expression equals constant True -> True");
-		return true;
-	};
 
 	private static final class BooleanExpressionEvaluator implements BooleanEvaluator
 	{
@@ -106,10 +99,7 @@ public final class ConditionEvaluators
 	 */
 	public static BooleanEvaluator getInstance(final Condition condition, final ExpressionFactory expressionFactory, final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
 	{
-		if (condition == null)
-		{
-			return TRUE_CONDITION;
-		}
+		Preconditions.checkArgument(condition != null, "<Condition> element undefined");
 
 		/*
 		 * condition != null -> condition's Expression is not null (by definition of XACML schema), therefore expressionFactory is needed
@@ -141,11 +131,12 @@ public final class ConditionEvaluators
 			{
 				// constant TRUE
 				LOGGER.warn("Condition's expression is equivalent to constant True -> optimization: replacing with constant True condition");
-				return TRUE_CONDITION;
+				return BooleanEvaluators.TRUE;
 			}
 
-			// constant False -> unacceptable
-			throw INVALID_CONSTANT_FALSE_EXPRESSION_EXCEPTION;
+			// constant False (according to section 7.11 of XACML 3.0, Rule evaluates always to NotApplicable )
+			LOGGER.warn("Condition's expression is equivalent to constant False -> replacing with constant False condition");
+			return BooleanEvaluators.FALSE;
 		}
 
 		// constant == null

@@ -37,6 +37,7 @@ import org.ow2.authzforce.core.pdp.impl.BooleanEvaluator;
 import org.ow2.authzforce.core.pdp.impl.PepActionExpression;
 import org.ow2.authzforce.core.pdp.impl.TargetEvaluators;
 import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluator;
+import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluators;
 import org.ow2.authzforce.xacml.identifiers.XPathVersion;
 import org.ow2.authzforce.xacml.identifiers.XacmlNodeName;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
@@ -1582,7 +1583,7 @@ public final class PolicyEvaluators
                 final RuleEvaluator ruleEvaluator;
                 try
                 {
-                    ruleEvaluator = new RuleEvaluator((Rule) policyChildElt, expressionFactory, childXpathCompiler);
+                    ruleEvaluator = RuleEvaluators.getInstance((Rule) policyChildElt, expressionFactory, childXpathCompiler);
                 } catch (final IllegalArgumentException e)
                 {
                     throw new IllegalArgumentException(policyMetadata + ": Error parsing child #" + childIndex + " (Rule)", e);
