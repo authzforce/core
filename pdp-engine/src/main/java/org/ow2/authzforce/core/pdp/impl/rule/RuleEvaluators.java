@@ -95,7 +95,7 @@ public final class RuleEvaluators
 	* @throws java.lang.IllegalArgumentException
 	*            Undefined rule element, Invalid Target, Condition or Obligation/Advice expressions
 	*/
-	public RuleEvaluator getInstance(final Rule ruleElt, final ExpressionFactory expressionFactory,  final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
+	public static RuleEvaluator getInstance(final Rule ruleElt, final ExpressionFactory expressionFactory,  final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
 	{
 		if (ruleElt == null)
 		{
@@ -120,7 +120,7 @@ public final class RuleEvaluators
 				conditionEvaluator = ConditionEvaluators.getInstance(condElt, expressionFactory, xPathCompiler);
 			} catch (final IllegalArgumentException e)
 			{
-				throw new IllegalArgumentException(this + ": invalid Condition", e);
+				throw new IllegalArgumentException("RuleEvaluators.getInstance: invalid Condition", e);
 			}
 
 			if (conditionEvaluator == BooleanEvaluators.FALSE) {
