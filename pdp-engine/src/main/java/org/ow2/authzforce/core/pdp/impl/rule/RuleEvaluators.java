@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -44,7 +44,7 @@ public final class RuleEvaluators
 {
 	private static final IllegalArgumentException NULL_XACML_RULE_ARGUMENT_EXCEPTION = new IllegalArgumentException("Cannot create Rule evaluator: undefined input XACML/JAXB Rule element");
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(RuleEvaluator.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RuleEvaluators.class);
 
 	private RuleEvaluators() {
 		// prevent instantiation
@@ -95,7 +95,7 @@ public final class RuleEvaluators
 	* @throws java.lang.IllegalArgumentException
 	*            Undefined rule element, Invalid Target, Condition or Obligation/Advice expressions
 	*/
-	public getInstance(final Rule ruleElt, final ExpressionFactory expressionFactory,  final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
+	public RuleEvaluator getInstance(final Rule ruleElt, final ExpressionFactory expressionFactory,  final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
 	{
 		if (ruleElt == null)
 		{
@@ -130,7 +130,7 @@ public final class RuleEvaluators
 		}
 
 		// Condition not null and not constant False
-		return new ApplicableRuleEvaluator(ruleId, ruleElt.getTarget(), expressionFactory, xPathCompiler);
+		return new ApplicableRuleEvaluator(ruleElt, ruleElt.getTarget(), conditionEvaluator, expressionFactory, xPathCompiler);
 	}
 
 	/**
@@ -347,12 +347,12 @@ public final class RuleEvaluators
 		* @throws java.lang.IllegalArgumentException
 		*             Invalid Target, Condition or Obligation/Advice expressions
 		*/
-		private ApplicableRuleEvaluator(final String ruleId, final Target target, final BooleanEvaluator conditionEvaluator, final ExpressionFactory expressionFactory,  final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
+		private ApplicableRuleEvaluator(final Rule ruleElt, final Target target, final BooleanEvaluator conditionEvaluator, final ExpressionFactory expressionFactory,  final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
 		{
-			super(ruleId);
+			super(ruleElt.getRuleId());
 			this.targetEvaluator = TargetEvaluators.getInstance(target, expressionFactory, xPathCompiler);
 			this.conditionEvaluator = conditionEvaluator;
-			this.isAlwaysApplicable = this.targetEvaluator == TargetEvaluators.MATCH_ALL_TARGET_EVALUATOR && this.conditionEvaluator == ConditionEvaluators.TRUE_CONDITION;
+			this.isAlwaysApplicable = this.targetEvaluator == TargetEvaluators.MATCH_ALL_TARGET_EVALUATOR && this.conditionEvaluator == BooleanEvaluators.TRUE;
 
 			/*
 			* Final decision result depends on rule's effect and Obligation/Advice elements
@@ -408,8 +408,8 @@ public final class RuleEvaluators
 				this.decisionResultFactory = effect == EffectType.DENY ? DENY_DECISION_WITHOUT_PEP_ACTION_RESULT_FACTORY : PERMIT_DECISION_WITHOUT_PEP_ACTION_RESULT_FACTORY;
 			} else
 			{
-				this.decisionResultFactory = effect == EffectType.DENY ? new DenyDecisionWithPepActionResultFactory(ruleId, pepActionExpressions)
-						: new PermitDecisionWithPepActionResultFactory(ruleId, pepActionExpressions);
+				this.decisionResultFactory = effect == EffectType.DENY ? new DenyDecisionWithPepActionResultFactory(getRuleId(), pepActionExpressions)
+						: new PermitDecisionWithPepActionResultFactory(getRuleId(), pepActionExpressions);
 			}
 		}
 
