@@ -295,8 +295,17 @@ If you are using the Java API with extensions configured by XML (Policy Provider
 1. *extensionXsdLocation*: location of the PDP extensions schema file: contains imports of namespaces corresponding to XML schemas of all XML-schema-defined PDP extensions to be used in the configuration file. Used for validation of PDP extensions configuration. The actual schema locations are resolved by the XML catalog parameter. You may use the [pdp-ext.xsd](pdp-testutils/src/test/resources/pdp-ext.xsd) in the sources as an example.
 
 
-## Integration with other Security Policy models, languages, formats, etc.
-### SPIF (Security Policy Information File)
+
+## Editing and creating XACML 3.0 policies
+
+### Using a full-fledged XML editor
+
+For full support of XACML, you may use any XML editor supporting XML Schema. Make sure you import the XACML 3.0 schema into the tool and enable XML schema validation.
+
+### Using ALFA plugin for VScode - ALFA to XACML
+Axiomatics provides an VScode plugin to edit policies in [ALFA](https://axiomatics.github.io/alfa-vscode-doc/docs/alfa-introduction/introduction/) (Abbreviated Language for Authorization) and generate XACML 3.0 policies from it automatically. Beware of the [Axiomatics license](https://marketplace.visualstudio.com/items/Axiomatics.alfa/license) and [limitations of ALFA with respect to XACML](https://axiomatics.github.io/alfa-vscode-doc/docs/xacml/limitations-with-respect-to-xacml/).
+
+### From SPIF (Security Policy Information File) - SPIF to XACML
 A SPIF (Security Policy Information File) defines a security labeling policy in a XML document (based on the [SPIF XML schema](spif-utils/spif.xsd)). More info on the [Open XML SPIF website](http://www.xmlspif.org/).
 
 [NATO ADatP-4774.1](https://nso.nato.int/nso/nsdd/main/standards/srd-details/222/EN) - related to [STANAG 4774](https://nso.nato.int/nso/nsdd/main/standards/stanag-details/8612/EN) - gives implementation guidance on how to generate a XACML policy from a SPIF, including an example of XSLT stylesheet. We made a few improvements to that stylesheet, using the latest XACML 3.0 enhancements and AuthzForce optimizations, and differentiating READ and WRITE actions in accordance to the Bell-Lapadula model. The enhanced stylesheet is available in the [spif-utils](spif-utils) folder in two versions:
