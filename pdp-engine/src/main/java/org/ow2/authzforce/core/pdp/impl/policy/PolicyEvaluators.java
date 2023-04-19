@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -37,6 +37,7 @@ import org.ow2.authzforce.core.pdp.impl.BooleanEvaluator;
 import org.ow2.authzforce.core.pdp.impl.PepActionExpression;
 import org.ow2.authzforce.core.pdp.impl.TargetEvaluators;
 import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluator;
+import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluators;
 import org.ow2.authzforce.xacml.identifiers.XPathVersion;
 import org.ow2.authzforce.xacml.identifiers.XacmlNodeName;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
@@ -1007,7 +1008,6 @@ public final class PolicyEvaluators
 
             private GetMetadataResult(final Optional<PolicyRefsMetadata> metadata)
             {
-                assert metadata != null;
                 this.extraMetadata = metadata;
             }
 
@@ -1582,19 +1582,35 @@ public final class PolicyEvaluators
                 final RuleEvaluator ruleEvaluator;
                 try
                 {
-                    ruleEvaluator = new RuleEvaluator((Rule) policyChildElt, expressionFactory, childXpathCompiler);
+                    ruleEvaluator = RuleEvaluators.getInstance((Rule) policyChildElt, expressionFactory, childXpathCompiler);
                 } catch (final IllegalArgumentException e)
                 {
                     throw new IllegalArgumentException(policyMetadata + ": Error parsing child #" + childIndex + " (Rule)", e);
                 }
 
-                final RuleEvaluator conflictingRuleEvaluator = ruleEvaluatorsByRuleIdInOrderOfDeclaration.putIfAbsent(ruleEvaluator.getRuleId(), ruleEvaluator);
-                if (conflictingRuleEvaluator != null)
+                final boolean skipRule;
+                if(ruleEvaluator.getEffect() == null) {
+                    // Skip rule unless debugging is enabled
+                    if(LOGGER.isDebugEnabled()) {
+                       skipRule = false;
+                        LOGGER.warn("Rule [{}] is always NotApplicable (constant False Condition), i.e. has no effect, therefore can be removed. Keeping the rule in the policy evaluation anyway for debugging purposes (log level = DEBUG)", ruleEvaluator.getRuleId());
+                    } else {
+                        skipRule = true;
+                        LOGGER.warn("Rule [{}] is always NotApplicable (constant False Condition), i.e. has no effect, therefore can be removed. Optimizing: the rule is removed from policy evaluation (log level != DEBUG)", ruleEvaluator.getRuleId());
+                    }
+                } else
                 {
-                    /*
-                     * Conflict: 2 Rule elements with same RuleId -> violates uniqueness of RuleId within a Policy (XACML spec)
-                     */
-                    throw new IllegalArgumentException(policyMetadata + ": Duplicate Rule with RuleId = " + conflictingRuleEvaluator.getRuleId());
+                    skipRule = false;
+                }
+                if(!skipRule) {
+                    final RuleEvaluator conflictingRuleEvaluator = ruleEvaluatorsByRuleIdInOrderOfDeclaration.putIfAbsent(ruleEvaluator.getRuleId(), ruleEvaluator);
+                    if (conflictingRuleEvaluator != null)
+                    {
+                        /*
+                         * Conflict: 2 Rule elements with same RuleId -> violates uniqueness of RuleId within a Policy (XACML spec)
+                         */
+                        throw new IllegalArgumentException(policyMetadata + ": Duplicate Rule with RuleId = " + conflictingRuleEvaluator.getRuleId());
+                    }
                 }
             }
 

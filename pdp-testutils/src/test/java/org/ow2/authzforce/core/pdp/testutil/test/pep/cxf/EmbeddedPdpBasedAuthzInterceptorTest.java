@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
  * This test is an adaptation of <a href="https://github.com/coheigea/testcases/tree/master/apache/cxf/cxf-sts-xacml">cxf-sts-xacml test</a> for AuthzForce PDP. The client authenticates to the STS
  * using a username/password, and gets a signed holder-of-key SAML Assertion in return. This is presented to the service, who verifies proof-of-possession + the signature of the STS on the assertion.
  * The CXF endpoint extracts roles from the Assertion + populates the security context. Note that the CXF endpoint requires a "role" Claim via the security policy.
- *
+ * <p>
  * The CXF Endpoint has configured the {@link EmbeddedPdpBasedAuthzInterceptor}, which creates a XACML 3.0 request for dispatch to the (co-located) PDP, and then enforces the PDP's decision.
  * 
  * <p>
@@ -94,6 +94,7 @@ public class EmbeddedPdpBasedAuthzInterceptorTest extends AbstractBusClientServe
 
 		final SpringBusFactory bf = new SpringBusFactory();
 		final URL busFile = EmbeddedPdpBasedAuthzInterceptorTest.class.getResource("cxf-client.xml");
+		assert busFile != null;
 
 		final Bus bus = bf.createBus(busFile.toString());
 		SpringBusFactory.setDefaultBus(bus);
@@ -119,6 +120,7 @@ public class EmbeddedPdpBasedAuthzInterceptorTest extends AbstractBusClientServe
 
 		final SpringBusFactory bf = new SpringBusFactory();
 		final URL busFile = EmbeddedPdpBasedAuthzInterceptorTest.class.getResource("cxf-client.xml");
+		assert busFile != null;
 
 		final Bus bus = bf.createBus(busFile.toString());
 		SpringBusFactory.setDefaultBus(bus);

@@ -15,49 +15,68 @@ AuthzForce Core may be used in the following ways:
 ***HTTP/REST server**: if you are interested in using an HTTP/REST API compliant with [REST Profile of XACML 3.0](http://docs.oasis-open.org/xacml/xacml-rest/v1.0/xacml-rest-v1.0.html), check the [AuthzForce RESTful PDP project](http://github.com/authzforce/restful-pdp) and [AuthzForce server project](http://github.com/authzforce/server).*
 
 ## Features
-* Compliance with the following OASIS XACML 3.0 standards:
-  * [XACML v3.0 - Core standard](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html) 
-  * [XACML v3.0 - Core and Hierarchical Role Based Access Control (RBAC) Profile Version 1.0](http://docs.oasis-open.org/xacml/3.0/rbac/v1.0/xacml-3.0-rbac-v1.0.html)
-  * [XACML v3.0 - Multiple Decision Profile Version 1.0 - Repeated attribute categories](http://docs.oasis-open.org/xacml/3.0/multiple/v1.0/cs02/xacml-3.0-multiple-v1.0-cs02.html#_Toc388943334)  (`urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories`).
-  * [XACML v3.0 - JSON Profile Version 1.0](http://docs.oasis-open.org/xacml/xacml-json-http/v1.0/xacml-json-http-v1.0.html), with extra security features:
-      * JSON schema [Draft v6](https://tools.ietf.org/html/draft-wright-json-schema-01) validation;
-      * DoS mitigation: JSON parser variant checking max JSON string size, max number of JSON keys/array items and max JSON object depth.
-  * Experimental support for:
-    * [XACML v3.0 - Data Loss Prevention / Network Access Control (DLP/NAC) Profile Version 1.0](http://docs.oasis-open.org/xacml/xacml-3.0-dlp-nac/v1.0/xacml-3.0-dlp-nac-v1.0.html): only `dnsName-value` datatype and `dnsName-value-equal` function are supported;
-    * [XACML v3.0 - Additional Combining Algorithms Profile Version 1.0](http://docs.oasis-open.org/xacml/xacml-3.0-combalgs/v1.0/xacml-3.0-combalgs-v1.0.html): `on-permit-apply-second` policy combining algorithm;
-    * [XACML v3.0 - Multiple Decision Profile Version 1.0 - Requests for a combined decision](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-multiple-v1-spec-cd-03-en.html#_Toc260837890)  (`urn:oasis:names:tc:xacml:3.0:profile:multiple:combined-decision`). 
+### Compliance with the following OASIS XACML 3.0 standards
+* [XACML v3.0 - Core standard](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html) 
+* [XACML v3.0 - Core and Hierarchical Role Based Access Control (RBAC) Profile Version 1.0](http://docs.oasis-open.org/xacml/3.0/rbac/v1.0/xacml-3.0-rbac-v1.0.html)
+* [XACML v3.0 - Multiple Decision Profile Version 1.0 - Repeated attribute categories](http://docs.oasis-open.org/xacml/3.0/multiple/v1.0/cs02/xacml-3.0-multiple-v1.0-cs02.html#_Toc388943334)  (`urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories`).
+* [XACML v3.0 - JSON Profile Version 1.0](http://docs.oasis-open.org/xacml/xacml-json-http/v1.0/xacml-json-http-v1.0.html), with extra security features:
+  * JSON schema [Draft v6](https://tools.ietf.org/html/draft-wright-json-schema-01) validation;
+  * DoS mitigation: JSON parser variant checking max JSON string size, max number of JSON keys/array items and max JSON object depth.
+* Experimental support for:
+  * [XACML v3.0 - Data Loss Prevention / Network Access Control (DLP/NAC) Profile Version 1.0](http://docs.oasis-open.org/xacml/xacml-3.0-dlp-nac/v1.0/xacml-3.0-dlp-nac-v1.0.html): only `dnsName-value` datatype and `dnsName-value-equal` function are supported;
+  * [XACML v3.0 - Additional Combining Algorithms Profile Version 1.0](http://docs.oasis-open.org/xacml/xacml-3.0-combalgs/v1.0/xacml-3.0-combalgs-v1.0.html): `on-permit-apply-second` policy combining algorithm;
+  * [XACML v3.0 - Multiple Decision Profile Version 1.0 - Requests for a combined decision](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-multiple-v1-spec-cd-03-en.html#_Toc260837890)  (`urn:oasis:names:tc:xacml:3.0:profile:multiple:combined-decision`). 
 
-  *For further details on what is actually supported regarding the XACML specifications, please refer to the conformance tests [README](pdp-testutils/src/test/resources/conformance/xacml-3.0-from-2.0-ct/README.md).*
-* Enhancements to the XACML standard:
-  * [GeoXACML](http://portal.opengeospatial.org/files/?artifact_id=42734) (Open Geospatial Consortium) support: see [this AuthzForce extension from SecureDimensions](https://github.com/securedimensions/authzforce-geoxacml-basic).
-  * Support `<VariableReference>` (indirectly) in `<Target>`/`<Match>` elements: this feature is a workaround for a limitation in XACML schema which does not allow Variables (`<VariableReference>`) in `Match` elements; i.e. the feature allows policy writers to use an equivalent of `<VariableReference>`s in `<Match>` elements (without changing the XACML schema) through a special kind of `<AttributeDesignator>` (specific `Category`, and `AttributeId` is used as `VariableId`). More details in the Usage section below. 
-* Interfaces: 
-  * Java API: basically a library for instantiating and using a PDP engine from your Java (or any Java-compatible) code;
-  * CLI (Command-Line Interface): basically an executable that you can run from the command-line to test the engine;
+*For further details on what is actually supported regarding the XACML specifications, please refer to the conformance tests [README](pdp-testutils/src/test/resources/conformance/xacml-3.0-from-2.0-ct/README.md).*
+
+### Enhancements to the XACML standard
+* [GeoXACML](http://portal.opengeospatial.org/files/?artifact_id=42734) (Open Geospatial Consortium) support: see [this AuthzForce extension from SecureDimensions](https://github.com/securedimensions/authzforce-geoxacml-basic).
+* Support `<VariableReference>` (indirectly) in `<Target>`/`<Match>` elements: this feature is a workaround for a limitation in XACML schema which does not allow Variables (`<VariableReference>`) in `Match` elements; i.e. the feature allows policy writers to use an equivalent of `<VariableReference>`s in `<Match>` elements (without changing the XACML schema) through a special kind of `<AttributeDesignator>` (specific `Category`, and `AttributeId` is used as `VariableId`). More details in the Usage section below. 
+
+### Interfaces
+* Java API: basically a library for instantiating and using a PDP engine from your Java (or any Java-compatible) code;
+* CLI (Command-Line Interface): basically an executable that you can run from the command-line to test the engine;
+*HTTP/REST API compliant with [REST Profile of XACML 3.0](http://docs.oasis-open.org/xacml/xacml-rest/v1.0/xacml-rest-v1.0.html) is provided by [AuthzForce RESTful PDP project](http://github.com/authzforce/restful-pdp) for PDP only, and [AuthzForce server project](http://github.com/authzforce/server) for PDP and PAP with multi-tenancy.*
+
+### Safety & Security
+* Prevention of circular XACML policy references (PolicyIdReference/PolicySetIdReference) as mandated by [XACML 3.0](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html#_Toc325047192);
+* Control of the **maximum XACML PolicyIdReference/PolicySetIdReference depth**;
+* Prevention of circular XACML variable references (VariableReference) as mandated by [XACML 3.0](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html#_Toc325047185); 
+* Control of the **maximum XACML VariableReference depth**.
+
+### Performance:
+* Optional **strict multivalued attribute parsing**: if enabled, multivalued attributes must be formed by grouping all `AttributeValue` elements in the same Attribute element (instead of duplicate Attribute elements); this does not fully comply with [XACML 3.0 Core specification of Multivalued attributes (§7.3.3)](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html#_Toc325047176), but it usually performs better than the default mode since it simplifies the parsing of attribute values in the request.
+* Optional **strict attribute Issuer matching**: if enabled, `AttributeDesignators` without Issuer only match request Attributes without Issuer (and same AttributeId, Category...); this option is not fully compliant with XACML 3.0, §5.29, in the case that the Issuer is indeed not present on a AttributeDesignator; but it is the recommended option for better performance when all AttributeDesignators have an Issuer (the XACML 3.0 specification (5.29) says: *If the Issuer is not present in the attribute designator, then the matching of the attribute to the named attribute SHALL be governed by AttributeId and DataType attributes alone.*);
+* **Optimal integer data-type** implementation: the `maxIntegerValue` configuration parameter (expected maximum absolute value in XACML attributes of type `http://www.w3.org/2001/XMLSchema#integer`) helps the PDP choose the most efficient Java data-type. By default, the XACML/XML type `http://www.w3.org/2001/XMLSchema#integer` is mapped to the larger Java data-type: `BigInteger`. However, this may be overkill for example in the case of integer attributes representing the age of a person; in this case, the `Short` type is more appropriate and especially more efficient. Therefore, decreasing the `maxIntegerValue` value as much as possible, based on the range you expect your integer values to fit in, makes the PDP engine more efficient on integer handling: lower memory consumption, faster computations.
+* **Pluggable Decision Cache**: you can plug in your own XACML Decision Cache mechanism to speed up evaluation of (repetitive) requests. See down below for more info (Decision Cache extension).
+
+### Extensibility points
+* **[Attribute Datatypes](https://github.com/authzforce/core/wiki/XACML-Data-Types)**: you may extend the PDP engine with custom XACML attribute datatypes;
+* **[Functions](https://github.com/authzforce/core/wiki/XACML-Functions)**: you may extend the PDP engine with custom XACML functions;
+* **[Combining Algorithms](https://github.com/authzforce/core/wiki/XACML-Combining-Algorithms)**: you may extend the PDP engine with custom XACML policy/rule combining algorithms;
+* **[Attribute Providers a.k.a. PIPs](https://github.com/authzforce/core/wiki/Attribute-Providers)** (Policy Information Points): you may plug custom attribute providers into the PDP engine to allow it to retrieve attributes from other attribute sources (e.g. remote service) than the input XACML Request during evaluation; 
+* **[Request Preprocessor](https://github.com/authzforce/core/wiki/XACML-Request-Preprocessors)**: you may customize the processing of XACML Requests before evaluation by the PDP core engine, e.g. used for supporting new XACML Request formats, and/or implementing [XACML v3.0 Multiple Decision Profile Version 1.0 - Repeated attribute categories](http://docs.oasis-open.org/xacml/3.0/multiple/v1.0/cs02/xacml-3.0-multiple-v1.0-cs02.html#_Toc388943334);
   
-  *HTTP/REST API compliant with [REST Profile of XACML 3.0](http://docs.oasis-open.org/xacml/xacml-rest/v1.0/xacml-rest-v1.0.html) is provided by [AuthzForce RESTful PDP project](http://github.com/authzforce/restful-pdp) for PDP only, and [AuthzForce server project](http://github.com/authzforce/server) for PDP and PAP with multi-tenancy.*
-* Safety & Security:
-  * Prevention of circular XACML policy references (PolicyIdReference/PolicySetIdReference) as mandated by [XACML 3.0](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html#_Toc325047192);
-  * Control of the **maximum XACML PolicyIdReference/PolicySetIdReference depth**;
-  * Prevention of circular XACML variable references (VariableReference) as mandated by [XACML 3.0](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html#_Toc325047185); 
-  * Control of the **maximum XACML VariableReference depth**;
-* Performance:
-  * Optional **strict multivalued attribute parsing**: if enabled, multivalued attributes must be formed by grouping all `AttributeValue` elements in the same Attribute element (instead of duplicate Attribute elements); this does not fully comply with [XACML 3.0 Core specification of Multivalued attributes (§7.3.3)](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html#_Toc325047176), but it usually performs better than the default mode since it simplifies the parsing of attribute values in the request.
-  * Optional **strict attribute Issuer matching**: if enabled, `AttributeDesignators` without Issuer only match request Attributes without Issuer (and same AttributeId, Category...); this option is not fully compliant with XACML 3.0, §5.29, in the case that the Issuer is indeed not present on a AttributeDesignator; but it is the recommended option for better performance when all AttributeDesignators have an Issuer (the XACML 3.0 specification (5.29) says: *If the Issuer is not present in the attribute designator, then the matching of the attribute to the named attribute SHALL be governed by AttributeId and DataType attributes alone.*);
-  * **Optimal integer data-type** implementation: the `maxIntegerValue` configuration parameter (expected maximum absolute value in XACML attributes of type `http://www.w3.org/2001/XMLSchema#integer`) helps the PDP choose the most efficient Java data-type. By default, the XACML/XML type `http://www.w3.org/2001/XMLSchema#integer` is mapped to the larger Java data-type: `BigInteger`. However, this may be overkill for example in the case of integer attributes representing the age of a person; in this case, the `Short` type is more appropriate and especially more efficient. Therefore, decreasing the `maxIntegerValue` value as much as possible, based on the range you expect your integer values to fit in, makes the PDP engine more efficient on integer handling: lower memory consumption, faster computations.
-  * **Pluggable Decision Cache**: you can plug in your own XACML Decision Cache mechanism to speed up evaluation of (repetitive) requests. See down below for more info (Decision Cache extension).
-* Extensibility points:
-  * **[Attribute Datatypes](https://github.com/authzforce/core/wiki/XACML-Data-Types)**: you may extend the PDP engine with custom XACML attribute datatypes;
-  * **[Functions](https://github.com/authzforce/core/wiki/XACML-Functions)**: you may extend the PDP engine with custom XACML functions;
-  * **[Combining Algorithms](https://github.com/authzforce/core/wiki/XACML-Combining-Algorithms)**: you may extend the PDP engine with custom XACML policy/rule combining algorithms;
-  * **[Attribute Providers a.k.a. PIPs](https://github.com/authzforce/core/wiki/Attribute-Providers)** (Policy Information Points): you may plug custom attribute providers into the PDP engine to allow it to retrieve attributes from other attribute sources (e.g. remote service) than the input XACML Request during evaluation; 
-  * **[Request Preprocessor](https://github.com/authzforce/core/wiki/XACML-Request-Preprocessors)**: you may customize the processing of XACML Requests before evaluation by the PDP core engine, e.g. used for supporting new XACML Request formats, and/or implementing [XACML v3.0 Multiple Decision Profile Version 1.0 - Repeated attribute categories](http://docs.oasis-open.org/xacml/3.0/multiple/v1.0/cs02/xacml-3.0-multiple-v1.0-cs02.html#_Toc388943334);
-  * **[Result Postprocessor](https://github.com/authzforce/core/wiki/XACML-Result-Postprocessors)**: you may customize the processing of XACML Results after evaluation by the PDP engine, e.g. used for supporting new XACML Response formats, and/or implementing [XACML v3.0 Multiple Decision Profile Version 1.0 - Requests for a combined decision](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-multiple-v1-spec-cd-03-en.html#_Toc260837890);
-  * **[Policy Provider](https://github.com/authzforce/core/wiki/Policy-Providers)**: you may plug custom policy providers into the PDP engine to allow it to resolve `PolicyIdReference` or `PolicySetIdReference`;
-  * **Decision Cache**: you may extend the PDP engine with a custom XACML decision cache, allowing the PDP to skip evaluation and retrieve XACML decisions from cache for recurring XACML Requests;
-  * Java [extension mechanism to switch HashMap/HashSet implementations](https://github.com/authzforce/core/wiki/Hashed-Collections) (e.g. to get different performance results).
-* PIP (Policy Information Point): AuthzForce provides XACML PIP features in the form of extensions called *Attribute Providers*. More information in the previous list of *Extensibility points*.
+  **Built-in Request Preprocessors** (possible `requestPreproc` values in a PDP configuration): 
+  * For XACML/XML input (Java type `oasis.names.tc.xacml._3_0.core.schema.wd_17.Request`):
+    * `urn:ow2:authzforce:feature:pdp:request-preproc:xacml-xml:default-lax`: implements only XACML 3.0 Core (no support for Multiple Decision Profile) and allows duplicate <Attribute> with same meta-data in the same <Attributes> element of a Request (complying with XACML 3.0 core spec, §7.3.3) 
+    * `urn:ow2:authzforce:feature:pdp:request-preproc:xacml-xml:default-strict`: implements only XACML 3.0 Core (no support for Multiple Decision Profile) and does not allow duplicate `<Attribute>` with same meta-data in the same `<Attributes>` element of a Request (not complying with XACML 3.0 core spec, §7.3.3, but better performances) 
+    * `urn:ow2:authzforce:feature:pdp:request-preproc:xacml-xml:multiple:repeated-attribute-categories-lax`: implements Multiple Decision Profile, section 2.3 (repeated attribute categories), and allows duplicate `<Attribute>` with same meta-data in the same `<Attributes>` element of a Request (complying with XACML 3.0 core spec, §7.3.3) 
+    * `urn:ow2:authzforce:feature:pdp:request-preproc:xacml-xml:multiple:repeated-attribute-categories-strict`: same as previous one, except it does not allow duplicate `<Attribute>` with same meta-data in the same `<Attributes>` element of a Request (not complying with XACML 3.0 core spec, §7.3.3, but better performances).
+  * For XACML/JSON input as defined by JSON Profile of XACML 3.0 (Java type `org.json.JSONObject`), we have the equivalent to the above for XML, except `xml` is replaced with `json` in the identifier, and they require the extra Maven dependency `authzforce-ce-core-pdp-io-xacml-json`. Here is the list:
+    * `urn:ow2:authzforce:feature:pdp:request-preproc:xacml-json:default-lax`;
+    * `urn:ow2:authzforce:feature:pdp:request-preproc:xacml-json:default-strict`;
+    * `urn:ow2:authzforce:feature:pdp:request-preproc:xacml-json:multiple:repeated-attribute-categories-lax`
+    * `urn:ow2:authzforce:feature:pdp:request-preproc:xacml-json:multiple:repeated-attribute-categories-strict`.
+    
+* **[Result Postprocessor](https://github.com/authzforce/core/wiki/XACML-Result-Postprocessors)**: you may customize the processing of XACML Results after evaluation by the PDP engine, e.g. used for supporting new XACML Response formats, and/or implementing [XACML v3.0 Multiple Decision Profile Version 1.0 - Requests for a combined decision](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-multiple-v1-spec-cd-03-en.html#_Toc260837890);
+* **[Policy Provider](https://github.com/authzforce/core/wiki/Policy-Providers)**: you may plug custom policy providers into the PDP engine to allow it to resolve `PolicyIdReference` or `PolicySetIdReference`;
+* **Decision Cache**: you may extend the PDP engine with a custom XACML decision cache, allowing the PDP to skip evaluation and retrieve XACML decisions from cache for recurring XACML Requests;
+* Java [extension mechanism to switch HashMap/HashSet implementations](https://github.com/authzforce/core/wiki/Hashed-Collections) (e.g. to get different performance results).
 
+### PIP (Policy Information Point)
+
+AuthzForce provides XACML PIP features in the form of extensions called *Attribute Providers*. More information in the previous list of *Extensibility points*.
 
 ## Limitations
 
@@ -105,7 +124,7 @@ To give you an example on how to test a XACML Policy (or PolicySet) and Request,
 $ ./authzforce-ce-core-pdp-cli-14.0.0.jar pdp.xml IIA001/Request.xml
 ```
 
-* `pdp.xml`: PDP configuration file in XML format, that defines the location(s) of XACML policy(ies) and more; for more information about PDP configuration parameters, the configuration format is fully specified and documented in the [XML schema `pdp.xsd`](pdp-engine/src/main/resources/pdp.xsd), also available in a [more user-friendly HTML form](https://authzforce.github.io/pdp.xsd/7.1) (start with the `pdp` element as the root element in a PDP configuration). **Feel free to change the policy location to point to your own for testing.**
+* `pdp.xml`: PDP configuration file in XML format, that defines the location(s) of XACML policy(ies) and more; for more information about PDP configuration parameters, the configuration format is fully specified and documented in the [XML schema `pdp.xsd`](pdp-engine/src/main/resources/pdp.xsd), also available in a [more user-friendly HTML form](https://authzforce.github.io/pdp.xsd/8.1) (start with the `pdp` element as the root element in a PDP configuration). **Feel free to change the policy location to point to your own for testing.**
 * `Request.xml`: XACML request in XACML 3.0/XML (core specification) format. **Feel free to replace with your own for testing.**
 
 If you want to test the JSON Profile of XACML 3.0, run it with extra option `-t XACML_JSON`:

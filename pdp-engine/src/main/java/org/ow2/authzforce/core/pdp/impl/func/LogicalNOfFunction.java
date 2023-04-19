@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 
 /**
  * A class that implements the n-of function. From the XACML spec (urn:oasis:names:tc:xacml:1.0:function:n-of): the first argument to this function SHALL be of data-type
- * http://www.w3.org/2001/XMLSchema#integer. The remaining arguments SHALL be of data-type http://www.w3.org/2001/XMLSchema#boolean. The first argument specifies the minimum number of the remaining
+ * <code>http://www.w3.org/2001/XMLSchema#integer</code>. The remaining arguments SHALL be of data-type <code>http://www.w3.org/2001/XMLSchema#boolean</code>. The first argument specifies the minimum number of the remaining
  * arguments that MUST evaluate to "True" for the expression to be considered "True". If the first argument is 0, the result SHALL be "True". If the number of arguments after the first one is less
  * than the value of the first argument, then the expression SHALL result in "Indeterminate". The order of evaluation SHALL be: first evaluate the integer value, and then evaluate each subsequent
  * argument. The evaluation SHALL stop and return "True" if the specified number of arguments evaluate to "True". The evaluation of arguments SHALL stop if it is determined that evaluating the
@@ -44,7 +44,6 @@ import java.util.stream.Collectors;
  * <p>
  * This function evaluates the arguments one at a time, starting with the first one. As soon as the result of the function can be determined, evaluation stops and that result is returned. During this
  * process, if any argument evaluates to indeterminate, an indeterminate result is returned.
- *
  * 
  * @version $Id: $
  */

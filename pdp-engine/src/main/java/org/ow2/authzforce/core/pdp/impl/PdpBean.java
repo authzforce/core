@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -30,11 +30,11 @@ import java.util.Map.Entry;
 
 /**
  * JavaBean for the PDP to be used/called as JNDI resource.
- *
- * In JEE application servers such as Glassfish, you could use class org.glassfish.resources.custom.factory.JavaBeanFactory for registering the custom JNDI resource. More info:
- * http://docs.oracle.com/cd/E26576_01/doc.312/e24930/jndi.htm#giywi
- *
- * For Tomcat, see http://tomcat.apache.org/tomcat-7.0-doc/jndi-resources-howto.html# Adding_Custom_Resource_Factories.
+ * <p>
+ * In JEE application servers such as Glassfish, you could use class org.glassfish.resources.custom.factory.JavaBeanFactory for registering the custom JNDI resource.
+ * <a href="http://docs.oracle.com/cd/E26576_01/doc.312/e24930/jndi.htm#giywi">More info</a>.
+ * <p>
+ * For Tomcat, see <a href="http://tomcat.apache.org/tomcat-7.0-doc/jndi-resources-howto.html#Adding_Custom_Resource_Factories">Tomcat documentation on Adding Custom Resource Factories</a>.
  *
  * @version $Id: $
  */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -31,8 +31,8 @@ import java.util.List;
 /**
  * Standard match functions taking parameters of same/equal type, i.e. standard (A.3.1) Equality predicates, special match function x500Name-match, string-starts-with/contains/ends-with.
  * <p>
- * Note that there are no such functions as ipAddress-equal and dnsName-equal functions in the XACML core specification. Regexp-match alternatives should be used instead. More info:
- * https://lists.oasis-open.org/archives/xacml-comment/200411/msg00002.html
+ * Note that there are no such functions as ipAddress-equal and dnsName-equal functions in the XACML core specification. Regexp-match alternatives should be used instead.
+ * <a href="https://lists.oasis-open.org/archives/xacml-comment/200411/msg00002.html">More info</a>.
  *
  * @version $Id: $
  */

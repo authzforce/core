@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -29,7 +29,6 @@ import java.util.Optional;
  * Implements {@link Closeable} because it may very likely hold resources such as network resources to get policies remotely, policy caches to speed up finding, etc. Therefore, you are required to
  * call {@link #close()} when you no longer need an instance - especially before replacing with a new instance (with different modules) - in order to make sure these resources are released properly by
  * each underlying module (e.g. invalidate the policy caches).
- *
  * 
  * @version $Id: $
  */

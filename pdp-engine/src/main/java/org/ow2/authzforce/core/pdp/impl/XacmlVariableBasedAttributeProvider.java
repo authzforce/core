@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -69,7 +69,7 @@ public final class XacmlVariableBasedAttributeProvider extends BaseNamedAttribut
     @Override
     public <AV extends AttributeValue> AttributeBag<AV> get(final AttributeFqn attributeFQN, final Datatype<AV> datatype, final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
     {
-        Preconditions.checkArgument(attributeFQN != null && datatype != null && context != null && mdpContext != null, "Invalid args");
+        Preconditions.checkArgument(attributeFQN != null && datatype != null && context != null, "Invalid args");
         if(!supportedAttCategory.equals(attributeFQN.getCategory())) {
             throw invalidAttCatEx;
         }

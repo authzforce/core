@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -187,7 +187,7 @@ public class TestUtils
         return writer.toString();
     }
 
-    // Convert to JAXB class instead of sub-class if necessary
+    // Convert to JAXB class instead of subclass if necessary
     private static StatusCode toJaxb(StatusCode statusCode)
     {
         if (statusCode instanceof ImmutableXacmlStatusCode)
@@ -213,7 +213,7 @@ public class TestUtils
         final List<Result> results = new ArrayList<>();
         /*
          * We iterate over all results, because for each result, we don't compare everything. In particular, we choose to ignore the StatusDetail.
-         * Also if {@code removeStatusMessage}, StatusMessage is ignored as well. Indeed, a PDP implementation might return a perfectly
+         * Also, if {@code removeStatusMessage}, StatusMessage is ignored as well. Indeed, a PDP implementation might return a perfectly
          * XACML-compliant response but with extra Status Message/Detail that we would not expect.
          */
         for (final Result result : response.getResults())
@@ -230,7 +230,7 @@ public class TestUtils
             {
 				/*
 				Equals() methods generated for XSD-derived classes with jaxb2-basics plugin check that classes are exactly the same.
-				Unfortunately, for immutability needs, we use immutable variants of the XSD-derived classes (ImmutableXacmlStatus, ImmutableXacmlStatusCode) that will cause these equals() to return false always syntaxically the same (same XACML output). So make sure we only have the original XSD-derived classes
+				Unfortunately, for immutability needs, we use immutable variants of the XSD-derived classes (ImmutableXacmlStatus, ImmutableXacmlStatusCode) that will cause these equals() to return false always syntactically the same (same XACML output). So make sure we only have the original XSD-derived classes
 				FIXME: this may not be necessary anymore once we switch completely to xjc-immutable-plugin
 				 */
                 final StatusCode oldStatusCode = oldStatus.getStatusCode();
@@ -259,7 +259,7 @@ public class TestUtils
     {
         if (arg0 == null || arg1 == null)
         {
-            throw new IllegalArgumentException("Invalid Attribtues args for comparator");
+            throw new IllegalArgumentException("Invalid Attributes args for comparator");
         }
 
         return arg0.getCategory().compareTo(arg1.getCategory());
@@ -284,7 +284,7 @@ public class TestUtils
     public static TopLevelPolicyElementRef getPolicyRef(final Path path) throws JAXBException
     {
         /*
-         * Unmarshall without schema validation because some test policy files are intendedly invalid to test XACML syntax validation
+         * Unmarshall without schema validation because some test policy files are invalid on purpose to test XACML syntax validation
          */
         final Object policyOrPolicySet = Xacml3JaxbHelper.XACML_3_0_JAXB_CONTEXT.createUnmarshaller().unmarshal(path.toFile());
         final boolean isPolicySet;
@@ -376,7 +376,7 @@ public class TestUtils
             }
         } catch (final DirectoryIteratorException ex)
         {
-            // I/O error encounted during the iteration, the cause is an IOException
+            // I/O error encountered during the iteration, the cause is an IOException
             throw ex.getCause();
         }
 
@@ -429,10 +429,9 @@ public class TestUtils
             throw new IllegalArgumentException("Undefined actual response  for response equality check");
         }
 
-        final boolean removeStatusMessage, removeStatusDetail;
+        final boolean removeStatusMessage;
         if(ignoreStatusMessageAndDetail) {
             removeStatusMessage = true;
-            removeStatusDetail = true;
         } else {
             /*
             Method equals is not implemented on DOM Elements used in StatusDetail, therefore useless for proper comparison of StatusDetail content.
@@ -487,15 +486,14 @@ public class TestUtils
             // StatusDetails/MissingAttributeDetails in Results are the same
 
             removeStatusMessage = false;
-            /*
-             StatusDetail comparison already taken care of, remove it else assertEquals will fail to compare StatusDetail content for the reason above.
-             */
-            removeStatusDetail = true;
         }
 
         // normalize responses for comparison
-        final Response normalizedExpectedResponse = TestUtils.normalizeForComparison(expectedResponse, removeStatusMessage, removeStatusDetail);
-        final Response normalizedActualResponse = TestUtils.normalizeForComparison(actualResponseFromPDP, removeStatusMessage,removeStatusDetail);
+                    /*
+             StatusDetail comparison already taken care of, remove it else assertEquals will fail to compare StatusDetail content for the reason above.
+             */
+        final Response normalizedExpectedResponse = TestUtils.normalizeForComparison(expectedResponse, removeStatusMessage, true);
+        final Response normalizedActualResponse = TestUtils.normalizeForComparison(actualResponseFromPDP, removeStatusMessage, true);
         final Marshaller marshaller = Xacml3JaxbHelper.createXacml3Marshaller();
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         assertEquals("Test '" + testId + "' "+(ignoreStatusMessageAndDetail? "(Status elements removed/ignored for comparison)": "")+": ", new MarshallableWithToString(normalizedExpectedResponse, marshaller),

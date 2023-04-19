@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -442,7 +442,7 @@ public final class SchemaHandler
 	{
 		/*
 		 * This is mostly similar to org.apache.cxf.jaxrs.utils.schemas.SchemaHandler#createSchema(), except we are using Spring ResourceUtils class to get Resource URLs, and we don't use any Bus
-		 * object. We are not using CXF's SchemaHandler class directly because it is part of cxf-rt-frontend-jaxrs which drags many dependencies on CXF we don't need, the full CXF JAX-RS framework actually. It would make more sense if SchemaHandler was part of some cxf common utility package, but it is not the case as of writing (December 2014).
+		 * object. We are not using CXF's SchemaHandler class directly because it is part of cxf-rt-frontend-jaxrs which drags many dependencies on CXF we don't need, since it drags the full CXF JAX-RS framework actually. It would make more sense if SchemaHandler was part of some cxf common utility package, but it is not the case as of writing (December 2014).
 		 */
 
 		final SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);

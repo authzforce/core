@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -28,13 +28,13 @@ import java.util.Arrays;
 import java.util.Collection;
 
 /**
- * 
+ *
  * XACML anyURI validation test. This test is no longer used since we refer to the definition of anyURI datatype given in XSD 1.1, which has the same value space as the string datatype. This is
- * confirmed by SAXON documentation: http://www.saxonica.com/html/documentation9.4/changes/intro93/xsd11-93.html
- * 
+ * confirmed by <a href="http://www.saxonica.com/html/documentation9.4/changes/intro93/xsd11-93.html">SAXON documentation</a>.
+ * <p>
  * Although XACML 3.0 still refers to XSD 1.0 and its stricter definition of anyURI, we prefer to anticipate and use the definition from XSD 1.1 for XACML AttributeValues of datatype anyURI. However,
  * this does not affect XACML schema validation of Policy/PolicySet/Request documents, where the XSD 1.0 definition of anyURI still applies.
- * 
+ * <p>
  * This class is kept for the record only.
  */
 @RunWith(value = Parameterized.class)

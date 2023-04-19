@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -35,9 +35,8 @@ import java.util.Optional;
  * A class that implements the optional XACML 3.0 xpath-node-count function.
  * <p>
  * From XACML core specification of function 'urn:oasis:names:tc:xacml:3.0:function:xpath-node-count': This function SHALL take an 'urn:oasis:names:tc:xacml:3.0:data-type:xpathExpression' as an
- * argument and evaluates to an 'http://www.w3.org/2001/XMLSchema#integer'. The value returned from the function SHALL be the count of the nodes within the node-set that match the given XPath
+ * argument and evaluates to an <code>http://www.w3.org/2001/XMLSchema#integer</code>. The value returned from the function SHALL be the count of the nodes within the node-set that match the given XPath
  * expression. If the &lt;Content&gt; element of the category to which the XPath expression applies to is not present in the request, this function SHALL return a value of zero.
- *
  * 
  * @version $Id: $
  */

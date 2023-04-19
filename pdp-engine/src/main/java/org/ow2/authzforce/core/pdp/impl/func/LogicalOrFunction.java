@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
  * From XACML core specification of function 'urn:oasis:names:tc:xacml:1.0:function:or': This function SHALL return "False" if it has no arguments and SHALL return "True" if at least one of its
  * arguments evaluates to "True". The order of evaluation SHALL be from first argument to last. The evaluation SHALL stop with a result of "True" if any argument evaluates to "True", leaving the rest
  * of the arguments unevaluated.
- *
  * 
  * @version $Id: $
  */

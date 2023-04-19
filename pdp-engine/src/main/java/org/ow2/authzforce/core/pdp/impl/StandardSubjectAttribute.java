@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -36,7 +36,7 @@ public enum StandardSubjectAttribute
 {
 	/**
 	 * Access subject category
-	 *
+	 * <p>
 	 * urn:oasis:names:tc:xacml:3.0:subject:authn-locality:ip-address
 	 */
 	ACCESS_SUBJECT_IP_ADDRESS(AttributeFqns.newInstance(XacmlAttributeCategory.XACML_1_0_ACCESS_SUBJECT.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_SUBJECT_IP_ADDRESS.value()), StandardDatatypes.IPADDRESS),
