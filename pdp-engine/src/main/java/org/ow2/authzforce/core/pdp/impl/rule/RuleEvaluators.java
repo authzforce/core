@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -36,7 +36,6 @@ import java.util.Optional;
 
 /**
  * XACML Rule evaluators
- *
  * 
  * @version $Id: $
  */
@@ -95,7 +94,7 @@ public final class RuleEvaluators
 	* @throws java.lang.IllegalArgumentException
 	*            Undefined rule element, Invalid Target, Condition or Obligation/Advice expressions
 	*/
-	public getInstance(final Rule ruleElt, final ExpressionFactory expressionFactory,  final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
+	public static RuleEvaluator getInstance(final Rule ruleElt, final ExpressionFactory expressionFactory,  final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
 	{
 		if (ruleElt == null)
 		{
@@ -120,22 +119,21 @@ public final class RuleEvaluators
 				conditionEvaluator = ConditionEvaluators.getInstance(condElt, expressionFactory, xPathCompiler);
 			} catch (final IllegalArgumentException e)
 			{
-				throw new IllegalArgumentException(this + ": invalid Condition", e);
+				throw new IllegalArgumentException("Rule [" + ruleId + "]: invalid Condition", e);
 			}
 
 			if (conditionEvaluator == BooleanEvaluators.FALSE) {
-				// always NotApplicatble, see section 7.11 of XACML 3.0
+				// always NotApplicable, see section 7.11 of XACML 3.0
 				return new NotApplicableRuleEvaluator(ruleId);
 			}
 		}
 
 		// Condition not null and not constant False
-		return new ApplicableRuleEvaluator(ruleId, ruleElt.getTarget(), expressionFactory, xPathCompiler);
+		return new ApplicableRuleEvaluator(ruleId, ruleElt.getEffect(), ruleElt.getTarget(), conditionEvaluator, ruleElt.getObligationExpressions(), ruleElt.getAdviceExpressions(), expressionFactory, xPathCompiler);
 	}
 
 	/**
 	 * Rule decision result factory
-	 *
 	 * 
 	 * @version $Id: $
 	 */
@@ -338,8 +336,8 @@ public final class RuleEvaluators
 		/**
 		* Instantiates rule from XACML RuleType
 		*
-		* @param ruleElt
-		*            Rule element definition
+		* @param ruleId
+		*            Rule ID
 		* @param xPathCompiler
 		*            XPath compiler, defined if XPath support enabled (by PDP configuration and some enclosing Policy(Set) defines a XPathVersion according to XACML standard)
 		* @param expressionFactory
@@ -347,22 +345,19 @@ public final class RuleEvaluators
 		* @throws java.lang.IllegalArgumentException
 		*             Invalid Target, Condition or Obligation/Advice expressions
 		*/
-		private ApplicableRuleEvaluator(final String ruleId, final Target target, final BooleanEvaluator conditionEvaluator, final ExpressionFactory expressionFactory,  final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
+		private ApplicableRuleEvaluator(final String ruleId, final EffectType ruleEffect, final Target target, final BooleanEvaluator conditionEvaluator, final ObligationExpressions obligationExpressions, final AdviceExpressions adviceExpressions, final ExpressionFactory expressionFactory,  final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
 		{
 			super(ruleId);
 			this.targetEvaluator = TargetEvaluators.getInstance(target, expressionFactory, xPathCompiler);
 			this.conditionEvaluator = conditionEvaluator;
-			this.isAlwaysApplicable = this.targetEvaluator == TargetEvaluators.MATCH_ALL_TARGET_EVALUATOR && this.conditionEvaluator == ConditionEvaluators.TRUE_CONDITION;
+			this.isAlwaysApplicable = this.targetEvaluator == TargetEvaluators.MATCH_ALL_TARGET_EVALUATOR && this.conditionEvaluator == BooleanEvaluators.TRUE;
 
 			/*
 			* Final decision result depends on rule's effect and Obligation/Advice elements
 			*/
-			final EffectType effect = ruleElt.getEffect();
-			final ObligationExpressions obligationExps = ruleElt.getObligationExpressions();
-			final AdviceExpressions adviceExps = ruleElt.getAdviceExpressions();
 			final List<PepActionExpression> pepActionExpressions;
-			final List<ObligationExpression> obligationExpList = obligationExps == null ? Collections.emptyList() : obligationExps.getObligationExpressions();
-			final List<AdviceExpression> adviceExpList = adviceExps == null ? Collections.emptyList() : adviceExps.getAdviceExpressions();
+			final List<ObligationExpression> obligationExpList = obligationExpressions == null ? Collections.emptyList() : obligationExpressions.getObligationExpressions();
+			final List<AdviceExpression> adviceExpList = adviceExpressions == null ? Collections.emptyList() : adviceExpressions.getAdviceExpressions();
 			if (obligationExpList.isEmpty() && adviceExpList.isEmpty())
 			{
 
@@ -372,7 +367,7 @@ public final class RuleEvaluators
 				pepActionExpressions = new ArrayList<>(obligationExpList.size() + adviceExpList.size());
 				obligationExpList.forEach(obligationExp -> {
 					final String pepActionId = obligationExp.getObligationId();
-					if (obligationExp.getFulfillOn() != effect)
+					if (obligationExp.getFulfillOn() != ruleEffect)
 					{
 						LOGGER.warn("{}: ignoring Obligation '{}' because fulfillOn does not match the rule's effect", this, pepActionId);
 						return;
@@ -383,7 +378,7 @@ public final class RuleEvaluators
 
 				adviceExpList.forEach(adviceExp -> {
 					final String pepActionId = adviceExp.getAdviceId();
-					if (adviceExp.getAppliesTo() != effect)
+					if (adviceExp.getAppliesTo() != ruleEffect)
 					{
 						LOGGER.warn("{}: ignoring Advice '{}' because appliesTo does not match the rule's effect", this, pepActionId);
 						return;
@@ -405,10 +400,10 @@ public final class RuleEvaluators
 				/*
 				* No PEP obligation/advice -> rule is (equivalent to) empty rule if also target matches all and condition is null or always True
 				*/
-				this.decisionResultFactory = effect == EffectType.DENY ? DENY_DECISION_WITHOUT_PEP_ACTION_RESULT_FACTORY : PERMIT_DECISION_WITHOUT_PEP_ACTION_RESULT_FACTORY;
+				this.decisionResultFactory = ruleEffect == EffectType.DENY ? DENY_DECISION_WITHOUT_PEP_ACTION_RESULT_FACTORY : PERMIT_DECISION_WITHOUT_PEP_ACTION_RESULT_FACTORY;
 			} else
 			{
-				this.decisionResultFactory = effect == EffectType.DENY ? new DenyDecisionWithPepActionResultFactory(ruleId, pepActionExpressions)
+				this.decisionResultFactory = ruleEffect == EffectType.DENY ? new DenyDecisionWithPepActionResultFactory(ruleId, pepActionExpressions)
 						: new PermitDecisionWithPepActionResultFactory(ruleId, pepActionExpressions);
 			}
 		}
@@ -457,7 +452,7 @@ public final class RuleEvaluators
 		*/
 		public boolean isEmptyEquivalent()
 		{
-			return this.isAlwaysApplicable && this.decisionResultFactory.hasAnyPepAction();
+			return this.isAlwaysApplicable && !this.decisionResultFactory.hasAnyPepAction();
 		}
 
 		/**

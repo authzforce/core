@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -254,7 +254,7 @@ public abstract class StandardFunctionTest
 	 * @param subFunctionName
 	 *            (optional) sub-function specified iff {@code functionName} corresponds to a higher-order function; else null
 	 * @param inputs
-	 *            The list of the function arguments as constant values, in order. Specify a null argument to indicate it is undefined. It will be considered as Indeterminate (wrapped in a Expression
+	 *            The list of the function arguments as constant values, in order. Specify a null argument to indicate it is undefined. It will be considered as Indeterminate (wrapped in an Expression
 	 *            that always evaluate to Indeterminate result). This is useful to test specific function behavior when one (or more) of the arguments is indeterminate; e.g. logical or/and/n-of
 	 *            functions are able to return False/True even if some of the arguments are Indeterminate.
 	 * @param expectedResult

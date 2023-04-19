@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -73,7 +73,7 @@ public abstract class BaseXacmlJsonRequestPreprocessor implements DecisionReques
 
 	/**
 	 * Creates instance of request pre-processor.
-	 * 
+	 *
 	 * @param attributeValueFactoryRegistry
 	 *            registry of datatype-specific attribute value factories (parsers)
 	 * @param strictAttributeIssuerMatch
@@ -83,8 +83,7 @@ public abstract class BaseXacmlJsonRequestPreprocessor implements DecisionReques
 	 *            AttributeId and DataType attributes alone."
 	 * @param allowAttributeDuplicates
 	 *            true iff the pre-processor should allow defining multivalued attributes by repeating the same XACML Attribute (same AttributeId) within a XACML Attributes element (same Category).
-	 *            Indeed, not allowing this is not fully compliant with the XACML spec according to a discussion on the xacml-dev mailing list (see
-	 *            {@linkplain "https://lists.oasis-open.org/archives/xacml-dev/201507/msg00001.html"}), referring to the XACML 3.0 core spec, §7.3.3, that indicates that multiple occurrences of the
+	 *            Indeed, not allowing this is not fully compliant with the XACML spec according to a <a href="https://lists.oasis-open.org/archives/xacml-dev/201507/msg00001.html">discussion on the xacml-dev mailing list </a>, referring to the XACML 3.0 core spec, §7.3.3, that indicates that multiple occurrences of the
 	 *            same &lt;Attribute&gt; with same meta-data but different values should be considered equivalent to a single &lt;Attribute&gt; element with same meta-data and merged values
 	 *            (multivalued Attribute). Moreover, the XACML 3.0 conformance test 'IIIA024' expects this behavior: the multiple subject-id Attributes are expected to result in a multi-value bag
 	 *            during evaluation of the &lt;AttributeDesignator&gt;.
@@ -94,7 +93,7 @@ public abstract class BaseXacmlJsonRequestPreprocessor implements DecisionReques
 	 *            not fully compliant).
 	 * @param requireContentForXPath
 	 *            true iff Attributes/Content parsing (into XDM) for XPath evaluation is required
-	 * 
+	 *
 	 * @param extraPdpFeatures
 	 *            extra - non-mandatory per XACML 3.0 core specification - features supported by PDP engine. Any feature requested by any request is checked against this before processing the request
 	 *            further. If some feature is not supported, an Indeterminate Result is returned.

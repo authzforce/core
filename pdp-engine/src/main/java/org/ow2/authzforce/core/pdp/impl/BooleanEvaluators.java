@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,18 +17,16 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-
-import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Evaluator returning a boolean result
  */
 public final class BooleanEvaluators
 {
-
-	private BooleanEvaluator() {
+	private static final Logger LOGGER = LoggerFactory.getLogger(BooleanEvaluators.class);
+	private BooleanEvaluators() {
 		// prevent instantiation
 	}
 

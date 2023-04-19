@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -42,11 +42,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * Main PDP core implementation test suite.
- * 
+ * <p>
  * NB: {@link AnyURIAttributeTest} no longer useful and removed because we now refer to the definition of anyURI datatype given in XSD 1.1, which has the same value space as the string datatype. More
- * info in the XSD 1.1 datatypes document and SAXON documentation: http://www.saxonica.com/html/documentation9.4/changes/intro93/xsd11-93.html. Although XACML 3.0 still refers to XSD 1.0 and its
+ * info in the XSD 1.1 datatypes document and <a href="http://www.saxonica.com/html/documentation9.4/changes/intro93/xsd11-93.html">SAXON documentation</a>. Although XACML 3.0 still refers to XSD 1.0 and its
  * stricter definition of anyURI, we prefer to anticipate and use the definition from XSD 1.1 for XACML AttributeValues of datatype anyURI. However, this does not affect XACML schema validation of
  * Policy/PolicySet/Request documents, where the XSD 1.0 definition of anyURI still applies.
  */

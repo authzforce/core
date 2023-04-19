@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,33 +17,16 @@
  */
 package org.ow2.authzforce.core.pdp.impl.rule;
 
-import com.google.common.collect.ImmutableList;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.*;
-import org.ow2.authzforce.core.pdp.api.*;
-import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
-import org.ow2.authzforce.core.pdp.api.expression.XPathCompilerProxy;
-import org.ow2.authzforce.core.pdp.impl.BooleanEvaluator;
-import org.ow2.authzforce.core.pdp.impl.BooleanEvaluators;
-import org.ow2.authzforce.core.pdp.impl.PepActionExpression;
-import org.ow2.authzforce.core.pdp.impl.TargetEvaluators;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
+import org.ow2.authzforce.core.pdp.api.Decidable;
 
 /**
  * Evaluates a XACML Rule to a Decision.
- *
  * 
  * @version $Id: $
  */
 public abstract class RuleEvaluator implements Decidable
 {
-	private static final Logger LOGGER = LoggerFactory.getLogger(RuleEvaluators.class);
-
 	// non-null
 	private final String ruleId;
 

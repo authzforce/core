@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -62,10 +62,10 @@ public final class PdpModelHandler
 	private final JAXBContext confJaxbCtx;
 
 	/**
-	 * Load Configuration model handler. Parameters here are locations to XSD files. Locations can be any resource string supported by Spring ResourceLoader. More info:
-	 * http://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html
-	 *
-	 * For example: classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd, http://myserver/ccc.xsd...
+	 * Load Configuration model handler. Parameters here are locations to XSD files. Locations can be any resource string supported by Spring ResourceLoader.
+	 * <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html">More info</a>.
+	 * <p>
+	 * For example: <code>classpath:com/myapp/aaa.xsd</code>, <code>file:///data/bbb.xsd</code>, <code>http://myserver/ccc.xsd</code>...
 	 *
 	 * @param extensionXsdLocation
 	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD namespace import for each extension used in the PDP
@@ -85,18 +85,18 @@ public final class PdpModelHandler
 	 * 	<!--  Adding TestAttributeProvider extension for example -->
 	 * 	<xs:import namespace="http://authzforce.github.io/core/xmlns/test/3" />
 	 * </xs:schema>
-	 * 			}
+	 *            }
 	 * </pre>
 	 *
 	 *            In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported namespace above using a line like this (for an XML-formatted catalog):
-	 * 
+	 *
 	 *            <pre>
 	 *            {@literal
 	 *            <uri name="http://authzforce.github.io/core/xmlns/test/3" uri=
 	 * 	"classpath:org.ow2.authzforce.core.test.xsd" />
 	 *            }
 	 * </pre>
-	 * 
+	 *
 	 *            We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base
 	 *            types) in this case.
 	 * @param catalogLocation

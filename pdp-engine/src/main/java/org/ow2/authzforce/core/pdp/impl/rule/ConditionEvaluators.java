@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -41,8 +41,6 @@ import java.util.Optional;
  */
 public final class ConditionEvaluators
 {
-
-	private static final IllegalArgumentException INVALID_CONSTANT_FALSE_EXPRESSION_EXCEPTION = new IllegalArgumentException("Invalid condition: Expression is equivalent to constant False");
 
 	/**
 	 * Logger used for all classes

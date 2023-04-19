@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -70,8 +70,6 @@ public final class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>
 	 * @return latest version; null if none matched
 	 */
 	public Entry<PolicyVersion, P> getLatest(final Optional<PolicyVersionPatterns> PolicyVersionPatterns) {
-		assert PolicyVersionPatterns != null;
-
 		// policiesByVersion is not empty -> at least one value
 		final Iterator<Entry<PolicyVersion, P>> versionPolicyPairsIterator = policiesByVersion.entrySet().iterator();
 		if (PolicyVersionPatterns.isEmpty())

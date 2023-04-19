@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -33,7 +33,7 @@ import java.util.Collection;
 public class MandatoryConformanceV3FromV2Test extends ConformanceV3FromV2Test
 {
 	/**
-	 * test root directory location, where each subdirectories contains a category of tests
+	 * Location of the test root directory, of which each subdirectory contains a category of tests
 	 */
 	private final static String ROOT_DIRECTORY = "target/test-classes/conformance/xacml-3.0-from-2.0-ct/mandatory";
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -33,14 +33,13 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
- * Represents the dnsName-value datatype <i>XACML Data Loss Prevention / Network Access Control (DLP/NAC) Profile Version 1.0<i>. Edited by John Tolbert, Richard Hill, Crystal Hayes, David Brossard,
- * Hal Lockhart, and Steven Legg. 16 February 2015. OASIS Committee Specification 01. http://docs.oasis-open.org/xacml/xacml-3.0-dlp-nac/v1.0/cs01/xacml-3.0-dlp-nac-v1.0-cs01.html. Latest version:
- * http://docs.oasis-open.org/xacml/xacml-3.0-dlp-nac/v1.0/xacml-3.0-dlp-nac-v1.0.html.
+ * Represents the dnsName-value datatype from <a href="http://docs.oasis-open.org/xacml/xacml-3.0-dlp-nac/v1.0/cs01/xacml-3.0-dlp-nac-v1.0-cs01.html">XACML Data Loss Prevention / Network Access Control (DLP/NAC) Profile Version 1.0, Edited by John
+ *  Tolbert, Richard Hill, Crystal Hayes, David Brossard, Hal Lockhart, and Steven Legg. 16 February 2015. OASIS Committee Specification 01</a>.
+ *  <a href="http://docs.oasis-open.org/xacml/xacml-3.0-dlp-nac/v1.0/xacml-3.0-dlp-nac-v1.0.html">Latest version</a>.
  * <p>
  * It is basically the same as XACML Core dnsName datatype except that the hostname may use a wildcard as left-most subdomain, and the part after ':' is limited to a port number only.
  * <p>
  * Used here for testing Authzforce datatype extension mechanism, i.e. plugging a custom simple datatype into the PDP engine.
- *
  * 
  * @version $Id: $
  */
@@ -95,7 +94,7 @@ public final class TestDnsNameWithPortValue extends StringParseableValue<String>
 	 * toplabel = alpha | alpha *( alphanum | "-" ) alphanum
 	 * </p>
 	 * Difference with XACML Core dnsName datatype is that there is no wildcard accepted in left-most part
-	 *
+	 * <p>
 	 * To prevent Regexp DoS, we replace wildcards with a max number of repetitions
 	 */
 	private static final int MAX_NUM_OF_SUB_PATTERN_REPETITIONS = 100;
@@ -121,7 +120,7 @@ public final class TestDnsNameWithPortValue extends StringParseableValue<String>
 
 	/**
 	 * Private helper that tests whether the given string is valid.
-	 * 
+	 * <p>
 	 * TODO: find out whether it's better to use DomainValidator from Apache commons-validator instead, but first make sure this issue is fixed: https://issues.apache.org/jira/browse/VALIDATOR-366
 	 */
 	private static boolean isValidHostName(final String hostname)
