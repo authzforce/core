@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [GitHub](https://github.com/authzforce/core/issues) are referenced in the form of `[GH-N]`, where N is the issue number. 
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
+## 20.3.0
+### Fixed
+- Upgraded parent project (8.4.1) to fix CVEs in following dependencies:
+  - `org.json:json` upgraded to 20230227
+  - `org.springframework:spring-core` upgraded to 5.3.27
+- GH-73: Exception thrown when a Rule's Condition always returns False.
+
+### Added
+- Policy / Rule evaluation optimization: if the Rule's Condition is always False, then the Rule is always NotApplicable as per section 7.11 of XACML 3.0, therefore skip the Rule.
+
+
 ## 20.2.0
 ### Added
 - [GH-69] Support for XACML `<StatusDetail>` / `<MissingAttributeDetail>`s, returned when missing named Attribute(s) in AttributeDesignator/AttributeSelector expressions, and may be returned by custom PDP extensions as well. See the example of [custom RequestPreprocessor](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/CustomTestRequestPreprocessorFactory.java) (PDP extension) adding AttributeId/Category to [custom AttributeValues](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/TestExtensibleSimpleValue.java) (PDP extension) and the [custom function](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/TestExtensibleSimpleValueEqualFunction.java) (PDP extension) using this info to throw a standard `missing-attribute` error with `<MissingAttributeDetail>` inside a `<StatusDetail>` element; and also the [example of XACML response](pdp-testutils/src/test/resources/custom/CustomRequestPreproc/response.xml) and [PDP configuration](pdp-testutils/src/test/resources/custom/CustomRequestPreproc/pdp.xml).
