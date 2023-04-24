@@ -296,7 +296,7 @@ If you are using the Java API with extensions configured by XML (Policy Provider
 
 
 
-## Editing and creating XACML 3.0 policies
+## Editing and creating XACML 3.0 policies from scratch and from other formats
 
 ### Using a full-fledged XML editor
 
@@ -304,6 +304,11 @@ For full support of XACML, you may use any XML editor supporting XML Schema. Mak
 
 ### Using ALFA plugin for VScode - ALFA to XACML
 Axiomatics provides an [VScode plugin](https://marketplace.visualstudio.com/items?itemName=Axiomatics.alfa) to edit policies in [ALFA](https://axiomatics.github.io/alfa-vscode-doc/docs/alfa-introduction/introduction/) (Abbreviated Language for Authorization) and generate XACML 3.0 policies from it automatically. Beware of the [Axiomatics license](https://marketplace.visualstudio.com/items/Axiomatics.alfa/license) and [limitations of ALFA with respect to XACML](https://axiomatics.github.io/alfa-vscode-doc/docs/xacml/limitations-with-respect-to-xacml/).
+
+### From XACML 2.0 policies - XACML 2.0 to 3.0
+
+If you still have legacy policies in older XACML 2.0 format, you can migrate to XACML 3.0 automatically with a simple command given in a previous section:
+https://github.com/authzforce/core#xacml-20-support-and-migrating-to-xacml-30
 
 ### From SPIF (Security Policy Information File) - SPIF to XACML
 A SPIF (Security Policy Information File) defines a security labeling policy in a XML document (based on the [SPIF XML schema](spif-utils/spif.xsd)). More info on the [Open XML SPIF website](http://www.xmlspif.org/).
