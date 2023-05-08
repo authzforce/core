@@ -3,33 +3,27 @@
 	<parent>
 		<groupId>org.ow2.authzforce</groupId>
 		<artifactId>authzforce-ce-core</artifactId>
-		<version>17.1.3-SNAPSHOT</version>
+		<version>20.3.1-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-	<artifactId>authzforce-ce-core-pdp-benchmark</artifactId>
+	<artifactId>authzforce-ce-core-pdp-engine-oss-functional-benchmark</artifactId>
 	<name>${project.groupId}:${project.artifactId}</name>
-	<description>AuthzForce - Core PDP Benchmark against AT&amp;T XACML and WSO2 Balana</description>
+	<description>AuthzForce - Functional benchmark of open source PDP engines (Authzforce, AT&amp;amp;T XACML, WSO2 Balana)</description>
 	<url>${project.url}</url>
 	<scm>
 		<!-- Used by Jenkins - Maven release plugin -->
-		<connection>scm:git:${git.url.base}/core.git/pdp-benchmark</connection>
-		<developerConnection>scm:git:${git.url.base}/core.git/pdp-benchmark</developerConnection>
+		<connection>scm:git:${git.url.base}/core.git/pdp-engine-oss-functional-benchmark</connection>
+		<developerConnection>scm:git:${git.url.base}/core.git/pdp-engine-oss-functional-benchmark</developerConnection>
 		<tag>HEAD</tag>
 		<!-- Publicly browsable repository URL. For example, via Gitlab web UI. -->
-		<url>${git.url.base}/core/pdp-benchmark</url>
+		<url>${git.url.base}/core/pdp-engine-oss-functional-benchmark</url>
 	</scm>
 	<!-- distributionManagement defined in parent POM already -->
 	<dependencies>
 		<dependency>
-			<groupId>org.ow2.authzforce</groupId>
+			<groupId>${parent.groupId}</groupId>
 			<artifactId>authzforce-ce-core-pdp-testutils</artifactId>
-			<version>17.1.3-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.ow2.authzforce</groupId>
-			<artifactId>authzforce-ce-core-pdp-io-xacml-json</artifactId>
-			<version>17.1.3-SNAPSHOT</version>
-			<scope>compile</scope>
+			<version>20.3.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

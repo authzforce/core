@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 THALES.
+ * Copyright 2012-2023 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -33,7 +33,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.ow2.authzforce.core.pdp.api.DecisionRequestPreprocessor;
 import org.ow2.authzforce.core.pdp.api.DecisionResultPostprocessor;
-import org.ow2.authzforce.core.pdp.api.XmlUtils;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParser;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParserFactory;
 import org.ow2.authzforce.core.pdp.api.io.BaseXacmlJaxbResultPostprocessor;
@@ -51,7 +50,10 @@ import org.ow2.authzforce.xacml.Xacml3JaxbHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
-import org.wso2.balana.*;
+import org.wso2.balana.ConfigurationStore;
+import org.wso2.balana.PDP;
+import org.wso2.balana.PDPConfig;
+import org.wso2.balana.UnknownIdentifierException;
 import org.wso2.balana.ctx.AbstractRequestCtx;
 import org.wso2.balana.ctx.RequestCtxFactory;
 import org.wso2.balana.ctx.ResponseCtx;
@@ -148,7 +150,7 @@ public class ComparativePdpTest
 		private static final AttributeValueFactoryRegistry STD_ATTRIBUTE_VALUE_FACTORIES = StandardAttributeValueFactories.getRegistry(false, Optional.empty());
 
 		private static final DecisionRequestPreprocessor<Request, IndividualXacmlJaxbRequest> DEFAULT_XACML_JAXB_REQ_PREPROC = SingleDecisionXacmlJaxbRequestPreprocessor.LaxVariantFactory.INSTANCE
-		        .getInstance(STD_ATTRIBUTE_VALUE_FACTORIES, false, false, XmlUtils.SAXON_PROCESSOR, Collections.emptySet());
+				.getInstance(STD_ATTRIBUTE_VALUE_FACTORIES, false, false, Set.of());
 		private static final DecisionResultPostprocessor<IndividualXacmlJaxbRequest, Response> DEFAULT_XACML_JAXB_RESULT_POSTPROC = new BaseXacmlJaxbResultPostprocessor(0);
 		private static final XMLInputFactory XML_INPUT_FACTORY = XMLInputFactory.newInstance();
 		// private static final XMLOutputFactory XML_OUTPUT_FACTORY = XMLOutputFactory.newInstance();
@@ -323,7 +325,7 @@ public class ComparativePdpTest
 				final ConfigurationStore configStore = new ConfigurationStore(pdpConfFile);
 				pdpConfig = configStore.getDefaultPDPConfig();
 			}
-			catch (final UnknownIdentifierException | ParsingException e)
+			catch (final UnknownIdentifierException | org.wso2.balana.ParsingException e)
 			{
 				throw new IllegalArgumentException("WSO2 Balana engine - Invalid PDP configuration", e);
 			}
@@ -336,7 +338,7 @@ public class ComparativePdpTest
 			{
 				balanaRequest = REQUEST_FACTORY.getRequestCtx(is);
 			}
-			catch (final ParsingException e)
+			catch (final org.wso2.balana.ParsingException e)
 			{
 				throw new IllegalArgumentException("WSO2 Balana engine - Bad Request", e);
 			}
@@ -426,7 +428,7 @@ public class ComparativePdpTest
 
 		final XmlnsFilteringParser unmarshaller = XACML_PARSER_FACTORY.getInstance();
 		final Response expectedResponse = TestUtils.createResponse(this.testDirPath.resolve(EXPECTED_RESPONSE_FILENAME), unmarshaller);
-		TestUtils.assertNormalizedEquals(testDirPath.toString(), expectedResponse, actualResponse);
+		TestUtils.assertNormalizedEquals(testDirPath.toString(), expectedResponse, actualResponse, true);
 	}
 
 }
