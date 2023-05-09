@@ -43,7 +43,7 @@
          <!-- v7.5 not yet compatible with maven Surefire plugin!
          https://groups.google.com/g/testng-users/c/ESLiK8xSomc?pli=1
          -->
-         <version>6.14.3</version>
+         <version>7.5.1</version>
          <scope>test</scope>
       </dependency>
       <dependency>
