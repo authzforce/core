@@ -21,7 +21,7 @@
       <dependency>
          <groupId>info.picocli</groupId>
          <artifactId>picocli</artifactId>
-         <version>4.6.2</version>
+         <version>4.7.4</version>
       </dependency>
       <dependency>
          <groupId>ch.qos.logback</groupId>
@@ -43,7 +43,7 @@
          <!-- v7.5 not yet compatible with maven Surefire plugin!
          https://groups.google.com/g/testng-users/c/ESLiK8xSomc?pli=1
          -->
-         <version>6.14.3</version>
+         <version>7.8.0</version>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -177,7 +177,8 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-               <skipAfterFailureCount>1</skipAfterFailureCount>
+               <!-- skipAfterFailureCount > 0 issue with TestNG: https://issues.apache.org/jira/browse/SUREFIRE-1762?jql=text%20~%20%22testng%22 -->
+               <skipAfterFailureCount>0</skipAfterFailureCount>
                <!-- redirectTestOutputToFile: set this to 'true' to redirect the unit test standard output to a file (found in reportsDirectory/testName-output.txt) -->
                <redirectTestOutputToFile>false</redirectTestOutputToFile>
                <systemPropertyVariables>
@@ -196,7 +197,7 @@
          <plugin>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
-            <version>2.0.0.M6</version>
+            <version>${spring-boot.version}</version>
             <configuration>
                <executable>true</executable>
                <layout>ZIP</layout>

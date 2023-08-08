@@ -53,15 +53,14 @@
         </dependency>
         <dependency>
             <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-            <!-- See this issue for compatibility with Jongo: https://github.com/bguerout/jongo/issues/254 -->
+            <artifactId>mongodb-driver-legacy</artifactId>
             <!-- Version must match the one defined in Jongo's pom.xml -->
-            <version>3.12.10</version>
+            <version>4.8.0</version>
         </dependency>
         <dependency>
             <groupId>org.jongo</groupId>
             <artifactId>jongo</artifactId>
-            <version>1.5.0</version>
+            <version>1.5.1</version>
         </dependency>
         <dependency>
             <groupId>com.github.spotbugs</groupId>
@@ -85,12 +84,14 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <!-- Same version as in cxf-rt-frontend-jaxws/cxf-rt-bindings-soap dependencies -->
             <groupId>jakarta.jws</groupId>
             <artifactId>jakarta.jws-api</artifactId>
             <version>2.1.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <!-- Same version as in cxf-rt-frontend-jaxws/cxf-rt-bindings-soap dependencies -->
             <groupId>jakarta.xml.ws</groupId>
             <artifactId>jakarta.xml.ws-api</artifactId>
             <version>2.3.3</version>
@@ -125,13 +126,13 @@
         <dependency>
             <groupId>de.bwaldvogel</groupId>
             <artifactId>mongo-java-server</artifactId>
-            <version>1.39.0</version>
+            <version>1.44.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>7.5</version>
+            <version>7.8.0</version>
             <scope>test</scope>
         </dependency>
         <!-- /Test dependencies -->
@@ -222,8 +223,8 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.jvnet.jaxb2.maven2</groupId>
-                <artifactId>maven-jaxb2-plugin</artifactId>
+                <groupId>org.jvnet.jaxb</groupId>
+                <artifactId>jaxb-maven-plugin</artifactId>
                 <configuration>
                     <!-- debug=true will generate JAXBDebug class. More info: https://github.com/highsource/maven-jaxb2-plugin/wiki/Miscellaneous -->
                     <debug>false</debug>
@@ -369,7 +370,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.4.0</version>
                 <executions>
                     <execution>
                         <id>add-test-resource</id>
@@ -403,7 +404,7 @@
                             <includes>
                                 <include>**/MainTest.java</include>
                             </includes>
-                            <skipAfterFailureCount>1</skipAfterFailureCount>
+                            <skipAfterFailureCount>0</skipAfterFailureCount>
                             <!-- redirectTestOutputToFile: set this to 'true' to redirect the unit test standard output to a file (found in reportsDirectory/testName-output.txt) -->
                             <redirectTestOutputToFile>false</redirectTestOutputToFile>
                             <systemPropertyVariables>
@@ -432,7 +433,7 @@
                                 <suiteXmlFile>src/test/suites/json/other.xml</suiteXmlFile>
                             </suiteXmlFiles>
 
-                            <skipAfterFailureCount>1</skipAfterFailureCount>
+                            <skipAfterFailureCount>0</skipAfterFailureCount>
                             <!-- redirectTestOutputToFile: set this to 'true' to redirect the unit test standard output to a file (found in reportsDirectory/testName-output.txt) -->
                             <redirectTestOutputToFile>false</redirectTestOutputToFile>
                             <systemPropertyVariables>

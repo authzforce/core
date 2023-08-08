@@ -38,7 +38,7 @@
 		<dependency>
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
-			<version>7.5</version>
+			<version>7.8.0</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- Other XACML engines -->
@@ -190,7 +190,7 @@
 							<includes>
 								<include>**/ComparativePdpTest.java</include>
 							</includes>
-							<skipAfterFailureCount>1</skipAfterFailureCount>
+							<skipAfterFailureCount>0</skipAfterFailureCount>
 							<!-- redirectTestOutputToFile: set this to 'true' to redirect the unit test standard output to a file (found in reportsDirectory/testName-output.txt) -->
 							<redirectTestOutputToFile>false</redirectTestOutputToFile>
 							<systemPropertyVariables>
