@@ -14,4 +14,11 @@
         <packageUrl regex="true">^pkg:maven/org\.json/json@.*$</packageUrl>
         <vulnerabilityName>CVE-2022-45688</vulnerabilityName>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   FP per issue #5779
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson-databind@.*$</packageUrl>
+        <cve>CVE-2023-35116</cve>
+    </suppress>
 </suppressions>

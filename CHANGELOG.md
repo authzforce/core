@@ -5,6 +5,28 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [GitHub](https://github.com/authzforce/core/issues) are referenced in the form of `[GH-N]`, where N is the issue number. 
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
+
+## 20.3.1
+### Fixed
+- CVEs by upgrading:
+  - parent project (authzforce-ce-parent): 8.5.0
+  - authzforce-ce-core-pdp-api: 21.4.0
+  - authzforce-ce-xacml-model, authzforce-ce-pdp-ext-model, authzforce-ce-xmlns-model: 8.5.0
+  - authzforce-ce-xacml-json-model: 3.0.5
+  - picocli: 4.7.4
+  - javax.mail -> jakarta.mail: 1.6.7
+  - mono-java-driver -> mongodb-driver-legacy: 4.8.0
+  - jongo: 1.5.1
+  - guava: 32.1.2-jre
+  - logback-classic: 1.2.12
+  - spring-core: 5.3.29
+  - Saxon-HE: 12.3
+  - jaxb2-basics-runtime: 0.13.1
+  - jaxb-runtime: 2.3.3
+  -  org.everit.json.schema renamed/upgraded to com.github.erosb/everit-json-schema:1.14.2
+- XacmlAttributeId enum: added missing value for standard XACML 3.0 Core attribute ID: `urn:oasis:names:tc:xacml:2.0:resource:target-namespace (used for processing).
+
+
 ## 20.3.0
 ### Fixed
 - Upgraded parent project (8.4.1) to fix CVEs in following dependencies:

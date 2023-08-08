@@ -1,7 +1,7 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/9c9812d7b09549e59edb99f3948bca4a)](https://www.codacy.com/gh/authzforce/core/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=authzforce/core&amp;utm_campaign=Badge_Grade)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/389/badge)](https://bestpractices.coreinfrastructure.org/projects/389)
 [![Build Status](https://github.com/authzforce/core/actions/workflows/maven.yml/badge.svg?branch=develop)](https://github.com/authzforce/core/actions/workflows/maven.yml)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fauthzforce%2Fcore.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fauthzforce%2Fcore?ref=badge_shield)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fauthzforce%2Fcore.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fauthzforce%2Fcore?ref=badge_shield)
 
 Javadocs: PDP engine [![Javadocs](http://javadoc.io/badge/org.ow2.authzforce/authzforce-ce-core-pdp-engine.svg)](http://javadoc.io/doc/org.ow2.authzforce/authzforce-ce-core-pdp-engine), XACML/JSON extension [![Javadocs](http://javadoc.io/badge/org.ow2.authzforce/authzforce-ce-core-pdp-io-xacml-json.svg)](http://javadoc.io/doc/org.ow2.authzforce/authzforce-ce-core-pdp-io-xacml-json), Test utilities [![Javadocs](http://javadoc.io/badge/org.ow2.authzforce/authzforce-ce-core-pdp-testutils.svg)](http://javadoc.io/doc/org.ow2.authzforce/authzforce-ce-core-pdp-testutils)
 
@@ -30,7 +30,13 @@ AuthzForce Core may be used in the following ways:
 *For further details on what is actually supported regarding the XACML specifications, please refer to the conformance tests [README](pdp-testutils/src/test/resources/conformance/xacml-3.0-from-2.0-ct/README.md).*
 
 ### Enhancements to the XACML standard
-* [GeoXACML](http://portal.opengeospatial.org/files/?artifact_id=42734) (Open Geospatial Consortium) support: see [this AuthzForce extension from SecureDimensions](https://github.com/securedimensions/authzforce-geoxacml-basic).
+
+GeoXACML 3.0 Core: https://docs.ogc.org/DRAFTS/22-049.html 
+GeoXACML 3.0 JSON Profile 1.0: https://docs.ogc.org/DRAFTS/22-050.html 
+
+* [GeoXACML 1.0](http://portal.opengeospatial.org/files/?artifact_id=42734) (Open Geospatial Consortium) support: see [this AuthzForce extension from SecureDimensions](https://github.com/securedimensions/authzforce-geoxacml-basic). 
+* [GeoXACML 3.0 Core (draft)](https://docs.ogc.org/DRAFTS/22-049.html) (Open Geospatial Consortium) support: see [this AuthzForce extension from SecureDimensions](https://github.com/securedimensions/authzforce-ce-geoxacml3). 
+* [GeoXACML 3.0 JSON Profile 1.0 (draft)](https://docs.ogc.org/DRAFTS/22-050.html) (Open Geospatial Consortium) support: see [this AuthzForce extension from SecureDimensions](https://github.com/securedimensions/authzforce-ce-geoxacml3).
 * Support `<VariableReference>` (indirectly) in `<Target>`/`<Match>` elements: this feature is a workaround for a limitation in XACML schema which does not allow Variables (`<VariableReference>`) in `Match` elements; i.e. the feature allows policy writers to use an equivalent of `<VariableReference>`s in `<Match>` elements (without changing the XACML schema) through a special kind of `<AttributeDesignator>` (specific `Category`, and `AttributeId` is used as `VariableId`). More details in the Usage section below. 
 
 ### Interfaces
@@ -295,8 +301,22 @@ If you are using the Java API with extensions configured by XML (Policy Provider
 1. *extensionXsdLocation*: location of the PDP extensions schema file: contains imports of namespaces corresponding to XML schemas of all XML-schema-defined PDP extensions to be used in the configuration file. Used for validation of PDP extensions configuration. The actual schema locations are resolved by the XML catalog parameter. You may use the [pdp-ext.xsd](pdp-testutils/src/test/resources/pdp-ext.xsd) in the sources as an example.
 
 
-## Integration with other Security Policy models, languages, formats, etc.
-### SPIF (Security Policy Information File)
+
+## Editing and creating XACML 3.0 policies from scratch and from other formats
+
+### Using a full-fledged XML editor
+
+For full support of XACML, you may use any XML editor supporting XML Schema. Make sure you import the XACML 3.0 schema into the tool and enable XML schema validation.
+
+### Using ALFA plugin for VScode - ALFA to XACML
+Axiomatics provides an [VScode plugin](https://marketplace.visualstudio.com/items?itemName=Axiomatics.alfa) to edit policies in [ALFA](https://axiomatics.github.io/alfa-vscode-doc/docs/alfa-introduction/introduction/) (Abbreviated Language for Authorization) and generate XACML 3.0 policies from it automatically. Beware of the [Axiomatics license](https://marketplace.visualstudio.com/items/Axiomatics.alfa/license) and [limitations of ALFA with respect to XACML](https://axiomatics.github.io/alfa-vscode-doc/docs/xacml/limitations-with-respect-to-xacml/).
+
+### From XACML 2.0 policies - XACML 2.0 to 3.0
+
+If you still have legacy policies in older XACML 2.0 format, you can migrate to XACML 3.0 automatically with a simple command given in a previous section:
+https://github.com/authzforce/core#xacml-20-support-and-migrating-to-xacml-30
+
+### From SPIF (Security Policy Information File) - SPIF to XACML
 A SPIF (Security Policy Information File) defines a security labeling policy in a XML document (based on the [SPIF XML schema](spif-utils/spif.xsd)). More info on the [Open XML SPIF website](http://www.xmlspif.org/).
 
 [NATO ADatP-4774.1](https://nso.nato.int/nso/nsdd/main/standards/srd-details/222/EN) - related to [STANAG 4774](https://nso.nato.int/nso/nsdd/main/standards/stanag-details/8612/EN) - gives implementation guidance on how to generate a XACML policy from a SPIF, including an example of XSLT stylesheet. We made a few improvements to that stylesheet, using the latest XACML 3.0 enhancements and AuthzForce optimizations, and differentiating READ and WRITE actions in accordance to the Bell-Lapadula model. The enhanced stylesheet is available in the [spif-utils](spif-utils) folder in two versions:

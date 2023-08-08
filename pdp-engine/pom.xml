@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.ow2.authzforce</groupId>
         <artifactId>authzforce-ce-core</artifactId>
-        <version>20.3.0</version>
+        <version>20.3.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>authzforce-ce-core-pdp-engine</artifactId>
@@ -27,10 +27,23 @@
             <artifactId>jcl-over-slf4j</artifactId>
         </dependency>
         <dependency>
-            <!-- JavaMail API implementation for XACML RFC822Name datatype -->
+            <!-- Future JavaMail API implementation for XACML RFC822Name datatype -->
+            <!--
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-mail</artifactId>
+            <version>2.0.2</version>
+            -->
+            <!-- Must match authzforce-ce-core-pdp-api's mail-api dependency -->
             <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
-            <version>1.6.2</version>
+            <artifactId>jakarta.mail</artifactId>
+            <version>1.6.7</version>
+            <exclusions>
+                <exclusion>
+                    <!-- jakarta.activation dependency v1.2.1 conflicting with dependency v1.2.2 of jaxb-runtime down below -->
+                    <groupId>com.sun.activation</groupId>
+                    <artifactId>jakarta.activation</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <!-- Needed for org.springframework.util.ResourceUtils,SystemPropertyUtils,FileCopyUtils, etc. -->
@@ -61,13 +74,6 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>${artifactId.prefix}-core-pdp-api</artifactId>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>com.github.spotbugs</groupId>
-            <artifactId>spotbugs-annotations</artifactId>
-            <optional>true</optional>
-        </dependency>
-        -->
         <!-- /AuthzForce dependencies -->
 
         <!-- Test dependencies -->
@@ -167,13 +173,14 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.jvnet.jaxb2.maven2</groupId>
-                <artifactId>maven-jaxb2-plugin</artifactId>
+                <groupId>org.jvnet.jaxb</groupId>
+                <artifactId>jaxb-maven-plugin</artifactId>
                 <dependencies>
                     <dependency>
                         <groupId>com.github.sabomichal</groupId>
                         <artifactId>immutable-xjc-plugin</artifactId>
-                        <version>1.6.2</version>
+                        <!-- For compatibility with jaxb-maven-plugin 2.x (supports JAXB 2.X only), use 1.7.x version. -->
+                        <version>1.7.1</version>
                     </dependency>
                 </dependencies>
                 <configuration>

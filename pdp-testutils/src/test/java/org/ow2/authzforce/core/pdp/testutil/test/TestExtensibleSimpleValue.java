@@ -20,9 +20,11 @@ package org.ow2.authzforce.core.pdp.testutil.test;
 import com.google.common.collect.ImmutableMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import net.sf.saxon.om.FingerprintedQName;
+import net.sf.saxon.om.NamespaceUri;
 import net.sf.saxon.s9api.ItemType;
 import net.sf.saxon.s9api.XdmItem;
 import net.sf.saxon.s9api.XdmNode;
+import net.sf.saxon.str.BMPString;
 import net.sf.saxon.tree.linked.ElementImpl;
 import net.sf.saxon.type.BuiltInAtomicType;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
@@ -119,8 +121,8 @@ public final class TestExtensibleSimpleValue extends SimpleValue<String>
     {
         if(xdmValue == null ) {
             final ElementImpl node = new ElementImpl();
-            this.extraXmlAtts.forEach((qName, s) -> node.addAttribute(new FingerprintedQName(qName.getPrefix(), qName.getNamespaceURI(), qName.getLocalPart()), BuiltInAtomicType.STRING, s, 0, true));
-            node.replaceStringValue(value);
+            this.extraXmlAtts.forEach((qName, s) -> node.addAttribute(new FingerprintedQName(qName.getPrefix(), NamespaceUri.of(qName.getNamespaceURI()), qName.getLocalPart()), BuiltInAtomicType.STRING, s, 0, true));
+            node.replaceStringValue(BMPString.of(value));
             xdmValue = new XdmNode(node);
         }
         return xdmValue;
