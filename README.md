@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/fd5da1c7cd6d42d499801e569cdec5fb)](https://app.codacy.com/gh/authzforce/core?utm_source=github.com&utm_medium=referral&utm_content=authzforce/core&utm_campaign=Badge_Grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/9c9812d7b09549e59edb99f3948bca4a)](https://www.codacy.com/gh/authzforce/core/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=authzforce/core&amp;utm_campaign=Badge_Grade)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/389/badge)](https://bestpractices.coreinfrastructure.org/projects/389)
 [![Build Status](https://github.com/authzforce/core/actions/workflows/maven.yml/badge.svg?branch=develop)](https://github.com/authzforce/core/actions/workflows/maven.yml)
