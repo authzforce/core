@@ -1,3 +1,4 @@
+[![](https://img.shields.io/badge/tag-authzforce-orange.svg?logo=stackoverflow)](http://stackoverflow.com/questions/tagged/authzforce)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/9c9812d7b09549e59edb99f3948bca4a)](https://app.codacy.com/gh/authzforce/core/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/389/badge)](https://bestpractices.coreinfrastructure.org/projects/389)
 [![Build Status](https://github.com/authzforce/core/actions/workflows/maven.yml/badge.svg?branch=develop)](https://github.com/authzforce/core/actions/workflows/maven.yml)
