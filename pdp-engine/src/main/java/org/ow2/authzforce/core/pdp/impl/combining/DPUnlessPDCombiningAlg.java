@@ -41,6 +41,9 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 
 	private static final class Evaluator extends BaseCombiningAlg.Evaluator<Decidable>
 	{
+		/*
+		In the "permit-unless-deny" (resp. deny-unless-permit) algorithm, Deny (resp. Permit) is called the "overriding" Effect and Permit (resp. Deny) is called the "overridden" Effect.
+		 */
 		private final DecisionType overridingEffectAsDecision;
 		private final ExtendedDecision overridingEffectAsExtDecision;
 		private final DecisionType overriddenEffectAsDecision;
@@ -131,6 +134,7 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 	{
 		private static boolean verifyRuleEffectsAndPepActions(final EffectType expectedEffect, final Collection<? extends RuleEvaluator> rules, final boolean mustHavePepAction)
 		{
+			assert rules != null;
 			for (final RuleEvaluator rule : rules)
 			{
 				if (rule.getEffect() != expectedEffect || mustHavePepAction && !rule.hasAnyPepAction())
@@ -142,54 +146,67 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 			return true;
 		}
 
+		/*
+		In the "permit-unless-deny" (resp. deny-unless-permit) algorithm, Deny (resp. Permit) is called the "overriding" Effect and Permit (resp. Deny) is called the "overridden" Effect.
+		 */
 		private final ImmutableList<RuleEvaluator> rulesWithOverridingEffect;
 		private final DecisionType overridingEffectAsDecision;
-		private final ImmutableList<RuleEvaluator> otherRulesWithPepActions;
+		private final ImmutableList<RuleEvaluator> rulesWithOverriddenEffectAndPepActions;
 		private final DecisionType overriddenEffectAsDecision;
 		private final ExtendedDecision overriddenEffectAsExtDecision;
 
 		/**
-		 * Constructor
+		 * Constructor. Either {@code nonEmptyRulesWithOverridingEffect} OR {@code rulesWithOverriddenEffectAndPepActions} must be non-empty (at least one Rule).
 		 * 
 		 * @param rulesWithOverridingEffect
 		 *            combined Rules with overriding Effect. Must be non-null and non-empty.
-		 * @param otherRulesWithPepActions
+		 * @param rulesWithOverriddenEffectAndPepActions
 		 *            combined Rules with opposite/overridden Effect and PEP actions. Must be non-null and non-empty.
 		 */
-		OverridingEffectFirstRuleCombiningAlgEvaluator(final Collection<RuleEvaluator> rulesWithOverridingEffect, final Collection<RuleEvaluator> otherRulesWithPepActions)
+		OverridingEffectFirstRuleCombiningAlgEvaluator(final Collection<RuleEvaluator> rulesWithOverridingEffect, final Collection<RuleEvaluator> rulesWithOverriddenEffectAndPepActions)
 		{
-			assert rulesWithOverridingEffect != null && !rulesWithOverridingEffect.isEmpty() && otherRulesWithPepActions != null;
-
-			// first rule's effect assumed the same for all
-			final EffectType overridingEffect = rulesWithOverridingEffect.iterator().next().getEffect();
-			assert verifyRuleEffectsAndPepActions(overridingEffect, rulesWithOverridingEffect, false);
-
+			assert rulesWithOverridingEffect != null && rulesWithOverriddenEffectAndPepActions != null && (!rulesWithOverridingEffect.isEmpty() || !rulesWithOverriddenEffectAndPepActions.isEmpty());
+			// Either nonEmptyRulesWithOverridingEffect OR rulesWithOverriddenEffectAndPepActions is non-empty (at least one Rule).
+			final EffectType overridingEffect;
 			final EffectType overriddenEffect;
+			// first rule's effect assumed the same for all rulesWithOverridingEffect
+			if(rulesWithOverridingEffect.isEmpty())
+			{
+				// rulesWithOverridingEffect is empty, so rulesWithOverriddenEffectAndPepActions is not
+				overriddenEffect = rulesWithOverriddenEffectAndPepActions.iterator().next().getEffect();
+				overridingEffect = overriddenEffect == EffectType.PERMIT ? EffectType.DENY: EffectType.PERMIT;
+			} else {
+				// rulesWithOverridingEffect is not empty
+				overridingEffect = rulesWithOverridingEffect.iterator().next().getEffect();
+				overriddenEffect = overridingEffect == EffectType.PERMIT ? EffectType.DENY: EffectType.PERMIT;
+			}
+
+			assert verifyRuleEffectsAndPepActions(overridingEffect, rulesWithOverridingEffect, false);
+			assert verifyRuleEffectsAndPepActions(overriddenEffect, rulesWithOverriddenEffectAndPepActions, true);
+
 			if (overridingEffect == EffectType.DENY)
 			{
-				overriddenEffect = EffectType.PERMIT;
 				this.overridingEffectAsDecision = DecisionType.DENY;
 				this.overriddenEffectAsDecision = DecisionType.PERMIT;
 				this.overriddenEffectAsExtDecision = ExtendedDecisions.SIMPLE_PERMIT;
 			} else
 			{
-				overriddenEffect = EffectType.DENY;
 				this.overridingEffectAsDecision = DecisionType.PERMIT;
 				this.overriddenEffectAsDecision = DecisionType.DENY;
 				this.overriddenEffectAsExtDecision = ExtendedDecisions.SIMPLE_DENY;
-
 			}
 
-			assert verifyRuleEffectsAndPepActions(overriddenEffect, otherRulesWithPepActions, true);
-
 			this.rulesWithOverridingEffect = ImmutableList.copyOf(rulesWithOverridingEffect);
-			this.otherRulesWithPepActions = ImmutableList.copyOf(otherRulesWithPepActions);
+			this.rulesWithOverriddenEffectAndPepActions = ImmutableList.copyOf(rulesWithOverriddenEffectAndPepActions);
 		}
 
 		@Override
 		public ExtendedDecision evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final UpdatableList<PepAction> updatablePepActions,
 		        final UpdatableList<PrimaryPolicyMetadata> updatableApplicablePolicyIdList)
 		{
+			/*
+		In the "permit-unless-deny" (resp. deny-unless-permit) algorithm, Deny (resp. Permit) is called the "overriding" Effect and Permit (resp. Deny) is called the "overridden" Effect.
+		 */
 			for (final RuleEvaluator rule : rulesWithOverridingEffect)
 			{
 				final DecisionResult evalResult = rule.evaluate(context, mdpContext);
@@ -206,7 +223,7 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 			/*
 			 * Decision is not the overriding Effect -> final decision will be the opposite/overridden Effect. Before returning the final result, we need to collect PEP actions
 			 */
-			for (final RuleEvaluator rule : otherRulesWithPepActions)
+			for (final RuleEvaluator rule : rulesWithOverriddenEffectAndPepActions)
 			{
 				final DecisionResult evalResult = rule.evaluate(context, mdpContext);
 				final DecisionType decision = evalResult.getDecision();
@@ -289,6 +306,8 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 		 */
 
 		/*
+		In the "permit-unless-deny" (resp. deny-unless-permit) algorithm, Deny (resp. Permit) is called the "overriding" Effect and Permit (resp. Deny) is called the "overridden" Effect.
+		 *
 		 * If we found any empty rule with overriding Effect, all others do not matter since the algorithm ends there with overriding Effect as decision -> ignore other rules. If there are non-empty
 		 * rules with overriding Effect, for optimization, we separate them from others. If the overriding Effect is not returned as decision, the overridden Effect is always returned as decision,
 		 * therefore the other rules (with overridden Effect) affect the decision result only if they have PEP action(s).
@@ -355,10 +374,10 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 		}
 
 		/*
-		 * (All rules have same overridden Effect, and) either there is no empty rule OR there is at least one with PEP action
+		 * There is at least one non-empty Rule that has either the overriding Effect (nonEmptyRulesWithOverridingEffect), OR (the overridden effect and PEP action(s) -> rulesWithOverriddenEffectAndPepActions).
 		 */
 		LOGGER.debug(
-		        "{}: 'children may be processed in any order' (XACML). This implementation will process Rules with overriding Effect first, then the others (with PEP actions only, others without are ignored)",
+		        "{}: 'children may be processed in any order' (XACML). Rules with overriding Effect will be processed first, then the others (with PEP actions only, others without are ignored)",
 		        this);
 		return new OverridingEffectFirstRuleCombiningAlgEvaluator(nonEmptyRulesWithOverridingEffect, rulesWithOverriddenEffectAndPepActions);
 	}
