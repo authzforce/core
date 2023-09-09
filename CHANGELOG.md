@@ -6,6 +6,11 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 20.3.2
+### Fixed
+- GH-83: `NoSuchElementException` thrown when the rule combining algorithm is `permit-unless-deny` and there is no Deny rule but at least one Permit rule with Obligation/Advice.
+
+
 ## 20.3.1
 ### Fixed
 - CVEs by upgrading:
