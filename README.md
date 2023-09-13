@@ -31,10 +31,6 @@ AuthzForce Core may be used in the following ways:
 *For further details on what is actually supported regarding the XACML specifications, please refer to the conformance tests [README](pdp-testutils/src/test/resources/conformance/xacml-3.0-from-2.0-ct/README.md).*
 
 ### Enhancements to the XACML standard
-
-GeoXACML 3.0 Core: https://docs.ogc.org/DRAFTS/22-049.html 
-GeoXACML 3.0 JSON Profile 1.0: https://docs.ogc.org/DRAFTS/22-050.html 
-
 * [GeoXACML 1.0](http://portal.opengeospatial.org/files/?artifact_id=42734) (Open Geospatial Consortium) support: see [this AuthzForce extension from SecureDimensions](https://github.com/securedimensions/authzforce-geoxacml-basic). 
 * [GeoXACML 3.0 Core (draft)](https://docs.ogc.org/DRAFTS/22-049.html) (Open Geospatial Consortium) support: see [this AuthzForce extension from SecureDimensions](https://github.com/securedimensions/authzforce-ce-geoxacml3). 
 * [GeoXACML 3.0 JSON Profile 1.0 (draft)](https://docs.ogc.org/DRAFTS/22-050.html) (Open Geospatial Consortium) support: see [this AuthzForce extension from SecureDimensions](https://github.com/securedimensions/authzforce-ce-geoxacml3).
