@@ -18,6 +18,9 @@
 package org.ow2.authzforce.core.pdp.impl.test.value;
 
 import com.google.common.collect.ImmutableMultiset;
+import jakarta.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import org.junit.Assert;
@@ -29,9 +32,6 @@ import org.ow2.authzforce.core.pdp.api.value.*;
 import org.ow2.authzforce.xacml.Xacml3JaxbHelper;
 
 import javax.security.auth.x500.X500Principal;
-import javax.xml.bind.DatatypeConverter;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -277,7 +277,7 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 				 */
 				try
 				{
-					attValFactories.newExpression(expectedAttributeDatatypeId, Collections.singletonList(null), null, null);
+					attValFactories.newExpression(expectedAttributeDatatypeId, Collections.singletonList(null), null, Optional.empty());
 					Assert.assertNull("Parsing raw value into AttributeValue did not throw exception as expected", expectedExceptionClass);
 				} catch (final Exception e)
 				{
@@ -327,7 +327,7 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 			final AttributeValueType inXacmlAttVal0 = inXacmlAttVals.get(0);
 			final AttributeValueFactory<?> attValFactory = this.attValFactories.getExtension(inXacmlAttVal0.getDataType());
 			final List<AttributeValue> inAttVals = inXacmlAttVals.stream()
-			        .map(inputXacmlAttValue -> attValFactory.getInstance(inputXacmlAttValue.getContent(), inputXacmlAttValue.getOtherAttributes(), null)).collect(Collectors.toList());
+			        .map(inputXacmlAttValue -> attValFactory.getInstance(inputXacmlAttValue.getContent(), inputXacmlAttValue.getOtherAttributes(), Optional.empty())).collect(Collectors.toList());
 
 			Assert.assertEquals("AttributeValues after unmarshalling do not match original AttributeValues before marshalling: " + outStr, attBag.elements(), ImmutableMultiset.copyOf(inAttVals));
 			Assert.assertNull("Parsing raw value into AttributeValue did not throw exception as expected", expectedExceptionClass);
@@ -340,7 +340,7 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 	public static void main(String[] args)
 	{
 		final byte[] hex = DatatypeConverter.parseHexBinary("01");
-		System.out.println(hex);
+		System.out.println(Arrays.toString(hex));
 	}
 
 }

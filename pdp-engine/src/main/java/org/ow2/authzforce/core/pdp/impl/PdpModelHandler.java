@@ -17,13 +17,13 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
+import jakarta.xml.bind.*;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.xmlns.pdp.Pdp;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPdpExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.*;
 import javax.xml.transform.Source;
 import javax.xml.validation.Schema;
 import java.beans.ConstructorProperties;

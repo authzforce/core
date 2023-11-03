@@ -20,6 +20,7 @@ package org.ow2.authzforce.core.pdp.impl.policy;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import jakarta.xml.bind.JAXBElement;
 import net.sf.saxon.s9api.*;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.*;
 import org.ow2.authzforce.core.pdp.api.*;
@@ -44,7 +45,6 @@ import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.JAXBElement;
 import java.io.Serializable;
 import java.util.*;
 
@@ -158,19 +158,14 @@ public final class PolicyEvaluators
         public DecisionResult getInstance(final ExtendedDecision combiningAlgResult, final EvaluationContext individualDecisionEvaluationContext, Optional<EvaluationContext> mdpContext, final UpdatableList<PepAction> basePepActions,
                                           final ImmutableList<PrimaryPolicyMetadata> applicablePolicies)
         {
-            final List<PepActionExpression> matchingActionExpressions;
             final DecisionType combiningAlgDecision = combiningAlgResult.getDecision();
-            switch (combiningAlgDecision)
+            final List<PepActionExpression> matchingActionExpressions = switch (combiningAlgDecision)
             {
-                case DENY:
-                    matchingActionExpressions = this.denyActionExpressions;
-                    break;
-                case PERMIT:
-                    matchingActionExpressions = this.permitActionExpressions;
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid decision type for policy obligations/advice: " + combiningAlgDecision + ". Expected: Permit/Deny");
-            }
+                case DENY -> this.denyActionExpressions;
+                case PERMIT -> this.permitActionExpressions;
+                default ->
+                        throw new IllegalArgumentException("Invalid decision type for policy obligations/advice: " + combiningAlgDecision + ". Expected: Permit/Deny");
+            };
 
             /*
              * If any of the attribute assignment expressions in an obligation or advice expression with a matching FulfillOn or AppliesTo attribute evaluates to "Indeterminate", then the whole rule,
@@ -630,27 +625,26 @@ public final class PolicyEvaluators
                          */
                         final DecisionType algDecision = algResult.getDecision();
 
-                        switch (algDecision)
+                        newResult = switch (algDecision)
                         {
-                            case NOT_APPLICABLE:
-                                newResult = DecisionResults.getNotApplicable(algResult.getStatus());
-                                break;
-                            case PERMIT:
-                            case DENY:
+                            case NOT_APPLICABLE -> DecisionResults.getNotApplicable(algResult.getStatus());
+                            case PERMIT, DENY ->
+                            {
                                 /*
                                  * Result != NotApplicable -> consider current policy as applicable
                                  */
                                 updatableApplicablePolicyIdList.add(this.policyMetadata);
-                                newResult = DecisionResults.newIndeterminate(algDecision, targetMatchIndeterminateException, updatableApplicablePolicyIdList.copy());
-                                break;
-                            default: // INDETERMINATE
+                                yield DecisionResults.newIndeterminate(algDecision, targetMatchIndeterminateException, updatableApplicablePolicyIdList.copy());
+                            }
+                            default ->
+                            { // INDETERMINATE
                                 /*
                                  * Result != NotApplicable -> consider current policy as applicable
                                  */
                                 updatableApplicablePolicyIdList.add(this.policyMetadata);
-                                newResult = DecisionResults.newIndeterminate(algResult.getExtendedIndeterminate(), targetMatchIndeterminateException, updatableApplicablePolicyIdList.copy());
-                                break;
-                        }
+                                yield DecisionResults.newIndeterminate(algResult.getExtendedIndeterminate(), targetMatchIndeterminateException, updatableApplicablePolicyIdList.copy());
+                            }
+                        };
 
                         /*
                          * newResult must be initialized and used as return variable at this point, in order to be used in finally{} block below
@@ -781,12 +775,11 @@ public final class PolicyEvaluators
                 return true;
             }
 
-            if (!(obj instanceof TopLevelPolicyElementEvaluator))
+            if (!(obj instanceof TopLevelPolicyElementEvaluator other))
             {
                 return false;
             }
 
-            final TopLevelPolicyElementEvaluator other = (TopLevelPolicyElementEvaluator) obj;
             /*
              * We ignore the policyIssuer because it is no part of PolicyReferences, therefore we consider it is not part of the Policy uniqueness
              */
@@ -914,12 +907,11 @@ public final class PolicyEvaluators
             }
 
             // if not both PolicyEvaluators or not both PolicySetEvaluators
-            if (!(obj instanceof PolicyRefEvaluator))
+            if (!(obj instanceof PolicyRefEvaluator other))
             {
                 return false;
             }
 
-            final PolicyRefEvaluator other = (PolicyRefEvaluator) obj;
             /*
              * We ignore the policyIssuer because it is no part of PolicyReferences, therefore we consider it is not part of the Policy uniqueness
              */
@@ -1036,9 +1028,8 @@ public final class PolicyEvaluators
              * check whether the result is already cached in the evaluation context
              */
             final Object cachedValue = evalCtx.getOther(requestScopedCacheKey);
-            if (cachedValue instanceof GetMetadataResult)
+            if (cachedValue instanceof GetMetadataResult result)
             {
-                final GetMetadataResult result = (GetMetadataResult) cachedValue;
                 return result.extraMetadata;
             }
 
@@ -1227,9 +1218,8 @@ public final class PolicyEvaluators
         {
             // check whether the policy was already resolved in the same context
             final Object cachedValue = evalCtx.getOther(requestScopedCacheKey);
-            if (cachedValue instanceof RefResolvedResult)
+            if (cachedValue instanceof RefResolvedResult result)
             {
-                final RefResolvedResult result = (RefResolvedResult) cachedValue;
                 if (result.exception == null)
                 {
                     checkPolicyRefChain(result.resolvedPolicy, evalCtx, mdpCtx);
@@ -1542,9 +1532,8 @@ public final class PolicyEvaluators
                 }
 
                 combiningAlgParameters.add(combiningAlgParameter);
-            } else if (policyChildElt instanceof VariableDefinition)
+            } else if (policyChildElt instanceof VariableDefinition varDef)
             {
-                final VariableDefinition varDef = (VariableDefinition) policyChildElt;
                 final Deque<String> varDefLongestVarRefChain = new ArrayDeque<>();
                 final VariableReference<?> var;
                 try
@@ -1724,7 +1713,7 @@ public final class PolicyEvaluators
      * @throws java.lang.IllegalArgumentException if {@code refPolicyProvider} undefined, or there is no policy of type {@code refPolicyType} matching {@code idRef} to be found by {@code refPolicyProvider}, or PolicySetIdReference
      *                                            loop detected or PolicySetIdReference depth exceeds the max enforced by {@code policyProvider}
      */
-    public static PolicyRefEvaluator getInstance(final TopLevelPolicyElementType refPolicyType, final IdReferenceType idRef, final PolicyProvider<?> refPolicyProvider,
+    private static PolicyRefEvaluator getInstance(final TopLevelPolicyElementType refPolicyType, final IdReferenceType idRef, final PolicyProvider<?> refPolicyProvider,
                                                  final Deque<String> policySetRefChainWithIdRefIfPolicySet) throws IllegalArgumentException
     {
         final PolicyRefEvaluatorFactory<? extends PolicyRefEvaluator> factory = refPolicyProvider instanceof StaticPolicyProvider
@@ -1754,7 +1743,7 @@ public final class PolicyEvaluators
      * @throws java.lang.IllegalArgumentException if {@code refPolicyProvider} undefined, or there is no policy of type {@code refPolicyType} matching {@code idRef} to be found by {@code refPolicyProvider}, or PolicySetIdReference
      *                                            loop detected or PolicySetIdReference depth exceeds the max enforced by {@code policyProvider}
      */
-    public static StaticPolicyRefEvaluator getInstanceStatic(final TopLevelPolicyElementType refPolicyType, final IdReferenceType idRef, final StaticPolicyProvider refPolicyProvider,
+    private static StaticPolicyRefEvaluator getInstanceStatic(final TopLevelPolicyElementType refPolicyType, final IdReferenceType idRef, final StaticPolicyProvider refPolicyProvider,
                                                              final Deque<String> ancestorPolicySetRefChain) throws IllegalArgumentException
     {
         final PolicyRefEvaluatorFactory<StaticPolicyRefEvaluator> factory = new StaticPolicyRefEvaluatorFactory(refPolicyProvider);
@@ -2181,9 +2170,8 @@ public final class PolicyEvaluators
                 }
 
                 combiningAlgParameters.add(combiningAlgParameter);
-            } else if (policyChildElt instanceof JAXBElement)
+            } else if (policyChildElt instanceof JAXBElement<?> jaxbPolicyChildElt)
             {
-                final JAXBElement<?> jaxbPolicyChildElt = (JAXBElement<?>) policyChildElt;
                 final String eltNameLocalPart = jaxbPolicyChildElt.getName().getLocalPart();
                 if (eltNameLocalPart.equals(XacmlNodeName.POLICY_ID_REFERENCE.value()))
                 {

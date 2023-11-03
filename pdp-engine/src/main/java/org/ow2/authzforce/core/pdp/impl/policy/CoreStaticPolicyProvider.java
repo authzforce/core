@@ -20,6 +20,7 @@ package org.ow2.authzforce.core.pdp.impl.policy;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Table;
+import jakarta.xml.bind.JAXBException;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
@@ -33,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
 
-import javax.xml.bind.JAXBException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -172,9 +172,8 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
                 if (policySetOrLocationPatternBeforePlaceholderReplacement instanceof PolicySet)
                 {
                     providerParams.add(new XacmlPolicyParam((PolicySet) policySetOrLocationPatternBeforePlaceholderReplacement));
-                } else if (policySetOrLocationPatternBeforePlaceholderReplacement instanceof String)
+                } else if (policySetOrLocationPatternBeforePlaceholderReplacement instanceof String policyLocationPatternBeforePlaceholderReplacement)
                 {
-                    final String policyLocationPatternBeforePlaceholderReplacement = (String) policySetOrLocationPatternBeforePlaceholderReplacement;
                     final String policyLocationPattern = environmentProperties.replacePlaceholders(policyLocationPatternBeforePlaceholderReplacement);
                     /*
                     policyLocationPattern is handled like a URL pattern, e.g. file://path/to/policy(ies)
@@ -642,9 +641,8 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
             }
 
             final ImmutableMap<String, String> nsPrefixUriMap = xacmlParser.getNamespacePrefixUriMap();
-            if (jaxbPolicyOrPolicySetObj instanceof Policy)
+            if (jaxbPolicyOrPolicySetObj instanceof Policy jaxbPolicy)
             {
-                final Policy jaxbPolicy = (Policy) jaxbPolicyOrPolicySetObj;
                 final String policyId = jaxbPolicy.getPolicyId();
                 final String policyVersionStr = jaxbPolicy.getVersion();
                 final PolicyVersion policyVersion = new PolicyVersion(policyVersionStr);
@@ -684,9 +682,8 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
                     throw new IllegalArgumentException("Policy conflict: two policies with same PolicyId=" + policyId + ", Version=" + policyVersionStr);
                 }
 
-            } else if (jaxbPolicyOrPolicySetObj instanceof PolicySet)
+            } else if (jaxbPolicyOrPolicySetObj instanceof PolicySet jaxbPolicySet)
             {
-                final PolicySet jaxbPolicySet = (PolicySet) jaxbPolicyOrPolicySetObj;
                 final String policyId = jaxbPolicySet.getPolicySetId();
                 final String policyVersionStr = jaxbPolicySet.getVersion();
                 final PolicyVersion policyVersion = new PolicyVersion(policyVersionStr);

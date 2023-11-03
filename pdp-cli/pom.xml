@@ -21,7 +21,7 @@
       <dependency>
          <groupId>info.picocli</groupId>
          <artifactId>picocli</artifactId>
-         <version>4.7.4</version>
+         <version>4.7.5</version>
       </dependency>
       <dependency>
          <groupId>ch.qos.logback</groupId>
@@ -36,6 +36,11 @@
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-io-xacml-json</artifactId>
          <version>20.3.3-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.testng</groupId>

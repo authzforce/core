@@ -18,8 +18,8 @@
  */
 package org.apache.coheigea.cxf.sts.xacml.common;
 
-import javax.xml.ws.BindingProvider;
 
+import jakarta.xml.ws.BindingProvider;
 import org.apache.cxf.ws.security.SecurityConstants;
 import org.apache.cxf.ws.security.trust.STSClient;
 
@@ -29,7 +29,7 @@ public final class TokenTestUtils {
         // complete
     }
     
-    public static void updateSTSPort(BindingProvider p, String port) {
+    public static void updateSTSPort(BindingProvider p, CharSequence port) {
         STSClient stsClient = (STSClient)p.getRequestContext().get(SecurityConstants.STS_CLIENT);
         if (stsClient != null) {
             String location = stsClient.getWsdlLocation();

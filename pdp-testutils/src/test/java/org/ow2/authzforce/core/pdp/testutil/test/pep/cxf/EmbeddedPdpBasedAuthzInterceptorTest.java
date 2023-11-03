@@ -17,6 +17,8 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.test.pep.cxf;
 
+import jakarta.xml.ws.BindingProvider;
+import jakarta.xml.ws.Service;
 import org.apache.coheigea.cxf.sts.xacml.common.STSServer;
 import org.apache.coheigea.cxf.sts.xacml.common.TokenTestUtils;
 import org.apache.cxf.Bus;
@@ -28,8 +30,6 @@ import org.example.contract.doubleit.DoubleItPortType;
 import org.junit.BeforeClass;
 
 import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Service;
 import java.net.URL;
 
 import static org.junit.Assert.*;
@@ -111,7 +111,7 @@ public class EmbeddedPdpBasedAuthzInterceptorTest extends AbstractBusClientServe
 
 		TokenTestUtils.updateSTSPort((BindingProvider) transportPort, STS_PORT);
 
-		doubleIt(transportPort, 25);
+		doubleIt(transportPort, 15);
 	}
 
 	@org.junit.Test
