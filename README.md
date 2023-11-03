@@ -113,7 +113,7 @@ See the [license file](LICENSE).
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fauthzforce%2Fcore.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fauthzforce%2Fcore?ref=badge_large)
 
 ## System requirements
-Java (JRE) version: 17 or later.
+Java (JRE) version: 17 LTS or later.
 
 ## Usage
 ### Getting started
