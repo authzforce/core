@@ -74,9 +74,8 @@ public final class PdpExtensions
 		for (final PdpExtension extension : extensionLoader)
 		{
 			boolean isValidExt = false;
-			if (extension instanceof JaxbBoundPdpExtension<?>)
+			if (extension instanceof JaxbBoundPdpExtension<?> jaxbBoundExt)
 			{
-				final JaxbBoundPdpExtension<?> jaxbBoundExt = (JaxbBoundPdpExtension<?>) extension;
 				final JaxbBoundPdpExtension<?> duplicate = mutableJaxbBoundExtMapByClass.putIfAbsent(jaxbBoundExt.getJaxbClass(), jaxbBoundExt);
 				if (duplicate != null)
 				{
@@ -128,7 +127,8 @@ public final class PdpExtensions
 	 * Get non-JAXB-bound (aka zero-configuration) extension identifiers. Used by PAPs for instance, to get the list of extensions supported by the PDP before modifying PDP's configuration
 	 *
 	 * @param extensionType
-	 *            type of extension: {@link AttributeValueFactory }, {@link Function}, {@link CombiningAlg}, etc.
+	 *            Java class of extension: {@link AttributeValueFactory }, {@link Function}, {@link CombiningAlg}, etc.
+	 * @param <T> extension type
 	 * @return unmodifiable set of supported non-JAXB bound extension IDs; may be empty (not null) if no extension available for this type
 	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code extensionType} is not a valid extension type
@@ -153,9 +153,10 @@ public final class PdpExtensions
 	 * Get non-JAXB-bound (aka zero-configuration) extension
 	 *
 	 * @param extensionType
-	 *            type of extension: {@link AttributeValueFactory}, {@link Function}, etc.
+	 *            extension's Java class: {@link AttributeValueFactory}, {@link Function}, etc.
 	 * @param id
 	 *            extension ID
+	 * @param <T> extension type
 	 * @return PDP extension instance of class {@code extensionType} and such that its method {@link PdpExtension#getId()} returns {@code id}
 	 * @throws java.lang.IllegalArgumentException
 	 *             if there is not any extension found for type {@code extensionType} with ID {@code id}
@@ -187,6 +188,7 @@ public final class PdpExtensions
 	 * 
 	 * @param jaxbConfClass
 	 *            XML-schema-derived type of attribute provider configuration
+	 * @param <ATTRIBUTE_PROVIDER_CONF> AttributeProvider extension configuration (Java) type
 	 * @return Attribute Provider factory builder
 	 * @throws java.lang.IllegalArgumentException
 	 *             if there is no extension of type {@link CloseableNamedAttributeProvider.FactoryBuilder} supporting {@code jaxbPdpExtensionClass}
@@ -210,45 +212,19 @@ public final class PdpExtensions
 	}
 
 	/**
-	 * Get Policy-by-reference Provider factory
-	 * 
-	 * @param jaxbConfClass
-	 *            XML-schema-derived type of policy provider configuration
-	 * @return Policy-by-reference Provider
-	 * @throws java.lang.IllegalArgumentException
-	 *             if there is no extension of type {@link CloseablePolicyProvider.Factory} supporting {@code jaxbPdpExtensionClass}
-	 */
-	public static <REF_POLICY_PROVIDER_CONF extends AbstractPolicyProvider> CloseablePolicyProvider.Factory<REF_POLICY_PROVIDER_CONF> getRefPolicyProviderFactory(
-	        final Class<REF_POLICY_PROVIDER_CONF> jaxbConfClass) throws IllegalArgumentException
-	{
-		final JaxbBoundPdpExtension<REF_POLICY_PROVIDER_CONF> ext = (JaxbBoundPdpExtension<REF_POLICY_PROVIDER_CONF>) JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.get(jaxbConfClass);
-		if (ext == null)
-		{
-			throw new IllegalArgumentException("No PDP extension found supporting JAXB (configuration) type: " + jaxbConfClass + ". Expected types: " + JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.keySet());
-		}
-
-		if (!(ext instanceof CloseablePolicyProvider.Factory))
-		{
-			throw new IllegalArgumentException(
-			        "No PDP extension of type " + CloseablePolicyProvider.Factory.class + " (Reference-based Policy Provider factory) supporting JAXB/XML (configuration) type: " + jaxbConfClass);
-		}
-
-		return (CloseablePolicyProvider.Factory<REF_POLICY_PROVIDER_CONF>) ext;
-	}
-
-	/**
 	 * Create PolicyProvider
 	 * 
 	 * @param jaxbConfClass
-	 *            XML-schema-derived type of policy provider configuration
-	 * 
+	 *            XML-schema-derived/JAXB-annotated class of policy provider configuration
+	 *
+	 * @param <POLICY_PROVIDER_CONF> policy provider configuration (Java) type
 	 * @return Policy Provider
 	 * @throws java.lang.IllegalArgumentException
 	 *             if there is no extension of type {@link org.ow2.authzforce.core.pdp.api.policy.CloseablePolicyProvider.Factory} supporting {@code jaxbPdpExtensionClass} or invalid
 	 *             {@code jaxbRootPolicyProviderConf}
 	 */
 
-	public static <POLICY_PROVIDER_CONF extends AbstractPolicyProvider> CloseablePolicyProvider.Factory<POLICY_PROVIDER_CONF> getRootPolicyProviderFactory(
+	public static <POLICY_PROVIDER_CONF extends AbstractPolicyProvider> CloseablePolicyProvider.Factory<POLICY_PROVIDER_CONF> getPolicyProviderFactory(
 	        final Class<POLICY_PROVIDER_CONF> jaxbConfClass) throws IllegalArgumentException
 	{
 		final JaxbBoundPdpExtension<POLICY_PROVIDER_CONF> ext = (JaxbBoundPdpExtension<POLICY_PROVIDER_CONF>) JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.get(jaxbConfClass);
@@ -270,7 +246,8 @@ public final class PdpExtensions
 	 * Get Decision Cache factory
 	 * 
 	 * @param jaxbConfClass
-	 *            XML-schema-derived type of decision cache provider configuration
+	 *            XML-schema-derived class of decision cache provider configuration
+	 * @param <DECISION_CACHE_CONF> decision cache provider configuration (Java) type
 	 * @return Decision Cache factory
 	 * @throws java.lang.IllegalArgumentException
 	 *             if there is no extension of type {@link org.ow2.authzforce.core.pdp.api.DecisionCache.Factory} supporting {@code jaxbPdpExtensionClass}

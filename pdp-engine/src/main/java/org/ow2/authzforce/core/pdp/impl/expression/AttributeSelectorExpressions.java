@@ -572,12 +572,11 @@ public final class AttributeSelectorExpressions
                 return true;
             }
 
-            if (!(obj instanceof ExtensibleAttributeSelectorExpression))
+            if (!(obj instanceof ExtensibleAttributeSelectorExpression<?> other))
             {
                 return false;
             }
 
-            final ExtensibleAttributeSelectorExpression<?> other = (ExtensibleAttributeSelectorExpression<?>) obj;
             return this.attributeSelectorId.equals(other.attributeSelectorId);
         }
 
@@ -691,6 +690,8 @@ public final class AttributeSelectorExpressions
      * @param attributeSelectorPath     XACML AttributeSelector's Path
      * @param xPathCompiler             XPath compiler used for compiling {@code attributeSelectorElement.getPath()} and XPath given by {@code attributeSelectorElement.getContextSelectorId()}.
      * @param attributeFactory          attribute factory to create the AttributeValue(s) from the XML node(s) resolved by XPath
+     * @param <AV> type of AttributeValue(s) to be returned by the new instance
+     * @param mustBePresent AttributeSelector's MustBePresent
      * @return instance of AttributeSelector expression
      * @throws java.lang.IllegalArgumentException if {@code attributeSelectorElement == null || xPathCompiler == null || attributeFactory == null}; or {@code attributeSelectorElement.getContextSelectorId() != null} but
      *                                            {@code attributeProvider == null}; or {@code attributeSelectorElement.getPath()} is not a valid XPath expression
@@ -709,6 +710,7 @@ public final class AttributeSelectorExpressions
      * @param contextSelectorAttributeProvider AttributeProvider for finding value of the attribute identified by ContextSelectorId in {@code attributeSelectorElement}; may be null if
      *                                         {@code attributeSelectorElement.getContextSelectorId() == null}
      * @param attributeFactory                 attribute factory to create the AttributeValue(s) from the XML node(s) resolved by XPath
+     * @param <AV> type of AttributeValue(s) to be returned by the new instance
      * @return instance of AttributeSelector expression
      * @throws java.lang.IllegalArgumentException if {@code attributeSelectorElement == null || xPathCompiler == null || attributeFactory == null}; or {@code attributeSelectorElement.getContextSelectorId() != null} but
      *                                            {@code attributeProvider == null}; or {@code attributeSelectorElement.getPath()} is not a valid XPath expression

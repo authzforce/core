@@ -46,6 +46,9 @@ import java.util.stream.Stream;
 public final class DepthLimitingExpressionFactory implements ExpressionFactory
 {
 
+	/**
+	 * Exception to be thrown when parsing an AttributeSelector expression and the default XPath version is undefined
+	 */
 	public static final IllegalArgumentException MISSING_POLICY_DEFAULTS_XPATH_VERSION_ILLEGAL_ARGUMENT_EXCEPTION = new IllegalArgumentException("AttributeSelector found but no Policy(Set)Defaults/XPathVersion defined in the enclosing - or any ancestor - Policy(Set) as required for XPath evaluation");
 
 	/**
@@ -615,9 +618,8 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		{
 			expression = ApplyExpressions.newInstance((ApplyType) expr, this, longestVarRefChain, xPathCompiler);
 		}
-		else if (expr instanceof AttributeDesignatorType)
+		else if (expr instanceof AttributeDesignatorType jaxbAttrDes)
 		{
-			final AttributeDesignatorType jaxbAttrDes = (AttributeDesignatorType) expr;
 			if (this.issuerRequiredOnAttributeDesignators && jaxbAttrDes.getIssuer() == null)
 			{
 				throw MISSING_ATTRIBUTE_DESIGNATOR_ISSUER_EXCEPTION;
@@ -635,14 +637,13 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 			Preconditions.checkArgument(requiredDatatype == null || requiredDatatype.equals(attrFactory.getDatatype()), "Invalid AttributeDesignator: invalid Datatype ("+attrFactory.getDatatype()+") for attribute " +attName+ ". Expected: " + requiredDatatype + " (mandatory per XACML standard)");
 			expression = newAttributeDesignatorExpr(attName, attrFactory.getDatatype(), jaxbAttrDes.isMustBePresent());
 		}
-		else if (expr instanceof AttributeSelectorType)
+		else if (expr instanceof AttributeSelectorType jaxbAttrSelector)
 		{
 			if (!isXPathEnabled)
 			{
 				throw UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION;
 			}
 
-			final AttributeSelectorType jaxbAttrSelector = (AttributeSelectorType) expr;
 			final AttributeValueFactory<?> attrFactory = datatypeFactoryRegistry.getExtension(jaxbAttrSelector.getDataType());
 			if (attrFactory == null)
 			{
@@ -677,9 +678,8 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		{
 			expression = getInstance((AttributeValueType) expr, xPathCompiler);
 		}
-		else if (expr instanceof FunctionType)
+		else if (expr instanceof FunctionType jaxbFunc)
 		{
-			final FunctionType jaxbFunc = (FunctionType) expr;
 			final FunctionExpression funcExp = getFunction(jaxbFunc.getFunctionId());
 			if (funcExp != null)
 			{
@@ -691,9 +691,8 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 				        + " is not supported (at least) as standalone Expression: either a generic higher-order function supported only as Apply FunctionId, or function completely unknown.");
 			}
 		}
-		else if (expr instanceof VariableReferenceType)
+		else if (expr instanceof VariableReferenceType varRefElt)
 		{
-			final VariableReferenceType varRefElt = (VariableReferenceType) expr;
 			expression = getVariable(varRefElt, longestVarRefChain);
 		}
 		else

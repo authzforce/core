@@ -553,7 +553,7 @@ public enum StandardFunction
      */
     MAP(Function.XACML_NS_3_0 + "map"),
 
-    /*
+    /**
      * XPath-based functions
      */
     XPATH_NODE_COUNT(Function.XACML_NS_3_0 + "xpath-node-count");

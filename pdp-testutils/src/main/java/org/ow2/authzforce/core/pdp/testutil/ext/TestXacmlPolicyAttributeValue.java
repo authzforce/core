@@ -110,7 +110,7 @@ public final class TestXacmlPolicyAttributeValue implements AttributeValue
 	}
 
 	/**
-	 * Returns the internal <Policy>.
+	 * Returns the internal XACML Policy.
 	 *
 	 * @return the value
 	 *
@@ -159,12 +159,11 @@ public final class TestXacmlPolicyAttributeValue implements AttributeValue
 			return true;
 		}
 
-		if (!(obj instanceof TestXacmlPolicyAttributeValue))
+		if (!(obj instanceof TestXacmlPolicyAttributeValue other))
 		{
 			return false;
 		}
 
-		final TestXacmlPolicyAttributeValue other = (TestXacmlPolicyAttributeValue) obj;
 		return this.policy.equals(other.policy);
 	}
 

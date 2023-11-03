@@ -35,50 +35,68 @@ import java.util.Optional;
 public enum StandardSubjectAttribute
 {
 	/**
-	 * Access subject category
+	 * Access subject category attribute:
 	 * <p>
 	 * urn:oasis:names:tc:xacml:3.0:subject:authn-locality:ip-address
 	 */
 	ACCESS_SUBJECT_IP_ADDRESS(AttributeFqns.newInstance(XacmlAttributeCategory.XACML_1_0_ACCESS_SUBJECT.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_SUBJECT_IP_ADDRESS.value()), StandardDatatypes.IPADDRESS),
 
 	/**
+	 * Access subject category attribute:
+	 * <p>
 	 * urn:oasis:names:tc:xacml:3.0:subject:authn-locality:dns-name
 	 */
 	ACCESS_SUBJECT_DNS_NAME(AttributeFqns.newInstance(XacmlAttributeCategory.XACML_1_0_ACCESS_SUBJECT.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_SUBJECT_DNS_NAME.value()), StandardDatatypes.DNSNAME),
 
 	/**
-	 * Intermediary subject category
+	 * Intermediary subject category attribute: urn:oasis:names:tc:xacml:3.0:subject:authn-locality:ip-address
 	 */
 	INTERMEDIARY_SUBJECT_IP_ADDRESS(AttributeFqns.newInstance(XacmlAttributeCategory.XACML_1_0_INTERMEDIARY_SUBJECT.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_SUBJECT_IP_ADDRESS.value()), StandardDatatypes.IPADDRESS),
 
-
+	/**
+	 * Intermediary subject category attribute: urn:oasis:names:tc:xacml:3.0:subject:authn-locality:dns-name
+	 */
 	INTERMEDIARY_SUBJECT_DNS_NAME(AttributeFqns.newInstance(XacmlAttributeCategory.XACML_1_0_INTERMEDIARY_SUBJECT.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_SUBJECT_DNS_NAME.value()), StandardDatatypes.DNSNAME),
 
 	/**
-	 * Subject codebase category
+	 * Subject codebase category attribute: urn:oasis:names:tc:xacml:3.0:subject:authn-locality:ip-address
 	 */
 	SUBJECT_CODEBASE_IP_ADDRESS(AttributeFqns.newInstance(XacmlAttributeCategory.XACML_1_0_SUBJECT_CODEBASE.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_SUBJECT_IP_ADDRESS.value()), StandardDatatypes.IPADDRESS),
 
+	/**
+	 * Subject codebase category attribute: urn:oasis:names:tc:xacml:3.0:subject:authn-locality:dns-name
+	 */
 	SUBJECT_CODEBASE_DNS_NAME(AttributeFqns.newInstance(XacmlAttributeCategory.XACML_1_0_SUBJECT_CODEBASE.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_SUBJECT_DNS_NAME.value()), StandardDatatypes.DNSNAME),
 
 	/**
-	 * Recipient subject category
+	 * Recipient subject category attribute: urn:oasis:names:tc:xacml:3.0:subject:authn-locality:ip-address
 	 */
 	RECIPIENT_SUBJECT_IP_ADDRESS(AttributeFqns.newInstance(XacmlAttributeCategory.XACML_1_0_RECIPIENT_SUBJECT.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_SUBJECT_IP_ADDRESS.value()), StandardDatatypes.IPADDRESS),
 
+	/**
+	 * Recipient subject category attribute: urn:oasis:names:tc:xacml:3.0:subject:authn-locality:dns-name
+	 */
 	RECIPIENT_SUBJECT_DNS_NAME(AttributeFqns.newInstance(XacmlAttributeCategory.XACML_1_0_RECIPIENT_SUBJECT.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_SUBJECT_DNS_NAME.value()), StandardDatatypes.DNSNAME),
 
 	/**
-	 * Subject's requesting machine category
+	 * Subject's requesting machine category attribute: urn:oasis:names:tc:xacml:3.0:subject:authn-locality:ip-address
 	 */
 	SUBJECT_REQUESTING_MACHINE_IP_ADDRESS(AttributeFqns.newInstance(XacmlAttributeCategory.XACML_1_0_SUBJECT_REQUESTING_MACHINE.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_SUBJECT_IP_ADDRESS.value()), StandardDatatypes.IPADDRESS),
 
+	/**
+	 * Subject's requesting machine category attribute: urn:oasis:names:tc:xacml:3.0:subject:authn-locality:dns-name
+	 */
 	SUBJECT_REQUESTING_MACHINE_DNS_NAME(AttributeFqns.newInstance(XacmlAttributeCategory.XACML_1_0_SUBJECT_REQUESTING_MACHINE.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_SUBJECT_DNS_NAME.value()), StandardDatatypes.DNSNAME);
 
 
 	private final AttributeFqn attributeFqn;
 	private final AttributeDatatype<?> attributeDatatype;
 
+	/**
+	 * Constructor
+	 * @param attributeFqn attribute name
+	 * @param datatype attribute datatype
+	 */
 	StandardSubjectAttribute(final AttributeFqn attributeFqn, final AttributeDatatype<?> datatype)
 	{
 		this.attributeFqn = attributeFqn;

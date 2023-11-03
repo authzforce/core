@@ -53,7 +53,6 @@ import java.util.Optional;
  * such as invalid syntax, circular reference, etc.</li>
  * <li>{@value #EXPECTED_RESPONSE_FILENAME}: (optional) expected XACML response from the PDP, to be compared with the actual response. Required only if {@value #REQUEST_FILENAME} is present.</li>
  * </ul>
- * </p>
  * <p>
  * Configuration 2 for advanced/custom PDP configuration:
  * <ul>
@@ -66,7 +65,6 @@ import java.util.Optional;
  * required only if there is any Policy(Set)IdReference in {@value #ROOT_POLICY_FILENAME} to resolve.</li>
  * <li>Policy files matching locations defined in {@value #PDP_CONF_FILENAME}.</li>
  * </ul>
- * </p>
  * 
  */
 public final class XacmlXmlPdpTestHelper
