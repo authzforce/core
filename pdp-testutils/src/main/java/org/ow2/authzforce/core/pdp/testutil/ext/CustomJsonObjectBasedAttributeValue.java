@@ -35,6 +35,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * JSON Object as XACML AttributeValue
+ */
 public final class CustomJsonObjectBasedAttributeValue implements AttributeValue
 {
 
@@ -48,6 +51,10 @@ public final class CustomJsonObjectBasedAttributeValue implements AttributeValue
     private transient volatile List<Serializable> content = null;
     private transient volatile XdmItem xdmItem = null;
 
+    /**
+     * Constructor
+     * @param json underlying JSON Object value
+     */
     public CustomJsonObjectBasedAttributeValue(JSONObject json)
     {
         this.json = new JSONObject(json, json.keySet().toArray(new String[0]));
@@ -81,6 +88,9 @@ public final class CustomJsonObjectBasedAttributeValue implements AttributeValue
         return xdmItem;
     }
 
+    /**
+     * Attribute Value factory
+     */
     public static final class Factory extends BaseAttributeValueFactory<CustomJsonObjectBasedAttributeValue> {
 
         private static final IllegalArgumentException UNDEFINED_CONTENT_ARG_EXCEPTION = new IllegalArgumentException("Invalid content for datatype '" + DATATYPE + "': null.");

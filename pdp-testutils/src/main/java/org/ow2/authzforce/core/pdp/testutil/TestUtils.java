@@ -47,6 +47,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+/**
+ * PDP engine test utility methods
+ */
 public class TestUtils
 {
 
@@ -168,6 +171,11 @@ public class TestUtils
         return (Response) unmarshaller.parse(responseFile.toUri().toURL());
     }
 
+    /**
+     * Print XACML response to String
+     * @param response XACML respones
+     * @return String representation
+     */
     public static String printResponse(final Response response)
     {
         final StringWriter writer = new StringWriter();
@@ -407,6 +415,7 @@ public class TestUtils
      * @param testId                test identifier
      * @param expectedResponse      expected response
      * @param actualResponseFromPDP actual response
+     * @param ignoreStatusMessageAndDetail ignore/remove the Status message and detail elements in the normalization
      * @return optional String if and only if expected and actual responses don't match (not equal), in which case the returned String gives some detail about the difference
      * @throws JAXBException error creating JAXB Marshaller for XACML output
      */

@@ -40,19 +40,39 @@ public abstract class EvaluationContextBasedNamedAttributeProvider
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(EvaluationContextBasedNamedAttributeProvider.class);
 
+	/**
+	 * Delegate AttributeProvider combinining one or more sub-modules (PIP extensions), either mono-module (using a single PIP extension) or composite (combining multiple PIPs)
+	 * @param <AV> type of AttributeValue(s) returned by this provider
+	 */
 	@FunctionalInterface
 	protected interface DelegateAttributeProvider<AV extends AttributeValue> {
+
+		/**
+		 * Retrieve/resolve an attribute
+		 * @param attributeFqn attribute name
+		 * @param datatype attribute datatype
+		 * @param context request evaluation context
+		 * @param mdpContext optional Multiple Decision context when the Multiple Decision Profile is used (shared by all Individual Decision requests of the same Multiple Decision request)
+		 * @return attribute values (bag)
+		 * @throws IndeterminateEvaluationException error resolving the attribute
+		 */
 		AttributeBag<AV> get(final AttributeFqn attributeFqn, final Datatype<AV> datatype, final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException;
 	}
 
-	protected static <V extends AttributeValue> DelegateAttributeProvider<V> newDelegate(final List<NamedAttributeProvider> composedProviders) {
+	/**
+	 * Creates the proper delegate combining provider based on input sub-modules (PIP extensions)
+	 * @param composedProviders composed AttributeProvider (aka PIP) sub-modules
+	 * @return combining delegate
+	 * @param <AV> type of AttributeValue(s) returned by the new instance
+	 */
+	protected static <AV extends AttributeValue> DelegateAttributeProvider<AV> newDelegate(final List<NamedAttributeProvider> composedProviders) {
 		assert composedProviders != null && !composedProviders.isEmpty();
 		if(composedProviders.size() == 1) {
 			final NamedAttributeProvider subProvider = composedProviders.get(0);
 			return  (name, type, ctx, mdpCtx) ->
 			{
 				LOGGER.debug("Requesting attribute {} from Provider module: {}", name, subProvider);
-				final AttributeBag<V> result = subProvider.get(name, type, ctx, mdpCtx);
+				final AttributeBag<AV> result = subProvider.get(name, type, ctx, mdpCtx);
 				LOGGER.debug("Values of attribute {}, type={} returned by Attribute Provider module #{}: {}", name, type, subProvider, result);
 				return result;
 			};
@@ -63,11 +83,11 @@ public abstract class EvaluationContextBasedNamedAttributeProvider
 			/*
 			 * Query all sub-providers in order
 			 */
-			final Collection<V> values = new ArrayList<>();
+			final Collection<AV> values = new ArrayList<>();
 			for (final NamedAttributeProvider subProvider : composedProviders)
 			{
 				LOGGER.debug("Requesting attribute {} from Provider module: {}", name, subProvider);
-				final AttributeBag<V> result = subProvider.get(name, type, ctx, mdpCtx);
+				final AttributeBag<AV> result = subProvider.get(name, type, ctx, mdpCtx);
 				LOGGER.debug("Values of attribute {}, type={} returned by Attribute Provider module #{}: {}", name, type, subProvider, result);
 				if (result != null)
 				{
@@ -112,11 +132,22 @@ public abstract class EvaluationContextBasedNamedAttributeProvider
 
 	private final IssuedToNonIssuedAttributeCopyMode issuedToNonIssuedAttributeCopyMode;
 
+	/**
+	 * Constructor
+	 * @param strictAttributeIssuerMatch true iff the returned attribute must match the Issuer in the AttributeDesignator/AttributeSelector expression exactly
+	 */
 	protected EvaluationContextBasedNamedAttributeProvider(final boolean strictAttributeIssuerMatch)
 	{
 		this.issuedToNonIssuedAttributeCopyMode = strictAttributeIssuerMatch ? ISSUED_TO_NON_ISSUED_ATTRIBUTE_COPY_DISABLED_MODE : ISSUED_TO_NON_ISSUED_ATTRIBUTE_COPY_ENABLED_MODE;
 	}
 
+	/**
+	 * Add attribute values to the request evaluation context
+	 * @param attributeFqn attribute name
+	 * @param vals attribute values (bag)
+	 * @param context request evaluation context
+	 * @param <AV> type of AttributeValue(s) added to the evaluation context
+	 */
 	protected final <AV extends AttributeValue> void addAttributeValuesToContext(final AttributeFqn attributeFqn, final AttributeBag<AV> vals, final EvaluationContext context)
 	{
 		/*
@@ -126,6 +157,16 @@ public abstract class EvaluationContextBasedNamedAttributeProvider
 		issuedToNonIssuedAttributeCopyMode.process(attributeFqn, vals, context);
 	}
 
+	/**
+	 * Retrieve/resolve the values of the attribute with given name and datatype
+	 * @param attributeFqn attribute name
+	 * @param datatype attribute datatype
+	 * @param context request evaluation context
+	 * @param mdpContext optional Multiple Decision context when the Multiple Decision Profile is used (shared by all Individual Decision requests of the same Multiple Decision request)
+	 * @param delegate delegate attribute provider
+	 * @return attribute values (bag)
+	 * @param <AV> type of AttributeValue(s) added to the evaluation context
+	 */
 	protected final <AV extends AttributeValue> AttributeBag<AV> get(final AttributeFqn attributeFqn, final Datatype<AV> datatype, final EvaluationContext context,  final Optional<EvaluationContext> mdpContext, final DelegateAttributeProvider<AV> delegate)
 	{
 		assert context != null && delegate != null;

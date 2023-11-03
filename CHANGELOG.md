@@ -6,6 +6,38 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 21.0.0
+### Changed
+- [GH-87] Minimum required Java version is now **Java 17**. (Java 11 no longer supported.)
+- [GH-86] Upgraded **JAXB to 4.0**. All `javax.xml.bind` namespace replaced with `jakarta.xml.bind` in all package imports.
+- Upgraded parent project (authzforce-ce-parent): 9.0.0
+- Upgraded dependencies:
+  - authzforce-ce-xacml-model: 9.0.0
+  - authzforce-ce-pdp-ext-model: 9.0.0
+  - authzforce-ce-xacml-json-model: 4.0.0
+  - authzforce-ce-core-pdp-api: 22.0.0
+  - jaxb-runtime: 4.0.4
+  - slf4j: 2.0.7
+  - logback: 1.4.11
+  - spring-core: 6.0.11
+  - guava: 32.1.3-jre
+  - jakarta.mail-api: 2.1.2
+  - jakarta.mail: 2.0.2
+  - jakarta.jws-api: 3.0.0
+  - jakarta.xml.ws-api: 3.0.1
+  - org.json:json: 20231013
+  - everit-json-schema: 1.14.3
+  - picocli: 4.7.5
+- authzforce-ce-pdp-testutils module changes:
+  - `junit` removed from compile dependencies (only test dependency)
+  - `jongo` removed from dependencies, replaced with `mongo-driver-sync` (4.11.0) for `MongodbPolicyProvider` (Policy Provider for MongoDB)
+  - Removed `PolicyPojo` class for handling policies in `MongodbPolicyProvider`, replaced with built-in `Document` class with JSON schema validation for the document format. See [new JSON schema for policy documents in MongoDB](pdp-testutils/src/main/resources/mongodb_policy_provider_doc_schema.json). 
+
+### Added
+- authzforce-ce-pdp-testutils module changes:
+    - New dependency: `mongo-driver-sync`: 4.11.0
+
+
 ## 20.3.2
 ### Fixed
 - GH-83: `NoSuchElementException` thrown when the rule combining algorithm is `permit-unless-deny` and there is no Deny rule but at least one Permit rule with Obligation/Advice.

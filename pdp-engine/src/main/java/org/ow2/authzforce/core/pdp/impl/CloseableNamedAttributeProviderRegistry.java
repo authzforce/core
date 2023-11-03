@@ -202,7 +202,7 @@ public final class CloseableNamedAttributeProviderRegistry implements Closeable
 	 *            (mandatory) attribute value factory
 	 * @param attributeProviderFactories
 	 *            Factories of all the Attribute Providers to be combined in the created instance (Attribute Providers resolve values of attributes absent from the request context). Empty if none.
-	 *            <b>We assume that they are listed in dependency order, i.e. for any AttributeProvider AP (at index N) in the list, if AP depends on attribute(s) A, B, etc. then A, B, etc. are assumed to be provided by either another AttributeProvider preceding AP in the list (at index n < N), or the PDP input request directly.</b>
+	 *            <b>We assume that they are listed in dependency order, i.e. for any AttributeProvider AP (at index N) in the list, if AP depends on attribute(s) A, B, etc. then A, B, etc. are assumed to be provided by either another AttributeProvider preceding AP in the list (at index n &lt; N), or the PDP input request directly.</b>
 	 * @param strictAttributeIssuerMatch
 	 *            true iff it is required that AttributeDesignator without Issuer only match request Attributes without Issuer. This mode is not fully compliant with XACML 3.0, §5.29, in the case that
 	 *            the Issuer is not present; but it performs better and is recommended when all AttributeDesignators have an Issuer (best practice). Set it to false, if you want full compliance with
@@ -341,6 +341,7 @@ public final class CloseableNamedAttributeProviderRegistry implements Closeable
 	 * This call is passed on to all AttributeProviders (used in this factory) that have {@link NamedAttributeProvider#supportsBeginIndividualDecisionRequest()} return true
 	 * @param context individual decision request context, will be passed on as {@code context} argument of each AttributeProvider ( {@link NamedAttributeProvider#get(AttributeFqn, Datatype, EvaluationContext, Optional)} ) when the Individual Decision request is evaluated against an AttributeDesignator or AttributeSelector with ContextSelectorId.
 	 * @param mdpContext context of a Multiple Decision request evaluation, will be passed on as {@code mdpContext} argument of each AttributeProvider ( {@link NamedAttributeProvider#get(AttributeFqn, Datatype, EvaluationContext, Optional)} ) when Individual Decision requests are evaluated.
+	 * @throws IndeterminateEvaluationException error beginning the request evaluation
 	 */
 	public void beginIndividualDecisionRequest(final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException {
 		for (final NamedAttributeProvider provider : this.individualReqBeginners)

@@ -88,14 +88,12 @@ public final class AllOfEvaluator
 
     /**
      * Determines whether this <code>AllOf</code> matches the input request
-     * (whether it is applicable).Here is the table shown in the specification:
-     * <code>
-     * <Match> values 						<AllOf> value
-     * All True				 			“Match�?
-     * No False and at least
-     * one "Indeterminate" 				“Indeterminate�?
-     * At least one False					"No Match"
-     * </code>
+     * (whether it is applicable), according to the XACML 3.0 specification, section 7.7:
+     * <ol>
+     *     <li>If all Match values in the AllOf are True, the AllOf value is Match.</li>
+     *     <li>If no False and at least one Indeterminate, the AllOf value is Inderminate.</li>
+     *     <li>If at least one False, the AllOf value is "No match".</li>
+     * </ol>
      *
      * @param context the representation of the Individual Decision request
      * @param mdpContext
