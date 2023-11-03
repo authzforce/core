@@ -17,11 +17,13 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.test;
 
+import jakarta.xml.bind.JAXBException;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.ow2.authzforce.core.pdp.testutil.XacmlXmlPdpTest;
+import org.ow2.authzforce.core.pdp.testutil.XacmlXmlPdpTestHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,13 +31,14 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Optional;
 
 /**
  * Non-regression testing. Each test addresses a bug reported in the issue management system (e.g. Gitlab). There should be a folder for test data of each issue in folder:
  * src/test/resources/NonRegression.
  */
 @RunWith(value = Parameterized.class)
-public class NonRegressionTest extends XacmlXmlPdpTest
+public class NonRegressionTest
 {
 	/**
 	 * Name of root directory that contains test resources for each non-regression test
@@ -47,6 +50,8 @@ public class NonRegressionTest extends XacmlXmlPdpTest
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(NonRegressionTest.class);
 
+	private final XacmlXmlPdpTestHelper testHelper;
+
 	/**
 	 * Initialize test parameters for each test
 	 * 
@@ -57,7 +62,7 @@ public class NonRegressionTest extends XacmlXmlPdpTest
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> params() throws IOException
 	{
-		return XacmlXmlPdpTest.params(TEST_RESOURCES_ROOT_DIRECTORY_PATH);
+		return XacmlXmlPdpTestHelper.params(TEST_RESOURCES_ROOT_DIRECTORY_PATH);
 	}
 
 	/**
@@ -67,12 +72,22 @@ public class NonRegressionTest extends XacmlXmlPdpTest
 	 */
 	public NonRegressionTest(final Path testDirPath)
 	{
-		super(testDirPath, true);
+
+		testHelper = new XacmlXmlPdpTestHelper(testDirPath, true);
 	}
 
 	@BeforeClass
 	public static void setUp()
     {
 		LOGGER.debug("Launching tests in '{}'", TEST_RESOURCES_ROOT_DIRECTORY_PATH);
+	}
+
+	@Test
+	public void test() throws JAXBException, IOException
+	{
+		final Optional<String> result = testHelper.test();
+		if(result.isPresent()) {
+			throw new AssertionError(result.get());
+		}
 	}
 }

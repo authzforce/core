@@ -39,6 +39,9 @@ public class TestDnsNameValueEqualFunction extends EqualTypeMatchFunction<TestDn
 		return arg0.getHostName().equalsIgnoreCase(arg1.getHostName());
 	};
 
+	/**
+	 * Constructor
+	 */
 	public TestDnsNameValueEqualFunction()
 	{
 		super(ID, TestDnsNameWithPortValue.FACTORY.getDatatype(), MATCHER);

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jaxb:bindings xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
-	jaxb:extensionBindingPrefixes="xjc" jaxb:version="2.1">
+<!-- JAXB version must be 3.0 for jaxb-maven-plugin 4.x -->
+<jaxb:bindings jaxb:version="3.0" xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+	jaxb:extensionBindingPrefixes="xjc">
 	<jaxb:globalBindings generateMixedExtensions="true" fixedAttributeAsConstantProperty="true">
 		<xjc:simple />
 	</jaxb:globalBindings>

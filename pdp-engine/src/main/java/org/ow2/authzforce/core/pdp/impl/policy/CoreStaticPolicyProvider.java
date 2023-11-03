@@ -20,6 +20,7 @@ package org.ow2.authzforce.core.pdp.impl.policy;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Table;
+import jakarta.xml.bind.JAXBException;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
@@ -33,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
 
-import javax.xml.bind.JAXBException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -55,7 +55,7 @@ import java.util.stream.Stream;
  * <p>
  * A policy location may also be a file pattern in the following form: "file://DIRECTORY_PATH/*SUFFIX" using wilcard character '*'; in which case the location is expanded to all regular files (not
  * subdirectories) in directory located at DIRECTORY_PATH with suffix <i>SUFFIX</i> (SUFFIX may be empty, i.e. no suffix). The files are NOT searched recursively on subdirectories.
- * <p>
+ * </p>
  *
  * @version $Id: $
  */
@@ -114,28 +114,22 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
          */
     }
 
-    private static final class XacmlPolicyParam implements StaticPolicyProviderInParam
-    {
-
-        private final PolicySet policy;
-
-        private XacmlPolicyParam(final PolicySet policy)
+    private record XacmlPolicyParam(PolicySet policy) implements StaticPolicyProviderInParam
         {
-            assert policy != null;
-            this.policy = policy;
+
+            private XacmlPolicyParam
+            {
+                assert policy != null;
+            }
         }
-    }
 
-    private static final class PolicyLocationParam implements StaticPolicyProviderInParam
-    {
-        private final URL policyLocation;
-
-        private PolicyLocationParam(final URL policyLocation)
+    private record PolicyLocationParam(URL policyLocation) implements StaticPolicyProviderInParam
         {
-            assert policyLocation != null;
-            this.policyLocation = policyLocation;
+            private PolicyLocationParam
+            {
+                assert policyLocation != null;
+            }
         }
-    }
 
     /**
      * Module factory
@@ -172,9 +166,8 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
                 if (policySetOrLocationPatternBeforePlaceholderReplacement instanceof PolicySet)
                 {
                     providerParams.add(new XacmlPolicyParam((PolicySet) policySetOrLocationPatternBeforePlaceholderReplacement));
-                } else if (policySetOrLocationPatternBeforePlaceholderReplacement instanceof String)
+                } else if (policySetOrLocationPatternBeforePlaceholderReplacement instanceof String policyLocationPatternBeforePlaceholderReplacement)
                 {
-                    final String policyLocationPatternBeforePlaceholderReplacement = (String) policySetOrLocationPatternBeforePlaceholderReplacement;
                     final String policyLocationPattern = environmentProperties.replacePlaceholders(policyLocationPatternBeforePlaceholderReplacement);
                     /*
                     policyLocationPattern is handled like a URL pattern, e.g. file://path/to/policy(ies)
@@ -582,7 +575,7 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
      * @throws java.lang.IllegalArgumentException if {@code policyURLs == null || policyURLs.length == 0 || xacmlParserFactory == null || expressionFactory == null || combiningAlgRegistry == null}; or one of {@code policyURLs} is
      *                                            null or is not a valid XACML Policy(Set) or conflicts with another because it has same Policy(Set)Id and Version. Beware that the Policy(Set)Issuer is ignored from this check!
      */
-    public static CoreStaticPolicyProvider getInstance(final List<StaticPolicyProviderInParam> providerParams, final boolean ignoreOldPolicyVersions,
+    private static CoreStaticPolicyProvider getInstance(final List<StaticPolicyProviderInParam> providerParams, final boolean ignoreOldPolicyVersions,
                                                        final XmlnsFilteringParserFactory xacmlParserFactory, final int maxPolicySetRefDepth, final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry,
                                                        final Optional<StaticPolicyProvider> otherPolicyProvider) throws IllegalArgumentException
     {
@@ -642,9 +635,8 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
             }
 
             final ImmutableMap<String, String> nsPrefixUriMap = xacmlParser.getNamespacePrefixUriMap();
-            if (jaxbPolicyOrPolicySetObj instanceof Policy)
+            if (jaxbPolicyOrPolicySetObj instanceof Policy jaxbPolicy)
             {
-                final Policy jaxbPolicy = (Policy) jaxbPolicyOrPolicySetObj;
                 final String policyId = jaxbPolicy.getPolicyId();
                 final String policyVersionStr = jaxbPolicy.getVersion();
                 final PolicyVersion policyVersion = new PolicyVersion(policyVersionStr);
@@ -684,9 +676,8 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
                     throw new IllegalArgumentException("Policy conflict: two policies with same PolicyId=" + policyId + ", Version=" + policyVersionStr);
                 }
 
-            } else if (jaxbPolicyOrPolicySetObj instanceof PolicySet)
+            } else if (jaxbPolicyOrPolicySetObj instanceof PolicySet jaxbPolicySet)
             {
-                final PolicySet jaxbPolicySet = (PolicySet) jaxbPolicyOrPolicySetObj;
                 final String policyId = jaxbPolicySet.getPolicySetId();
                 final String policyVersionStr = jaxbPolicySet.getVersion();
                 final PolicyVersion policyVersion = new PolicyVersion(policyVersionStr);

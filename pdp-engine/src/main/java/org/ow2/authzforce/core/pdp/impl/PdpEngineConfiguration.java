@@ -19,6 +19,8 @@ package org.ow2.authzforce.core.pdp.impl;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
 import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParserFactory;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
@@ -48,8 +50,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import java.io.Closeable;
@@ -282,7 +282,7 @@ public final class PdpEngineConfiguration
 	        final int maxPolicySetRefDepth, final ExpressionFactory xacmlExprFactory, final CombiningAlgRegistry combiningAlgRegistry, final EnvironmentProperties envProps,
 	        final Optional<PolicyProvider<?>> otherHelpingPolicyProvider)
 	{
-		final CloseablePolicyProvider.Factory<JAXB_CONF> refPolicyProviderModFactory = PdpExtensions.getRefPolicyProviderFactory((Class<JAXB_CONF>) jaxbConf.getClass());
+		final CloseablePolicyProvider.Factory<JAXB_CONF> refPolicyProviderModFactory = PdpExtensions.getPolicyProviderFactory((Class<JAXB_CONF>) jaxbConf.getClass());
 		return refPolicyProviderModFactory.getInstance(jaxbConf, xacmlParserFactory, maxPolicySetRefDepth, xacmlExprFactory, combiningAlgRegistry, envProps, otherHelpingPolicyProvider);
 	}
 
@@ -677,12 +677,10 @@ public final class PdpEngineConfiguration
 		try
 		{
 			pdpJaxbConf = modelHandler.unmarshal(confXmlSrc, Pdp.class);
-		}
-		catch (final JAXBException e)
+		} catch (JAXBException e)
 		{
-			throw new IllegalArgumentException("Invalid PDP configuration file", e);
+			throw new IllegalArgumentException("Invalid or inaccessible PDP configuration (XML)", e);
 		}
-
 		return new PdpEngineConfiguration(pdpJaxbConf, envProps);
 	}
 
@@ -798,19 +796,21 @@ public final class PdpEngineConfiguration
 	}
 
 	/**
+	 * <p>
 	 * Create PDP instance. Locations here can be any resource string supported by Spring ResourceLoader. More info: <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/html">Spring documentation</a>
 	 * /resources.html
-	 *
+	 *</p>
+	 * <p>
 	 * For example: <code>classpath:com/myapp/aaa.xsd</code>, <code>file:///data/bbb.xsd</code>, <code>http://myserver/ccc.xsd</code>...
-	 *
+	 *</p>
 	 * @param confFile
 	 *            PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd)
 	 * @param extensionXsdLocation
-	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD namespace import for each extension used in the PDP
-	 *            configuration, for example:
+	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD namespace import for each extension used in the PDP configuration, for example:
 	 *
-	 * <code>
-	 * 		  <?xml version="1.0" encoding="UTF-8"?>
+	 * <pre>
+	 *     {@code
+	 * <?xml version="1.0" encoding="UTF-8"?>
 	 * <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 	 * 	<xs:annotation>
 	 * 		<xs:documentation xml:lang="en">
@@ -822,19 +822,22 @@ public final class PdpEngineConfiguration
 	 * 	<!--  Adding TestAttributeProvider extension for example -->
 	 * 	<xs:import namespace="http://authzforce.github.io/core/xmlns/test/3" />
 	 * </xs:schema>
-	 * </code>
+	 * }
+	 * </pre>
 	 *
+	 * <p>
 	 * In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported namespace above using a line like this (for an XML-formatted catalog):
-	 *
-	 * <pre>
+	 * </p>
+	 * <p>
 	 *            {@literal
 	 *            <uri name="http://authzforce.github.io/core/xmlns/test/3" uri=
 	 * 	"classpath:org.ow2.authzforce.core.test.xsd" />
 	 *            }
-	 * </pre>
-	 *
+	 *</p>
+	 * <p>
 	 * We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base types) in this
 	 * case.
+	 * </p>
 	 * @param catalogLocation
 	 *            location of XML catalog for resolving XSDs imported by the extension XSD specified as 'extensionXsdLocation' argument (may be null if 'extensionXsdLocation' is null)
 	 * @return PDP instance
@@ -849,19 +852,21 @@ public final class PdpEngineConfiguration
 	}
 
 	/**
+	 * <p>
 	 * Create PDP instance. Locations here may be any resource string supported by Spring ResourceLoader. More info: <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/html">Spring documentation</a>
 	 * /resources.html
-	 *
+	 *</p>
+	 * <p>
 	 * For example: <code>classpath:com/myapp/aaa.xsd</code>, <code>file:///data/bbb.xsd</code>, <code>http://myserver/ccc.xsd</code>...
-	 *
+	 *</p>
 	 * @param confLocation
 	 *            location of PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd)
 	 * @param extensionXsdLocation
-	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD namespace import for each extension used in the PDP
-	 *            configuration, for example:
+	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD namespace import for each extension used in the PDPconfiguration, for example:
 	 *
-	 * <code>
-	 * 		  <?xml version="1.0" encoding="UTF-8"?>
+	 * <pre>
+	 * {@code
+	 * <?xml version="1.0" encoding="UTF-8"?>
 	 * <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 	 * 	<xs:annotation>
 	 * 		<xs:documentation xml:lang="en">
@@ -873,15 +878,18 @@ public final class PdpEngineConfiguration
 	 * 	<!--  Adding TestAttributeProvider extension for example -->
 	 * 	<xs:import namespace="http://authzforce.github.io/core/xmlns/test/3" />
 	 * </xs:schema>
-	 * </code>
+	 * }
+	 * </pre>
 	 *
+	 * <p>
 	 * In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported namespace above using a line like this (for an XML-formatted catalog):
-	 *
-	 * <code>
+	 * </p>
+	 * <p>
+	 * {@code
 	 *            <uri name="http://authzforce.github.io/core/xmlns/test/3" uri=
 	 * 	"classpath:org.ow2.authzforce.core.test.xsd" />
-	 * </code>
-	 *
+	 * }
+	 *</p>
 	 * We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base types) in this
 	 * case.
 	 * @param catalogLocation

@@ -17,6 +17,7 @@
  */
 package org.ow2.authzforce.core.pdp.cli;
 
+import jakarta.xml.bind.Marshaller;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import org.json.JSONObject;
@@ -38,7 +39,6 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-import javax.xml.bind.Marshaller;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -106,10 +106,13 @@ public final class PdpCommandLineCallable implements Callable<Void>
 				        configuration.getAttributeValueFactoryRegistry(), configuration.isStrictAttributeIssuerMatchEnabled(), configuration.isXPathEnabled(),
 				        defaultResultPostproc.getFeatures());
 
-				final PdpEngineInoutAdapter<JSONObject, JSONObject> jsonPdpEngineAdapter = PdpEngineAdapters.newInoutAdapter(JSONObject.class, JSONObject.class, configuration, defaultReqPreproc,
-				        defaultResultPostproc);
-				final JSONObject jsonResponse = jsonPdpEngineAdapter.evaluate(jsonRequest);
-				System.out.println(jsonResponse.toString(formattedOutput ? 4 : 0));
+				final JSONObject jsonResponse;
+				try (PdpEngineInoutAdapter<JSONObject, JSONObject> jsonPdpEngineAdapter = PdpEngineAdapters.newInoutAdapter(JSONObject.class, JSONObject.class, configuration, defaultReqPreproc,
+						defaultResultPostproc))
+				{
+					jsonResponse = jsonPdpEngineAdapter.evaluate(jsonRequest);
+					System.out.println(jsonResponse.toString(formattedOutput ? 4 : 0));
+				}
 				break;
 
 			default:
@@ -120,12 +123,15 @@ public final class PdpCommandLineCallable implements Callable<Void>
 					throw new IllegalArgumentException("Invalid XACML/XML Request file (according to XACML 3.0 schema): " + reqFile);
 				}
 
-				final PdpEngineInoutAdapter<Request, Response> xmlPdpEngineAdapter = PdpEngineAdapters.newXacmlJaxbInoutAdapter(configuration);
-				final Response xmlResponse = xmlPdpEngineAdapter.evaluate((Request) request, parser.getNamespacePrefixUriMap());
-				final Marshaller marshaller = Xacml3JaxbHelper.createXacml3Marshaller();
-				final Boolean formatted = formattedOutput;
-				marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, formatted);
-				marshaller.marshal(xmlResponse, System.out);
+				final Response xmlResponse;
+				try (PdpEngineInoutAdapter<Request, Response> xmlPdpEngineAdapter = PdpEngineAdapters.newXacmlJaxbInoutAdapter(configuration))
+				{
+					xmlResponse = xmlPdpEngineAdapter.evaluate((Request) request, parser.getNamespacePrefixUriMap());
+					final Marshaller marshaller = Xacml3JaxbHelper.createXacml3Marshaller();
+					final Boolean formatted = formattedOutput;
+					marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, formatted);
+					marshaller.marshal(xmlResponse, System.out);
+				}
 				break;
 		}
 

@@ -32,12 +32,11 @@ AuthzForce Core may be used in the following ways:
 
 ### Enhancements to the XACML standard
 
-GeoXACML 3.0 Core: https://docs.ogc.org/DRAFTS/22-049.html 
-GeoXACML 3.0 JSON Profile 1.0: https://docs.ogc.org/DRAFTS/22-050.html 
+* OGC (Open Geospatial Consortium) GeoXACML standards:
+  * [GeoXACML 1.0](http://portal.opengeospatial.org/files/?artifact_id=42734) support: see [this AuthzForce extension from SecureDimensions](https://github.com/securedimensions/authzforce-geoxacml-basic). 
+  * [GeoXACML 3.0 Core](https://docs.ogc.org/is/22-049r1/22-049r1.html) support: see [this AuthzForce extension from SecureDimensions](https://github.com/securedimensions/authzforce-ce-geoxacml3). 
+  * [GeoXACML 3.0 JSON Profile 1.0](https://docs.ogc.org/is/22-050r1/22-050r1.html) support: see [this AuthzForce extension from SecureDimensions](https://github.com/securedimensions/authzforce-ce-geoxacml3).
 
-* [GeoXACML 1.0](http://portal.opengeospatial.org/files/?artifact_id=42734) (Open Geospatial Consortium) support: see [this AuthzForce extension from SecureDimensions](https://github.com/securedimensions/authzforce-geoxacml-basic). 
-* [GeoXACML 3.0 Core (draft)](https://docs.ogc.org/DRAFTS/22-049.html) (Open Geospatial Consortium) support: see [this AuthzForce extension from SecureDimensions](https://github.com/securedimensions/authzforce-ce-geoxacml3). 
-* [GeoXACML 3.0 JSON Profile 1.0 (draft)](https://docs.ogc.org/DRAFTS/22-050.html) (Open Geospatial Consortium) support: see [this AuthzForce extension from SecureDimensions](https://github.com/securedimensions/authzforce-ce-geoxacml3).
 * Support `<VariableReference>` (indirectly) in `<Target>`/`<Match>` elements: this feature is a workaround for a limitation in XACML schema which does not allow Variables (`<VariableReference>`) in `Match` elements; i.e. the feature allows policy writers to use an equivalent of `<VariableReference>`s in `<Match>` elements (without changing the XACML schema) through a special kind of `<AttributeDesignator>` (specific `Category`, and `AttributeId` is used as `VariableId`). More details in the Usage section below. 
 
 ### Interfaces
@@ -114,7 +113,7 @@ See the [license file](LICENSE).
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fauthzforce%2Fcore.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fauthzforce%2Fcore?ref=badge_large)
 
 ## System requirements
-Java (JRE) version: 11 or later. Java 8 is no longer supported.
+Java (JRE) version: 17 or later.
 
 ## Usage
 ### Getting started

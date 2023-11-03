@@ -17,6 +17,7 @@
  */
 package org.ow2.authzforce.core.pdp.impl.expression;
 
+import jakarta.xml.bind.JAXBElement;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
@@ -32,7 +33,6 @@ import org.ow2.authzforce.core.pdp.api.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.JAXBElement;
 import java.util.*;
 
 /**

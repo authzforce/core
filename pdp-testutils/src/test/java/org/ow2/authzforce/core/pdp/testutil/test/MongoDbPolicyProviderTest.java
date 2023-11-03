@@ -17,17 +17,24 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.test;
 
-import com.mongodb.MongoClient;
-import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.CreateCollectionOptions;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.ValidationOptions;
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import org.apache.cxf.helpers.IOUtils;
-import org.jongo.Jongo;
-import org.jongo.MongoCollection;
+import org.bson.Document;
+import org.bson.json.JsonObject;
 import org.junit.*;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParser;
@@ -47,24 +54,25 @@ import org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry;
 import org.ow2.authzforce.core.pdp.impl.func.StandardFunction;
 import org.ow2.authzforce.core.pdp.impl.io.PdpEngineAdapters;
 import org.ow2.authzforce.core.pdp.testutil.TestUtils;
-import org.ow2.authzforce.core.pdp.testutil.XacmlXmlPdpTest;
+import org.ow2.authzforce.core.pdp.testutil.XacmlXmlPdpTestHelper;
 import org.ow2.authzforce.core.pdp.testutil.ext.MongoDbPolicyProvider;
-import org.ow2.authzforce.core.pdp.testutil.ext.PolicyPojo;
 import org.ow2.authzforce.core.pdp.testutil.ext.xmlns.MongoDBBasedPolicyProviderDescriptor;
 import org.ow2.authzforce.core.xmlns.pdp.Pdp;
 import org.ow2.authzforce.xacml.Xacml3JaxbHelper;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
+import org.springframework.util.ResourceUtils;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
@@ -86,7 +94,7 @@ public class MongoDbPolicyProviderTest
 	{
 		final PdpModelHandler pdpModelHandler = new PdpModelHandler("classpath:catalog.xml", "classpath:pdp-ext.xsd");
 		final Pdp pdpConf;
-		try (final InputStream is = MongoDbPolicyProviderTest.class.getResourceAsStream(XacmlXmlPdpTest.PDP_CONF_FILENAME))
+		try (final InputStream is = MongoDbPolicyProviderTest.class.getResourceAsStream(XacmlXmlPdpTestHelper.PDP_CONF_FILENAME))
 		{
 			pdpConf = pdpModelHandler.unmarshal(new StreamSource(is), Pdp.class);
 		}
@@ -123,46 +131,53 @@ public class MongoDbPolicyProviderTest
 		final InetSocketAddress socketAddress = new InetSocketAddress(mongodbBasedPolicyProviderConf.getServerHost(), mongodbBasedPolicyProviderConf.getServerPort());
 		DB_SERVER.bind(socketAddress);
 
-		final MongoClient dbClient = new MongoClient(new ServerAddress(socketAddress));
-		/*
-		 * FIXME: Issue with getDB() deprecated not fixed yet: https://github.com/bguerout/jongo/issues/320
-		 * AND https://github.com/bguerout/jongo/issues/254
-		 */
-		final Jongo testDbWrapper = new Jongo(dbClient.getDB(mongodbBasedPolicyProviderConf.getDbName()));
-		final MongoCollection POLICY_COLLECTION = testDbWrapper.getCollection(mongodbBasedPolicyProviderConf.getCollectionName());
-		// populate database with sample policies
-		final Unmarshaller unmarshaller = Xacml3JaxbHelper.createXacml3Unmarshaller();
-		for (final String policyFilename : SAMPLE_POLICY_FILENAMES)
+		final MongoDatabase db;
+		try (MongoClient dbClient = MongoClients.create("mongodb://"+mongodbBasedPolicyProviderConf.getServerHost()+":" +mongodbBasedPolicyProviderConf.getServerPort()))
 		{
-			final String policyContent;
-			try (final InputStream is = MongoDbPolicyProviderTest.class.getResourceAsStream(policyFilename))
-			{
-				assert is != null;
-				policyContent = IOUtils.toString(is, IOUtils.UTF8_CHARSET.name());
-			}
-			final Object jaxbObj = unmarshaller.unmarshal(new StringReader(policyContent));
-			final String policyTypeId;
-			final String policyId;
-			final String policyVersion;
-			if (jaxbObj instanceof Policy)
-			{
-				final Policy policy = (Policy) jaxbObj;
-				policyTypeId = MongoDbPolicyProvider.XACML3_POLICY_TYPE_ID;
-				policyId = policy.getPolicyId();
-				policyVersion = policy.getVersion();
-			}
-			else
-			{
-				// PolicySet
-				policyTypeId = MongoDbPolicyProvider.XACML3_POLICYSET_TYPE_ID;
-				final PolicySet policySet = (PolicySet) jaxbObj;
-				policyId = policySet.getPolicySetId();
-				policyVersion = policySet.getVersion();
-			}
+			db = dbClient.getDatabase(mongodbBasedPolicyProviderConf.getDbName());
+			db.listCollectionNames().forEach(s -> System.out.println("collection " + s));
 
-			POLICY_COLLECTION.insert(new PolicyPojo(policyId, policyVersion, policyTypeId, policyContent));
+			// Load the JSON schema for policy documents in the MongoDB
+			final File mongodbDocumentSchemaFile = ResourceUtils.getFile("classpath:mongodb_policy_provider_doc_schema.json");
+			final JsonObject mongodbDocumentSchema = new JsonObject(Files.readString(mongodbDocumentSchemaFile.toPath()));
+
+			// Create the MongoDB collection of policy documents
+			db.createCollection(mongodbBasedPolicyProviderConf.getCollectionName(), new CreateCollectionOptions().validationOptions(new ValidationOptions().validator(Filters.jsonSchema(mongodbDocumentSchema))));
+
+			// update the collection with a new policy document
+			final MongoCollection<Document> mongoCollectionOfPolicies = db.getCollection(mongodbBasedPolicyProviderConf.getCollectionName());
+
+			// populate database with sample policies
+			final Unmarshaller unmarshaller = Xacml3JaxbHelper.createXacml3Unmarshaller();
+			for (final String policyFilename : SAMPLE_POLICY_FILENAMES)
+			{
+				final String policyContent;
+				try (final InputStream is = MongoDbPolicyProviderTest.class.getResourceAsStream(policyFilename))
+				{
+					assert is != null;
+					policyContent = IOUtils.toString(is, IOUtils.UTF8_CHARSET.name());
+				}
+				final Object jaxbObj = unmarshaller.unmarshal(new StringReader(policyContent));
+				final String policyTypeId;
+				final String policyId;
+				final String policyVersion;
+				if (jaxbObj instanceof Policy policy)
+				{
+					policyTypeId = MongoDbPolicyProvider.XACML3_POLICY_TYPE_ID;
+					policyId = policy.getPolicyId();
+					policyVersion = policy.getVersion();
+				} else
+				{
+					// PolicySet
+					policyTypeId = MongoDbPolicyProvider.XACML3_POLICYSET_TYPE_ID;
+					final PolicySet policySet = (PolicySet) jaxbObj;
+					policyId = policySet.getPolicySetId();
+					policyVersion = policySet.getVersion();
+				}
+
+				mongoCollectionOfPolicies.insertOne(new Document(Map.of("id", policyId, "version", policyVersion, "type", policyTypeId, "content", policyContent)));
+			}
 		}
-
 	}
 
 	@AfterClass
@@ -333,7 +348,11 @@ public class MongoDbPolicyProviderTest
 		{
 			actualResp = pdpEngine.evaluate(req);
 		}
-		TestUtils.assertNormalizedEquals("", expectedResp, actualResp, true);
+
+		final Optional<String> result = TestUtils.assertNormalizedEquals("", expectedResp, actualResp, true);
+		if(result.isPresent()) {
+			throw new AssertionError(result.get());
+		}
 	}
 
 }

@@ -17,6 +17,7 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.test.conformance;
 
+import jakarta.xml.bind.JAXBException;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import org.junit.Assert;
@@ -34,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
 
-import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -303,7 +303,10 @@ public class ConformanceV3FromV2Test
 					LOGGER.debug("Response that is received from the PDP :  {}", TestUtils.printResponse(actualResponse));
 				}
 
-				TestUtils.assertNormalizedEquals("Test failed for directory "+ testDirectoryPath, expectedResponse, actualResponse, true);
+				final Optional<String> result = TestUtils.assertNormalizedEquals("Test failed for directory "+ testDirectoryPath, expectedResponse, actualResponse, true);
+				if(result.isPresent()) {
+					throw new AssertionError(result.get());
+				}
 			}
 		}
 		catch (final IllegalArgumentException e)

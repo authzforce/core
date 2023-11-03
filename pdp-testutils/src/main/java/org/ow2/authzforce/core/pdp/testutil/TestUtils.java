@@ -18,6 +18,7 @@
 package org.ow2.authzforce.core.pdp.testutil;
 
 import com.google.common.base.Preconditions;
+import jakarta.xml.bind.*;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.*;
 import org.ow2.authzforce.core.pdp.api.ImmutableXacmlStatusCode;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParser;
@@ -36,7 +37,6 @@ import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.*;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigInteger;
@@ -47,9 +47,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
+/**
+ * PDP engine test utility methods
+ */
 public class TestUtils
 {
 
@@ -171,6 +171,11 @@ public class TestUtils
         return (Response) unmarshaller.parse(responseFile.toUri().toURL());
     }
 
+    /**
+     * Print XACML response to String
+     * @param response XACML respones
+     * @return String representation
+     */
     public static String printResponse(final Response response)
     {
         final StringWriter writer = new StringWriter();
@@ -410,9 +415,11 @@ public class TestUtils
      * @param testId                test identifier
      * @param expectedResponse      expected response
      * @param actualResponseFromPDP actual response
+     * @param ignoreStatusMessageAndDetail ignore/remove the Status message and detail elements in the normalization
+     * @return optional String if and only if expected and actual responses don't match (not equal), in which case the returned String gives some detail about the difference
      * @throws JAXBException error creating JAXB Marshaller for XACML output
      */
-    public static void assertNormalizedEquals(final String testId, final Response expectedResponse, final Response actualResponseFromPDP, boolean ignoreStatusMessageAndDetail) throws JAXBException
+    public static Optional<String> assertNormalizedEquals(final String testId, final Response expectedResponse, final Response actualResponseFromPDP, boolean ignoreStatusMessageAndDetail) throws JAXBException
     {
         if (testId == null)
         {
@@ -442,7 +449,7 @@ public class TestUtils
             {
                 if (!actualResultsIt.hasNext())
                 {
-                    fail("Actual response has fewer Results than expected");
+                    return Optional.of("Actual response has fewer Results than expected");
                 }
 
                 final Result actualResult = actualResultsIt.next();
@@ -453,7 +460,7 @@ public class TestUtils
                 {
                     if (actualStatus != null)
                     {
-                        fail("One of the Result(s) of the actual response has a unexpected <Status>.");
+                        return Optional.of("One of the Result(s) of the actual response has a unexpected <Status>.");
                     }
 
                     // expectedStatus == actualStatus == null
@@ -462,7 +469,7 @@ public class TestUtils
                 // expectedStatus != null
                 if (actualStatus == null)
                 {
-                    fail("One of the Result(s) of the actual response does not have a <Status> as expected.");
+                    return Optional.of("One of the Result(s) of the actual response does not have a <Status> as expected.");
                 }
                 // actualStatus != null
                 final StatusDetail expectedStatusDetail = expectedStatus.getStatusDetail();
@@ -471,16 +478,18 @@ public class TestUtils
                 {
                     if (actualStatusDetail != null)
                     {
-                        fail("One of the Result(s) of the actual response has a unexpected <StatusDetail>.");
+                        return Optional.of("One of the Result(s) of the actual response has a unexpected <StatusDetail>.");
                     }
                 } else if (actualStatusDetail == null)
                 {
-                    fail("One of the Result(s) of the actual response does not have a <StatusDetail> as expected.");
+                    return Optional.of("One of the Result(s) of the actual response does not have a <StatusDetail> as expected.");
                 } else
                 {
                     final MissingAttributeDetail expectedMissingAttributeDetail = validate(expectedStatusDetail);
                     final MissingAttributeDetail actualMissingAttributeDetail = validate(actualStatusDetail);
-                    assertEquals("Test '" + testId + ": Matching <StatusDetail>/<MissingAttributeDetail>s: '", expectedMissingAttributeDetail, actualMissingAttributeDetail);
+                    if(!expectedMissingAttributeDetail.equals(actualMissingAttributeDetail)) {
+                        return Optional.of("Test '" + testId + ": <StatusDetail>/<MissingAttributeDetail>s don't match: expected: " + System.lineSeparator() + expectedMissingAttributeDetail + System.lineSeparator() + "actual: " + System.lineSeparator() + actualMissingAttributeDetail + System.lineSeparator());
+                    }
                 }
             }
             // StatusDetails/MissingAttributeDetails in Results are the same
@@ -496,8 +505,13 @@ public class TestUtils
         final Response normalizedActualResponse = TestUtils.normalizeForComparison(actualResponseFromPDP, removeStatusMessage, true);
         final Marshaller marshaller = Xacml3JaxbHelper.createXacml3Marshaller();
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        assertEquals("Test '" + testId + "' "+(ignoreStatusMessageAndDetail? "(Status elements removed/ignored for comparison)": "")+": ", new MarshallableWithToString(normalizedExpectedResponse, marshaller),
-                new MarshallableWithToString(normalizedActualResponse, marshaller));
+        final MarshallableWithToString expectedMarshallableResponse = new MarshallableWithToString(normalizedExpectedResponse, marshaller);
+        final MarshallableWithToString actualMarshallableResponse = new MarshallableWithToString(normalizedActualResponse, marshaller);
+        if(!expectedMarshallableResponse.equals(actualMarshallableResponse)) {
+            return Optional.of("Test '" + testId + "' "+(ignoreStatusMessageAndDetail? "(Status elements removed/ignored for comparison)": "")+": XACML responses don't match: " + System.lineSeparator() + expectedMarshallableResponse + System.lineSeparator() + "actual: " + System.lineSeparator() + actualMarshallableResponse + System.lineSeparator());
+        }
+
+        return Optional.empty();
     }
 
     private static MissingAttributeDetail validate(final StatusDetail statusDetail)

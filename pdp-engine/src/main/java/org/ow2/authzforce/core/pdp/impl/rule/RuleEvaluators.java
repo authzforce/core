@@ -83,17 +83,18 @@ public final class RuleEvaluators
 	}
 
 	/**
-	* Instantiates rule from XACML RuleType
-	*
-	* @param ruleElt
-	*            Rule element definition (not null)
-	* @param xPathCompiler
-	*            XPath compiler, defined if XPath support enabled (by PDP configuration and some enclosing Policy(Set) defines a XPathVersion according to XACML standard)
-	* @param expressionFactory
-	*            Expression parser/factory
-	* @throws java.lang.IllegalArgumentException
-	*            Undefined rule element, Invalid Target, Condition or Obligation/Advice expressions
-	*/
+	 * Instantiates rule from XACML RuleType
+	 *
+	 * @param ruleElt
+	 *            Rule element definition (not null)
+	 * @param xPathCompiler
+	 *            XPath compiler, defined if XPath support enabled (by PDP configuration and some enclosing Policy(Set) defines a XPathVersion according to XACML standard)
+	 * @param expressionFactory
+	 *            Expression parser/factory
+	 * @return new instance
+	 * @throws java.lang.IllegalArgumentException
+	 *            Undefined rule element, Invalid Target, Condition or Obligation/Advice expressions
+	 */
 	public static RuleEvaluator getInstance(final Rule ruleElt, final ExpressionFactory expressionFactory,  final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
 	{
 		if (ruleElt == null)

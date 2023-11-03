@@ -32,6 +32,10 @@ public abstract class RuleEvaluator implements Decidable
 
 	private final transient String toString;
 
+	/**
+	 * Constructor
+	 * @param ruleId rule ID
+	 */
 	protected RuleEvaluator(final String ruleId)
 	{
 		assert ruleId != null;

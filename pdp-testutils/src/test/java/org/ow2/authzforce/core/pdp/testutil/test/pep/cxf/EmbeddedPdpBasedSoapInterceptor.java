@@ -17,6 +17,7 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.test.pep.cxf;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.interceptor.Fault;
@@ -26,7 +27,6 @@ import org.apache.cxf.message.MessageUtils;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.transport.http.AbstractHTTPDestination;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
 /**

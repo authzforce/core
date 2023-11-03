@@ -29,8 +29,7 @@ import java.util.Iterator;
 import java.util.Optional;
 
 /**
- * Implements "on-permit-apply-second" policy combining algorithm from <a href="http://docs.oasis-open.org/xacml/xacml-3.0-combalgs/v1.0/xacml-3.0-combalgs-v1.0.html">XACML 3.0 Additional Combining
- * Algorithms Profile Version 1.0</a>. Edited by Erik Rissanen. 18 August 2014. OASIS Committee Specification 01. </>
+ * Implements "on-permit-apply-second" policy combining algorithm from <a href="http://docs.oasis-open.org/xacml/xacml-3.0-combalgs/v1.0/xacml-3.0-combalgs-v1.0.html">XACML 3.0 Additional Combining Algorithms Profile Version 1.0</a>. Edited by Erik Rissanen. 18 August 2014. OASIS Committee Specification 01.
  * <p>
  * Used here for testing Authzforce combining algorithm extension mechanism, i.e. plugging a custom policy/rule combining algorithm into the PDP engine.
  *

@@ -17,6 +17,7 @@
  */
 package org.ow2.authzforce.core.pdp.cli.test;
 
+import jakarta.xml.bind.JAXBException;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -28,11 +29,11 @@ import org.ow2.authzforce.xacml.json.model.XacmlJsonUtils;
 import org.testng.Assert;
 import picocli.CommandLine;
 
-import javax.xml.bind.JAXBException;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 import static org.junit.Assert.assertSame;
 
@@ -61,7 +62,10 @@ public class CliTest
         try
         {
             actualXacmlJaxbObj = (Response) Xacml3JaxbHelper.createXacml3Unmarshaller().unmarshal(new StringReader(output));
-            TestUtils.assertNormalizedEquals(TEST_DATA_DIR + "/IIA001", expectedXacmlJaxbObj, actualXacmlJaxbObj, true);
+            final Optional<String> result = TestUtils.assertNormalizedEquals(TEST_DATA_DIR + "/IIA001", expectedXacmlJaxbObj, actualXacmlJaxbObj, true);
+            if(result.isPresent()) {
+                throw new AssertionError(result.get());
+            }
         } catch (final JAXBException e)
         {
             Assert.fail("Invalid XACML/XML Response returned", e);
@@ -87,9 +91,9 @@ public class CliTest
         final JSONObject normalizedExpectedResponse;
         try (final BufferedReader reader = Files.newBufferedReader(Paths.get(TEST_DATA_DIR + "/IIA001/Response.json"), StandardCharsets.UTF_8))
         {
-            normalizedExpectedResponse = XacmlJsonUtils.canonicalizeResponse(new JSONObject(new JSONTokener(reader)), true);
+            normalizedExpectedResponse = XacmlJsonUtils.canonicalizeResponse(new JSONObject(new JSONTokener(reader)));
         }
-        final JSONObject normalizedActualResponse = XacmlJsonUtils.canonicalizeResponse(new JSONObject(output), true);
+        final JSONObject normalizedActualResponse = XacmlJsonUtils.canonicalizeResponse(new JSONObject(output));
         Assert.assertTrue(normalizedActualResponse.similar(normalizedExpectedResponse), "Actual XACML/JSON Response does not match expected");
     }
 

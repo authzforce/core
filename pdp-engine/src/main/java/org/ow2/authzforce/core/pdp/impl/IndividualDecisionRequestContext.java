@@ -67,6 +67,7 @@ public final class IndividualDecisionRequestContext extends BaseEvaluationContex
 	 *            extra contents by attribute category (equivalent to XACML Attributes/Content elements); null iff no Content in the attribute category.
 	 * @param returnApplicablePolicyIdList
 	 *            true iff list of IDs of policies matched during evaluation must be returned
+	 * @param requestTimestamp optional request timestamp (current time is used if not specified)
 	 */
 	public IndividualDecisionRequestContext(final Map<AttributeFqn, AttributeBag<?>> namedAttributeMap, final ImmutableMap<String, XdmNode> extraContentsByCategory, final boolean returnApplicablePolicyIdList, Optional<Instant> requestTimestamp)
 	{

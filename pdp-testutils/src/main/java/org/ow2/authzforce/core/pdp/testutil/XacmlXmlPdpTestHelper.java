@@ -17,10 +17,9 @@
  */
 package org.ow2.authzforce.core.pdp.testutil;
 
+import jakarta.xml.bind.JAXBException;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
-import org.junit.Assert;
-import org.junit.Test;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParser;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParserFactory;
 import org.ow2.authzforce.core.pdp.api.io.PdpEngineInoutAdapter;
@@ -31,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
 
-import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -55,7 +53,6 @@ import java.util.Optional;
  * such as invalid syntax, circular reference, etc.</li>
  * <li>{@value #EXPECTED_RESPONSE_FILENAME}: (optional) expected XACML response from the PDP, to be compared with the actual response. Required only if {@value #REQUEST_FILENAME} is present.</li>
  * </ul>
- * </p>
  * <p>
  * Configuration 2 for advanced/custom PDP configuration:
  * <ul>
@@ -68,10 +65,9 @@ import java.util.Optional;
  * required only if there is any Policy(Set)IdReference in {@value #ROOT_POLICY_FILENAME} to resolve.</li>
  * <li>Policy files matching locations defined in {@value #PDP_CONF_FILENAME}.</li>
  * </ul>
- * </p>
  * 
  */
-public abstract class XacmlXmlPdpTest
+public final class XacmlXmlPdpTestHelper
 {
 
 	/**
@@ -112,7 +108,7 @@ public abstract class XacmlXmlPdpTest
 	/**
 	 * the logger we'll use for all messages
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(XacmlXmlPdpTest.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(XacmlXmlPdpTestHelper.class);
 
 	private static final XmlnsFilteringParserFactory XACML_PARSER_FACTORY = XacmlJaxbParsingUtils.getXacmlParserFactory(false);
 
@@ -125,7 +121,7 @@ public abstract class XacmlXmlPdpTest
 	 *            directory where test data are located
 	 * @param ignoreStatusMessageAndDetail ignore StatusMessage/StatusDetail in response comparison
 	 */
-	public XacmlXmlPdpTest(final Path testDirectoryPath, boolean ignoreStatusMessageAndDetail)
+	public XacmlXmlPdpTestHelper(final Path testDirectoryPath, boolean ignoreStatusMessageAndDetail)
 	{
 		this.testDirPath = testDirectoryPath;
 		this.ignoreStatusMessageAndDetail = ignoreStatusMessageAndDetail;
@@ -174,8 +170,16 @@ public abstract class XacmlXmlPdpTest
 		return testParams;
 	}
 
-	@Test
-	public void test() throws IllegalArgumentException, IOException, JAXBException
+
+	/**
+	 * Test the PDP configuration in file {@value PDP_CONF_FILENAME} with XACML policies in directory '{@value POLICIES_DIR_NAME}' if such directory exists, else the root policy in file '{@value ROOT_POLICY_FILENAME}'; and/or request in file '{@value REQUEST_FILENAME}' and/or expected response in file '{@value EXPECTED_RESPONSE_FILENAME}' in the test directory set as constructor argument
+	 *
+	 * @return optional String if and only if some test assertion failed, in which case the String gives more info about the assertion error
+	 * @throws JAXBException error creating JAXB Marshaller for XACML output, or unmarshalling XML document (XACML request/response/policy, PDP configuration...)
+	 * @throws IOException error reading some test's input (XACML request/response/policy, PDP configuration...) from file
+	 * @throws IllegalArgumentException invalid test input
+	 */
+	public Optional<String> test() throws IllegalArgumentException, IOException, JAXBException
 	{
 		LOGGER.debug("******************************");
 		LOGGER.debug("Starting PDP test of directory '{}'", testDirPath);
@@ -270,7 +274,7 @@ public abstract class XacmlXmlPdpTest
 				/*
 				 * This is a policy syntax error check, and we didn't find the syntax error as expected
 				 */
-				Assert.fail("Failed to find syntax error as expected in policy(ies) located in directory: " + testDirPath);
+				return Optional.of("Failed to find syntax error as expected in policy(ies) located in directory: " + testDirPath);
 			}
 			else
 			{
@@ -282,8 +286,8 @@ public abstract class XacmlXmlPdpTest
 				{
 					LOGGER.debug("XACML Response received from the PDP: {}", TestUtils.printResponse(response));
 				}
-				TestUtils.assertNormalizedEquals(testDirPath.toString(), expectedResponse, response, ignoreStatusMessageAndDetail);
-				LOGGER.debug("Finished PDP test of directory '{}'", testDirPath);
+
+				return TestUtils.assertNormalizedEquals(testDirPath.toString(), expectedResponse, response, ignoreStatusMessageAndDetail);
 			}
 		}
 		catch (final IllegalArgumentException e)
@@ -294,6 +298,7 @@ public abstract class XacmlXmlPdpTest
 				// this is a policy syntax error check, and we found the syntax error as
 				// expected -> success
 				LOGGER.debug("Successfully found syntax error as expected in policy(ies) located in directory: {}", testDirPath, e);
+				return Optional.empty();
 			}
 			else
 			{
@@ -302,11 +307,11 @@ public abstract class XacmlXmlPdpTest
 		}
 		finally
 		{
+			LOGGER.debug("Finished PDP test of directory '{}'", testDirPath);
 			if (pdp != null)
 			{
 				pdp.close();
 			}
 		}
-
 	}
 }

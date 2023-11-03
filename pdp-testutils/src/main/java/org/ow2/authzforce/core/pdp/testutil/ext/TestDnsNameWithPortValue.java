@@ -63,9 +63,14 @@ public final class TestDnsNameWithPortValue extends StringParseableValue<String>
 		return xdmItem;
 	}
 
+	/**
+	 * AttributeValue factory
+	 */
 	public static final class Factory extends StringContentOnlyValueFactory<TestDnsNameWithPortValue>
 	{
-
+		/**
+		 * Factory constructor
+		 */
 		public Factory()
 		{
 			super(DATATYPE);
@@ -79,6 +84,9 @@ public final class TestDnsNameWithPortValue extends StringParseableValue<String>
 
 	}
 
+	/**
+	 * Factory singleton instance
+	 */
 	public static final Factory FACTORY = new Factory();
 
 	private static final Integer UNDEFINED_PORT = -1;
@@ -225,12 +233,10 @@ public final class TestDnsNameWithPortValue extends StringParseableValue<String>
 			return true;
 		}
 
-		if (!(obj instanceof TestDnsNameWithPortValue))
+		if (!(obj instanceof TestDnsNameWithPortValue other))
 		{
 			return false;
 		}
-
-		final TestDnsNameWithPortValue other = (TestDnsNameWithPortValue) obj;
 
 		// hostname and portRange are not null
 		/*

@@ -18,6 +18,7 @@
 package org.ow2.authzforce.core.pdp.impl;
 
 import com.google.common.base.Preconditions;
+import jakarta.xml.bind.JAXBElement;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
@@ -33,7 +34,6 @@ import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.JAXBElement;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;

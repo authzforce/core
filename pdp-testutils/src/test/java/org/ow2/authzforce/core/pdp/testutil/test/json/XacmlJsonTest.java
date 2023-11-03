@@ -166,8 +166,8 @@ public abstract class XacmlJsonTest
         }
 
         // normalize responses for comparison
-        final JSONObject normalizedExpectedResponse = XacmlJsonUtils.canonicalizeResponse(expectedResponse, true);
-        final JSONObject normalizedActualResponse = XacmlJsonUtils.canonicalizeResponse(actualResponseFromPDP, true);
+        final JSONObject normalizedExpectedResponse = XacmlJsonUtils.canonicalizeResponse(expectedResponse);
+        final JSONObject normalizedActualResponse = XacmlJsonUtils.canonicalizeResponse(actualResponseFromPDP);
         Assert.assertTrue(normalizedActualResponse.similar(normalizedExpectedResponse),
                 "Test '" + testId + "' (StatusMessage/StatusDetail/nested StatusCode elements removed/ignored for comparison): expected: <" + normalizedExpectedResponse + "> ; actual: <"
                         + normalizedActualResponse + ">");

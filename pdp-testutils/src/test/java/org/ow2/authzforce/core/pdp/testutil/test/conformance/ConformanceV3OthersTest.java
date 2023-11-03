@@ -17,11 +17,13 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.test.conformance;
 
+import jakarta.xml.bind.JAXBException;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.ow2.authzforce.core.pdp.testutil.XacmlXmlPdpTest;
+import org.ow2.authzforce.core.pdp.testutil.XacmlXmlPdpTestHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,12 +31,13 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Optional;
 
 /**
  * "Various" XACML 3.0 conformance tests that are not in the official set of conformance tests already addressed by {@link MandatoryConformanceV3FromV2Test}.
  */
 @RunWith(value = Parameterized.class)
-public class ConformanceV3OthersTest extends XacmlXmlPdpTest
+public class ConformanceV3OthersTest
 {
 
 	/**
@@ -44,6 +47,8 @@ public class ConformanceV3OthersTest extends XacmlXmlPdpTest
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ConformanceV3OthersTest.class);
 
+	private final XacmlXmlPdpTestHelper testHelper;
+
 	/**
 	 * @param testDirPath
 	 *            subdirectory of TEST_RESOURCES_ROOT_DIRECTORY_PATH where test data are located
@@ -51,7 +56,7 @@ public class ConformanceV3OthersTest extends XacmlXmlPdpTest
 	public ConformanceV3OthersTest(final Path testDirPath)
 	{
 		// Some tests need to check StatusDetail like the actual test on StatusDetail/MissingAttributeDetail
-		super(testDirPath,  false);
+		this.testHelper = new XacmlXmlPdpTestHelper(testDirPath,  false);
 	}
 
 	@BeforeClass
@@ -63,6 +68,15 @@ public class ConformanceV3OthersTest extends XacmlXmlPdpTest
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> params() throws IOException
 	{
-		return XacmlXmlPdpTest.params(TEST_RESOURCES_ROOT_DIRECTORY_PATH);
+		return XacmlXmlPdpTestHelper.params(TEST_RESOURCES_ROOT_DIRECTORY_PATH);
+	}
+
+	@Test
+	public void test() throws JAXBException, IOException
+	{
+		final Optional<String> result = testHelper.test();
+		if(result.isPresent()) {
+			throw new AssertionError(result.get());
+		}
 	}
 }

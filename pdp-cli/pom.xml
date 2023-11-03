@@ -3,7 +3,7 @@
    <parent>
       <groupId>org.ow2.authzforce</groupId>
       <artifactId>authzforce-ce-core</artifactId>
-      <version>20.3.2</version>
+      <version>21.0.0</version>
       <relativePath>../pom.xml</relativePath>
    </parent>
    <artifactId>authzforce-ce-core-pdp-cli</artifactId>
@@ -21,7 +21,7 @@
       <dependency>
          <groupId>info.picocli</groupId>
          <artifactId>picocli</artifactId>
-         <version>4.7.4</version>
+         <version>4.7.5</version>
       </dependency>
       <dependency>
          <groupId>ch.qos.logback</groupId>
@@ -30,12 +30,17 @@
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-engine</artifactId>
-         <version>20.3.2</version>
+         <version>21.0.0</version>
       </dependency>
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-io-xacml-json</artifactId>
-         <version>20.3.2</version>
+         <version>21.0.0</version>
+      </dependency>
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.testng</groupId>
@@ -49,7 +54,7 @@
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-testutils</artifactId>
-         <version>20.3.2</version>
+         <version>21.0.0</version>
          <scope>test</scope>
       </dependency>
    </dependencies>

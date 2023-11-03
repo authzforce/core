@@ -17,12 +17,15 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.ext;
 
-import com.mongodb.MongoClient;
-import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import jakarta.xml.bind.JAXBException;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
-import org.jongo.Jongo;
-import org.jongo.MongoCollection;
+import org.bson.Document;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.ImmutableXacmlStatus;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
@@ -38,7 +41,6 @@ import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.ow2.authzforce.xacml.identifiers.XacmlVersion;
 import org.xml.sax.InputSource;
 
-import javax.xml.bind.JAXBException;
 import java.io.StringReader;
 import java.util.Deque;
 import java.util.Map;
@@ -46,15 +48,13 @@ import java.util.Optional;
 
 /**
  * 
- * Policy provider that retrieves policies (given a Policy(Set)IdReference) from documents in a MongoDB-hosted collection. The document structure must correspond (be mappable) to {@link PolicyPojo} ,
+ * Policy provider that retrieves policies (given a Policy(Set)IdReference) from documents in a MongoDB-hosted collection. The document structure is defined by the JSON schema in source file {@literal pdp-testutils/src/main/resources/mongodb_policy_provider_doc_schema.json},
  * where the 'type' is either "{urn:oasis:names:tc:xacml:3.0:core:schema:wd-17}Policy" for XACML 3.0 Policies or "{urn:oasis:names:tc:xacml:3.0:core:schema:wd-17}PolicySet" for XACML 3.0 PolicySets,
- * the 'id' is the XACML Policy(Set)Id, the 'version' is the XACML Policy(Set)'s Version, and the 'content' property holds the actual XACML Policy(Set) document - depending on 'type' - as plain text
- * XML.
+ * the 'id' is the XACML Policy(Set)Id, the 'version' is the XACML Policy(Set)'s Version, and the 'content' property holds the actual XACML Policy(Set) document - depending on 'type' - as plain text XML.
  * <p>
  * This policy provider does not support Policy(Set)IdReferences with LatestVersion and EarliestVersion attributes.
  * <p>
- * TODO: performance optimization: cache results of {@link #get(org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType, String, Optional, Deque)} to avoid repetitive requests to database
- * server
+ * TODO: performance optimization: cache results of {@link #get(org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType, String, Optional, Deque)} to avoid repetitive requests to the database server
  * 
  */
 public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
@@ -111,50 +111,35 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 				throw ILLEGAL_COMBINING_ALG_REGISTRY_ARGUMENT_EXCEPTION;
 			}
 
-			final ServerAddress serverAddress = new ServerAddress(conf.getServerHost(), conf.getServerPort());
-			return new MongoDbPolicyProvider(conf.getId(), serverAddress, conf.getDbName(), conf.getCollectionName(), xmlParserFactory, expressionFactory, combiningAlgRegistry, maxPolicySetRefDepth);
+			return new MongoDbPolicyProvider(conf.getId(), "mongodb://"+conf.getServerHost()+":" +conf.getServerPort(), conf.getDbName(), conf.getCollectionName(), xmlParserFactory, expressionFactory, combiningAlgRegistry, maxPolicySetRefDepth);
 		}
 
 	}
 
-	private static final class PolicyQueryResult
-	{
-		private final PolicyPojo policyPojo;
-		private final Object resultJaxbObj;
-		private final Map<String, String> xmlnsToPrefixMap;
-
-
-		private PolicyQueryResult(final PolicyPojo policyPojo, final Object resultJaxbObj, final Map<String, String> xmlnsToPrefixMap)
+	private record PolicyQueryResult(Document policyDocument, Object resultJaxbObj,
+									 Map<String, String> xmlnsToPrefixMap)
 		{
-			this.resultJaxbObj = resultJaxbObj;
-			this.xmlnsToPrefixMap = xmlnsToPrefixMap;
-			this.policyPojo = policyPojo;
 		}
-	}
 
 	private final String id;
 	private final MongoClient dbClient;
-	private final MongoCollection policyCollection;
+	private final MongoCollection<Document> policyCollection;
 	private final XmlnsFilteringParserFactory xacmlParserFactory;
 	private final ExpressionFactory expressionFactory;
 	private final CombiningAlgRegistry combiningAlgRegistry;
 	private transient final ImmutableXacmlStatus jaxbUnmarshallerCreationErrStatus;
 
-	private MongoDbPolicyProvider(final String id, final ServerAddress serverAddress, final String dbName, final String collectionName, final XmlnsFilteringParserFactory xacmlParserFactory,
-	        final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final int maxPolicySetRefDepth)
+	private MongoDbPolicyProvider(final String id, final String serverUri, final String dbName, final String collectionName, final XmlnsFilteringParserFactory xacmlParserFactory,
+								  final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final int maxPolicySetRefDepth)
 	{
 		super(maxPolicySetRefDepth);
 		assert id != null && !id.isEmpty() && dbName != null && !dbName.isEmpty() && collectionName != null && !collectionName.isEmpty() && xacmlParserFactory != null && expressionFactory != null
 		        && combiningAlgRegistry != null;
 
 		this.id = id;
-		this.dbClient = new MongoClient(serverAddress);
-		/*
-		 * FIXME: Issue with getDB() deprecated not fixed yet: https://github.com/bguerout/jongo/issues/320
-		 * AND https://github.com/bguerout/jongo/issues/254
-		 */
-		final Jongo dbApiWrapper = new Jongo(dbClient.getDB(dbName));
-		this.policyCollection = dbApiWrapper.getCollection(collectionName);
+		this.dbClient = MongoClients.create(serverUri);
+		final MongoDatabase db = dbClient.getDatabase(dbName);
+		this.policyCollection = db.getCollection(collectionName);
 		this.xacmlParserFactory = xacmlParserFactory;
 		this.expressionFactory = expressionFactory;
 		this.combiningAlgRegistry = combiningAlgRegistry;
@@ -199,7 +184,7 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 			versionPattern = Optional.empty();
 		}
 
-		final PolicyPojo policyPOJO;
+		final Document policyDoc;
 		/*
 		 * TODO: the following code will get any policy version that matches the policy type, id and optional VersionMatch. It may be smarter to always get the latest if there are multiple matches.
 		 * But this adds complexity as mentioned in previous TODO comment.
@@ -210,7 +195,7 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 			final PolicyVersion versionLiteral = nonNullVersionPattern.toLiteral();
 			if (versionLiteral != null)
 			{
-				policyPOJO = policyCollection.findOne("{type: #, id: #, version: #}", policyTypeId, policyId, versionLiteral.toString()).as(PolicyPojo.class);
+				policyDoc = policyCollection.find(Filters.and(Filters.eq("type", policyTypeId), Filters.eq("id", policyId), Filters.eq("version", versionLiteral.toString()))).first();
 			}
 			else
 			{
@@ -218,16 +203,16 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 				 * versionPattern is not a literal/constant version (contains wildcard '*' or '+') -> convert to PCRE regex for MongoDB server-side evaluation
 				 */
 				final String regex = "^" + nonNullVersionPattern.toRegex() + "$";
-				policyPOJO = policyCollection.findOne("{type: #, id: #, version: { $regex: # }}", policyTypeId, policyId, regex).as(PolicyPojo.class);
+				policyDoc = policyCollection.find(Filters.and(Filters.eq("type", policyTypeId), Filters.eq("id", policyId), Filters.regex("version", regex))).first();
 			}
 		}
 		else
 		{
 			// no version pattern specified
-			policyPOJO = policyCollection.findOne("{type: #, id: #}", policyTypeId, policyId).as(PolicyPojo.class);
+			policyDoc = policyCollection.find(Filters.and(Filters.eq("type", policyTypeId), Filters.eq("id", policyId))).first();
 		}
 
-		if (policyPOJO == null)
+		if (policyDoc == null)
 		{
 			return null;
 		}
@@ -242,7 +227,7 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 			throw new IndeterminateEvaluationException(jaxbUnmarshallerCreationErrStatus, e);
 		}
 
-		final InputSource xmlInputSrc = new InputSource(new StringReader(policyPOJO.getContent()));
+		final InputSource xmlInputSrc = new InputSource(new StringReader(policyDoc.getString("content")));
 		final Object resultJaxbObj;
 		try
 		{
@@ -254,11 +239,11 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 		catch (final JAXBException e)
 		{
 			throw new IndeterminateEvaluationException(
-			        "PolicyProvider " + id + ": failed to parse Policy(Set) XML document from 'content' value of the policy document " + policyPOJO + " retrieved from database",
+			        "PolicyProvider " + id + ": failed to parse Policy(Set) XML document from 'content' value of the policy document " + policyDoc.toJson() + " retrieved from database",
 			        XacmlStatusCode.PROCESSING_ERROR.value(), e);
 		}
 
-		return new PolicyQueryResult(policyPOJO, resultJaxbObj, xacmlParser.getNamespacePrefixUriMap());
+		return new PolicyQueryResult(policyDoc, resultJaxbObj, xacmlParser.getNamespacePrefixUriMap());
 	}
 
 	@Override
@@ -273,28 +258,27 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 			return null;
 		}
 
-		final PolicyPojo policyPOJO = xmlParsingResult.policyPojo;
+		final Document policyDoc = xmlParsingResult.policyDocument;
 		final Object jaxbPolicyOrPolicySetObj = xmlParsingResult.resultJaxbObj;
 		final Map<String, String> nsPrefixUriMap = xmlParsingResult.xmlnsToPrefixMap;
-		if (!(jaxbPolicyOrPolicySetObj instanceof Policy))
+		if (!(jaxbPolicyOrPolicySetObj instanceof Policy jaxbPolicy))
 		{
-			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": 'content' of the policy document " + policyPOJO
+			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": 'content' of the policy document " + policyDoc
 			        + " retrieved from database is not consistent with its 'type' (expected: Policy). Actual content type: " + jaxbPolicyOrPolicySetObj.getClass() + " (corrupted database?).",
 			        XacmlStatusCode.PROCESSING_ERROR.value());
 		}
 
-		final Policy jaxbPolicy = (Policy) jaxbPolicyOrPolicySetObj;
 		final String contentPolicyId = jaxbPolicy.getPolicyId();
-		if (!contentPolicyId.equals(policyPOJO.getId()))
+		if (!contentPolicyId.equals(policyDoc.getString("id")))
 		{
-			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": PolicyId in 'content' of the policy document " + policyPOJO
+			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": PolicyId in 'content' of the policy document " + policyDoc
 			        + " retrieved from database is not consistent with 'id'. Actual PolicyId: " + contentPolicyId + " (corrupted database?).", XacmlStatusCode.PROCESSING_ERROR.value());
 		}
 
 		final String contentPolicyVersion = jaxbPolicy.getVersion();
-		if (!contentPolicyVersion.equals(policyPOJO.getVersion()))
+		if (!contentPolicyVersion.equals(policyDoc.getString("version")))
 		{
-			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": Version in 'content' of the policy document " + policyPOJO
+			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": Version in 'content' of the policy document " + policyDoc
 			        + " retrieved from database is not consistent with 'version'. Actual Version: " + contentPolicyVersion + " (corrupted database?).", XacmlStatusCode.PROCESSING_ERROR.value());
 		}
 
@@ -307,7 +291,7 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 		}
 		catch (final IllegalArgumentException e)
 		{
-			throw new IllegalArgumentException("Invalid Policy in 'content' of the policy document " + policyPOJO + " retrieved from database", e);
+			throw new IllegalArgumentException("Invalid Policy in 'content' of the policy document " + policyDoc + " retrieved from database", e);
 		}
 	}
 
@@ -326,28 +310,27 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 			return null;
 		}
 
-		final PolicyPojo policyPOJO = xmlParsingResult.policyPojo;
+		final Document policyDoc = xmlParsingResult.policyDocument;
 		final Object jaxbPolicyOrPolicySetObj = xmlParsingResult.resultJaxbObj;
 		final Map<String, String> nsPrefixUriMap = xmlParsingResult.xmlnsToPrefixMap;
-		if (!(jaxbPolicyOrPolicySetObj instanceof PolicySet))
+		if (!(jaxbPolicyOrPolicySetObj instanceof PolicySet jaxbPolicySet))
 		{
-			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": 'content' of the policy document " + policyPOJO
+			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": 'content' of the policy document " + policyDoc
 			        + " retrieved from database is not consistent with 'type' (expected: PolicySet). Actual content type: " + jaxbPolicyOrPolicySetObj.getClass() + " (corrupted database?).",
 			        XacmlStatusCode.PROCESSING_ERROR.value());
 		}
 
-		final PolicySet jaxbPolicySet = (PolicySet) jaxbPolicyOrPolicySetObj;
 		final String contentPolicyId = jaxbPolicySet.getPolicySetId();
-		if (!contentPolicyId.equals(policyPOJO.getId()))
+		if (!contentPolicyId.equals(policyDoc.getString("id")))
 		{
-			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": PolicyId in 'content' of the policy document " + policyPOJO
+			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": PolicyId in 'content' of the policy document " + policyDoc
 			        + " retrieved from database is not consistent with 'id'. Actual PolicyId: " + contentPolicyId + " (corrupted database?).", XacmlStatusCode.PROCESSING_ERROR.value());
 		}
 
 		final String contentPolicyVersion = jaxbPolicySet.getVersion();
-		if (!contentPolicyVersion.equals(policyPOJO.getVersion()))
+		if (!contentPolicyVersion.equals(policyDoc.getString("version")))
 		{
-			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": Version in 'content' of the policy document " + policyPOJO
+			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": Version in 'content' of the policy document " + policyDoc
 			        + " retrieved from database is not consistent with 'version'. Actual Version: " + contentPolicyVersion + " (corrupted database?).", XacmlStatusCode.PROCESSING_ERROR.value());
 		}
 
@@ -357,7 +340,7 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 		}
 		catch (final IllegalArgumentException e)
 		{
-			throw new IndeterminateEvaluationException("Invalid PolicySet in 'content' of the policy document " + policyPOJO + " retrieved from database", XacmlStatusCode.PROCESSING_ERROR.value(), e);
+			throw new IndeterminateEvaluationException("Invalid PolicySet in 'content' of the policy document " + policyDoc + " retrieved from database", XacmlStatusCode.PROCESSING_ERROR.value(), e);
 		}
 	}
 }
