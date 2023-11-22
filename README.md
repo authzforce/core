@@ -141,10 +141,10 @@ $ ./authzforce-ce-core-pdp-cli-X.Y.Z.jar -t XACML_JSON pdp.xml IIA001/Request.js
 
 For more info, run it without parameters, and you'll get detailed information on usage.
 
-For **troubleshooting**, you can increase the log level of the logger(s) in the Logback configuration file `logback.xml` to `INFO` or `DEBUG`, esp. the logger named `org.ow2.authzforce`. Then run the CLI as follows:
+For **troubleshooting**, you can increase the log level of the logger(s) in the Logback configuration file `logback.xml` to `INFO` or `DEBUG`, esp. the logger named `org.ow2.authzforce`. Then run the CLI as follows (replace `X.Y.Z` with the current version):
 
 ```shell
-$ java -jar -Dlogback.configurationFile=./logback.xml authzforce-ce-core-pdp-cli-14.0.0.jar pdp.xml IIA001/Request.xml
+$ java -jar -Dlogback.configurationFile=./logback.xml authzforce-ce-core-pdp-cli-X.Y.Z.jar pdp.xml IIA001/Request.xml
 ```
 
 #### Java API
