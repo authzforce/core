@@ -113,21 +113,21 @@ See the [license file](LICENSE).
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fauthzforce%2Fcore.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fauthzforce%2Fcore?ref=badge_large)
 
 ## System requirements
-Java (JRE) version: 17 or later.
+Java (JRE) version: 17 LTS or later.
 
 ## Usage
 ### Getting started
 #### CLI
-Get the latest executable jar from Maven Central by following the `authzforce-ce-core-pdp-cli` link on [the latest release page](https://github.com/authzforce/core/releases/latest), and make sure you are allowed to run it (it is a fully executable JAR), e.g. with command:
+Get the latest executable jar from Maven Central by following the `authzforce-ce-core-pdp-cli` link on [the latest release page](https://github.com/authzforce/core/releases/latest), and make sure you are allowed to run it (it is a fully executable JAR), e.g. with the following command (replace `X.Y.Z` with the current version):
 
 ```
-$ chmod a+x authzforce-ce-core-pdp-cli-14.0.0.jar
+$ chmod a+x authzforce-ce-core-pdp-cli-X.Y.Z.jar
 ```
 
 To give you an example on how to test a XACML Policy (or PolicySet) and Request, you may copy the content of [that folder](pdp-cli/src/test/resources/conformance/xacml-3.0-core/mandatory) to the same directory as the executable, and run the executable as follows:
 
 ```
-$ ./authzforce-ce-core-pdp-cli-14.0.0.jar pdp.xml IIA001/Request.xml
+$ ./authzforce-ce-core-pdp-cli-X.Y.Z.jar pdp.xml IIA001/Request.xml
 ```
 
 * `pdp.xml`: PDP configuration file in XML format, that defines the location(s) of XACML policy(ies) and more; for more information about PDP configuration parameters, the configuration format is fully specified and documented in the [XML schema `pdp.xsd`](pdp-engine/src/main/resources/pdp.xsd), also available in a [more user-friendly HTML form](https://authzforce.github.io/pdp.xsd/8.1) (start with the `pdp` element as the root element in a PDP configuration). **Feel free to change the policy location to point to your own for testing.**
@@ -135,16 +135,16 @@ $ ./authzforce-ce-core-pdp-cli-14.0.0.jar pdp.xml IIA001/Request.xml
 
 If you want to test the JSON Profile of XACML 3.0, run it with extra option `-t XACML_JSON`:
 ```
-$ ./authzforce-ce-core-pdp-cli-14.0.0.jar -t XACML_JSON pdp.xml IIA001/Request.json
+$ ./authzforce-ce-core-pdp-cli-X.Y.Z.jar -t XACML_JSON pdp.xml IIA001/Request.json
 ```
 * `Request.json`: XACML request in XACML 3.0/JSON (Profile) format. **Feel free to replace with your own for testing.**
 
 For more info, run it without parameters, and you'll get detailed information on usage.
 
-For **troubleshooting**, you can increase the log level of the logger(s) in the Logback configuration file `logback.xml` to `INFO` or `DEBUG`, esp. the logger named `org.ow2.authzforce`. Then run the CLI as follows:
+For **troubleshooting**, you can increase the log level of the logger(s) in the Logback configuration file `logback.xml` to `INFO` or `DEBUG`, esp. the logger named `org.ow2.authzforce`. Then run the CLI as follows (replace `X.Y.Z` with the current version):
 
 ```shell
-$ java -jar -Dlogback.configurationFile=./logback.xml authzforce-ce-core-pdp-cli-14.0.0.jar pdp.xml IIA001/Request.xml
+$ java -jar -Dlogback.configurationFile=./logback.xml authzforce-ce-core-pdp-cli-X.Y.Z.jar pdp.xml IIA001/Request.xml
 ```
 
 #### Java API
@@ -168,11 +168,11 @@ Since this is a Maven artifact, and it requires dependencies, you should build y
 
 To get started using a PDP to evaluate XACML requests, the first step is to write/get a XACML 3.0 policy. Please refer to [XACML v3.0 - Core standard](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html) for the syntax. For a basic example, see [this one](pdp-testutils/src/test/resources/conformance/xacml-3.0-from-2.0-ct/mandatory/IIA001/IIA001Policy.xml). 
 
-Then instantiate a PDP engine configuration with method [PdpEngineConfiguration#getInstance(String)](pdp-engine/src/main/java/org/ow2/authzforce/core/pdp/impl/PdpEngineConfiguration.java#L663). The required parameter *confLocation* must be the location of the PDP configuration file. For more information about PDP configuration parameters, the configuration format is fully specified and documented in the [XML schema `pdp.xsd`](pdp-engine/src/main/resources/pdp.xsd), also available in a [more user-friendly HTML form](https://authzforce.github.io/pdp.xsd/7.1) (start with the `pdp` element as the root element in a PDP configuration). Here is a minimal example of configuration:
+Then instantiate a PDP engine configuration with method [PdpEngineConfiguration#getInstance(String)](pdp-engine/src/main/java/org/ow2/authzforce/core/pdp/impl/PdpEngineConfiguration.java#L663). The required parameter *confLocation* must be the location of the PDP configuration file. For more information about PDP configuration parameters, the configuration format is fully specified and documented in the [XML schema `pdp.xsd`](pdp-engine/src/main/resources/pdp.xsd), also available in a [more user-friendly HTML form](https://authzforce.github.io/pdp.xsd/8.1) (start with the `pdp` element as the root element in a PDP configuration). Here is a minimal example of configuration:
 
    ```xml
    <?xml version="1.0" encoding="UTF-8"?>
-   <pdp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://authzforce.github.io/core/xmlns/pdp/7" version="7.1">
+   <pdp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://authzforce.github.io/core/xmlns/pdp/8" version="8.1">
 	  <policyProvider id="policyProvider" xsi:type="StaticPolicyProvider">
 	    <policyLocation>${PARENT_DIR}/policy.xml</policyLocation>
 	  </policyProvider>

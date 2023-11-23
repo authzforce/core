@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17">
+    <Result>
+        <Decision>Permit</Decision>
+        <Obligations>
+            <Obligation
+                    ObligationId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIA001quinquies:rule2:obligation1"/>
+            <Obligation
+                    ObligationId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIA001quinquies:rule2:obligation2"/>
+            <Obligation
+                    ObligationId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIA001quinquies:rule3:obligation1"/>
+            <Obligation
+                    ObligationId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIA001quinquies:rule3:obligation2"/>
+        </Obligations>
+    </Result>
+</Response>

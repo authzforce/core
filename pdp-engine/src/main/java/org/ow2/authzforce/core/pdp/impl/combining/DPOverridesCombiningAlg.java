@@ -17,7 +17,6 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
-import com.google.common.collect.ImmutableList;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 import org.ow2.authzforce.core.pdp.api.*;
@@ -34,969 +33,808 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 /**
- * 
  * Standard *-overrides combining algorithm.
- *
  */
-final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAlg<T>
+class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAlg<T>
 {
-	/**
-	 * "Ordered" Deny/Permit-overrides combining algorithm evaluator; "ordered" means combined elements are evaluated in the same order as in the input collection (constructor parameter
-	 * 'combinedElements'), i.e. no re-ordering.
-	 */
-	private static final class OrderPreservingCombiningAlgEvaluator extends BaseCombiningAlg.Evaluator<Decidable>
-	{
-		/**
-		 * Helper to combine (not-overriding) decision results until a decision overrides or there is no more element to combine
-		 */
-		private static final class DecisionResultCollector
-		{
-			private final UpdatableList<PrimaryPolicyMetadata> combinedApplicablePolicyIdList;
-			/*
-			 * Replaces atLeastOneErrorDP from XACML spec. atLeastOneErrorDP == true <=> firstIndeterminateDPResult != null
-			 */
-			private ExtendedDecision firstIndeterminateDPResult = null;
-			/*
-			 * Replaces atLeastOneError${overriding_effect} from XACML spec. atLeastOneError${overriding_effect} == true <=> firstIndeterminate${overriding_effect} != null
-			 */
-			private ExtendedDecision firstIndeterminateOverridingEffect = null;
-			/*
-			 * Replaces atLeastOneError${overridden_effect} from XACML spec. atLeastOneError${overridden_effect} == true <=> firstIndeterminate${overridden_effect} != null
-			 */
-			private ExtendedDecision firstIndeterminateOverriddenEffect = null;
+    private static final Logger LOGGER = LoggerFactory.getLogger(DPOverridesCombiningAlg.class);
 
-			/**
-			 * Replaces atLeastOnePermit (resp. atLeastOneDeny) from description of permit-overrides (resp. deny-overrides) in the XACML spec.
-			 * <p>
-			 * atLeastOnePermit (resp. atLeastOneDeny) == false <=> combinedPepActions == null.
-			 * <p>
-			 * At this point, we don't know yet whether the PEP actions of combined/children's Permit/Deny decisions will be added to the final result's PEP actions, since we don't know yet whether
-			 * the final decision is Permit/Deny.
-			 */
-			private UpdatableList<PepAction> combinedPepActions = null;
+    private static final IndeterminateEvaluationException UNKNOWN_OVERRIDING_EFFECT_RULES_EVALUATION_ERROR = new IndeterminateEvaluationException("Unknown error while evaluating the Rules with the overriding Effect", XacmlStatusCode.PROCESSING_ERROR.value());
 
-			DecisionResultCollector(final boolean returnApplicablePolicyIdList)
-			{
+    private final EffectType overridingEffect;
+    private final CombiningAlgEvaluators.ConstantDecisionEvaluator constantOverridingEffectDecisionEvaluator;
+    protected final CombiningAlgEvaluators.ConstantDecisionEvaluator constantOverriddenEffectDecisionEvaluator;
+
+    private final boolean isAnyIndeterminateIgnored;
+    private final CombiningAlgEvaluators.ConstantDecisionEvaluator defaultCombiningAlgEvaluator;
+
+    /**
+     * Constructor
+     *
+     * @param algId            combining algorithm ID
+     * @param overridingEffect overriding effect (e.g. Deny for deny-overrides algorithm)
+     * @param ignoreIndeterminates ignore Indeterminate results, e.g. in *-unless* standard combining algorithm
+     * @param returnOverriddenEffectAsDefaultDecision if true, overridden_effect returned as decision by default (e.g. for standard X-unless-Y algorithms, i.e. DPUnlessPDCombiningAlg), i.e. if all NotApplicable or Indeterminate and {@code ignoreIndeterminates}; else NotApplicable is the default.
+     * //@param isOrdered        true iff combined elements must be evaluated in order of declaration, i.e. in same order as in 'combinedElements' argument of {@link #getInstance(Iterable, Iterable)}. If false, the
+     * //                        order is changed, in particular optimized by evaluating rules with overriding Effect first.
+     */
+    protected DPOverridesCombiningAlg(final String algId, final Class<T> combinedType, final EffectType overridingEffect, final boolean ignoreIndeterminates, final boolean returnOverriddenEffectAsDefaultDecision)
+    {
+        super(algId, combinedType);
+        this.overridingEffect = overridingEffect;
+        if (overridingEffect == EffectType.DENY)
+        {
+            constantOverridingEffectDecisionEvaluator = CombiningAlgEvaluators.DENY_CONSTANT_EVALUATOR;
+            constantOverriddenEffectDecisionEvaluator = CombiningAlgEvaluators.PERMIT_CONSTANT_EVALUATOR;
+        } else
+        {
+            // Overriding Effect is Permit
+            constantOverridingEffectDecisionEvaluator = CombiningAlgEvaluators.PERMIT_CONSTANT_EVALUATOR;
+            constantOverriddenEffectDecisionEvaluator = CombiningAlgEvaluators.DENY_CONSTANT_EVALUATOR;
+        }
+
+        this.isAnyIndeterminateIgnored = ignoreIndeterminates;
+        this.defaultCombiningAlgEvaluator = returnOverriddenEffectAsDefaultDecision? constantOverriddenEffectDecisionEvaluator: CombiningAlgEvaluators.NOT_APPLICABLE_CONSTANT_EVALUATOR;
+    }
+
+    /**
+     * Constructor for *-overrides algorithms
+     *
+     * @param algId            combining algorithm ID
+     * @param combinedType type of combined element (Rule, Policy, PolicySet)
+     * @param overridingEffect overriding effect (e.g. Deny for deny-overrides algorithm)
+     * //@param isOrdered        true iff combined elements must be evaluated in order of declaration, i.e. in same order as in 'combinedElements' argument of {@link #getInstance(Iterable, Iterable)}. If false, the
+     * //                        order is changed, in particular optimized by evaluating rules with overriding Effect first.
+     */
+    DPOverridesCombiningAlg(final String algId, final Class<T> combinedType, final EffectType overridingEffect/*, final boolean isOrdered*/)
+    {
+        this(algId, combinedType, overridingEffect, false, false);
+    }
+
+    /**
+     * Provides the proper rule combiner for combining {overridden_effect} rules preceded by {overriding_effect} rules or not.
+     * This is an interface so that the subclass {@link DPUnlessPDCombiningAlg} can override this as it differs in the way this rule combiner works.
+     */
+    protected interface OverriddenEffectRuleCombiningHelper {
+
+        /**
+         *
+         * @return evaluator to be called
+         */
+        CombiningAlg.Evaluator getOverriddenEffectRuleCombiningAlgEvaluator();
+
+        ExtendedDecision evaluateAfterOverridingEffectRules(ExtendedDecision extDecisionFromOverridingEffectRules, EvaluationContext context, Optional<EvaluationContext> mdpContext, UpdatableList<PepAction> updatablePepActions);
+    }
+
+    protected OverriddenEffectRuleCombiningHelper getOverriddenEffectRulesCombiningAlgEvaluator(boolean atLeastOneEmptyRuleWithOverriddenEffect, List<RuleEvaluator> nonEmptyRulesWithOverriddenEffectAndAtLeastOnePepAction, List<RuleEvaluator> nonEmptyRulesWithOverriddenEffectAndNoPepAction)
+    {
+        final CombiningAlg.Evaluator overriddenEffectRuleCombiner;
+        if (atLeastOneEmptyRuleWithOverriddenEffect)
+        {
+            /*
+        If atLeastOneEmptyRuleWithOverriddenEffect, the decision is fixed in advance to be the overridden effect in this sub-combiner, so we only need the rules with PEP actions and same effect, to combine them in the result.
+         */
+            if (nonEmptyRulesWithOverriddenEffectAndAtLeastOnePepAction.isEmpty())
+            {
+                /*
+                Constant decision (= overridden_effect) and no PEP actions
+                 */
+                overriddenEffectRuleCombiner = constantOverriddenEffectDecisionEvaluator;
+            } else
+            {
+                /*
+                Constructor arg 'returnOnFirstApplicable' set to false because in the XACML spec pseudo-code of standard x-overrides (and x-unless-y) algorithms, as long as no rule evaluates to the overriding_effect, we continue to evaluate the rules (and we collect PEP actions if any).
+                 */
+                overriddenEffectRuleCombiner = new RulesWithSameEffectEvaluator(nonEmptyRulesWithOverriddenEffectAndAtLeastOnePepAction, false);
+            }
+        } else
+        {
+            /*
+            There is no empty {overridden_effect} rule
+
+            Constructor arg 'returnOnFirstApplicable' set to false because in the XACML spec pseudo-code of standard x-overrides (and x-unless-y) algorithms, as long as no rule evaluates to the overriding_effect, we continue to evaluate the rules (and we collect PEP actions if any).
+             */
+            if (nonEmptyRulesWithOverriddenEffectAndAtLeastOnePepAction.isEmpty() && nonEmptyRulesWithOverriddenEffectAndNoPepAction.isEmpty())
+            {
+			/*
+			There is no {overridden_effect} rule.
+			 */
+                overriddenEffectRuleCombiner = CombiningAlgEvaluators.NOT_APPLICABLE_CONSTANT_EVALUATOR;
+            } else
+            {
+                overriddenEffectRuleCombiner = new RulesWithSameEffectEvaluator(nonEmptyRulesWithOverriddenEffectAndAtLeastOnePepAction, nonEmptyRulesWithOverriddenEffectAndNoPepAction, false);
+            }
+        }
+
+        return new OverriddenEffectRuleCombiningHelper()
+        {
+            @Override
+            public CombiningAlg.Evaluator getOverriddenEffectRuleCombiningAlgEvaluator()
+            {
+                return overriddenEffectRuleCombiner;
+            }
+
+            @Override
+            public ExtendedDecision evaluateAfterOverridingEffectRules(ExtendedDecision extDecisionFromOverridingEffectRules, EvaluationContext context, Optional<EvaluationContext> mdpContext, UpdatableList<PepAction> updatablePepActions)
+            {
+                final ExtendedDecision extDecisionFromRulesWithOverriddenEffect = overriddenEffectRuleCombiner.evaluate(context, mdpContext, updatablePepActions, null);
+                final DecisionType decisionFromRulesWithOverriddenEffect = extDecisionFromRulesWithOverriddenEffect.getDecision();
+
+                // if atLeastOneError{overriding_effect} (XACML spec)
+                if (extDecisionFromOverridingEffectRules.getDecision() == DecisionType.INDETERMINATE)
+                {
 				/*
-				 * Since we may combine multiple elements before returning a final decision, we have to collect them in a list; and since we don't know yet whether the final decision is NotApplicable,
-				 * we cannot add collected applicable policies straight to outApplicablePolicyIdList. So we create a temporary list until we know the final decision applies.
+				 If atLeastOneError{overridden_effect} || atLeastOne{overridden_effect} (which is equivalent to decisionFromRulesWithOverriddenEffect = Indeterminate (| Deny) | Permit; which is equivalent to decisionFromRulesWithOverriddenEffect != NotApplicable)
 				 */
-				combinedApplicablePolicyIdList = returnApplicablePolicyIdList ? UpdatableCollections.newUpdatableList()
-				        : UpdatableCollections.emptyList();
-			}
+                    if (decisionFromRulesWithOverriddenEffect != DecisionType.NOT_APPLICABLE)
+                    {
+                        // return Indeterminate{DP}
+                        return ExtendedDecisions.newIndeterminate(null, extDecisionFromOverridingEffectRules.getCauseForIndeterminate().orElse(UNKNOWN_OVERRIDING_EFFECT_RULES_EVALUATION_ERROR));
+                    }
 
-			/**
-			 * Return new result's applicable policies combined (added last) with the ones previously found, or only the ones combined so far if result == null
-			 * 
+                    return extDecisionFromOverridingEffectRules;
+                }
+
+			/*
+			The rest of the algorithm in the XACML spec's pseudo-code ( If atLeastOne{overridden_effect} | If atLeastOneError{overridden_effect} | etc. ) is equivalent to return extDecisionFromRulesWithOverriddenEffect as the result
 			 */
-			List<PrimaryPolicyMetadata> getApplicablePolicies(final DecisionResult result)
-			{
-				if (result != null)
-				{
-					combinedApplicablePolicyIdList.addAll(result.getApplicablePolicies());
-				}
-				return combinedApplicablePolicyIdList.copy();
-			}
+                return extDecisionFromRulesWithOverriddenEffect;
+            }
+        };
+    }
 
-			/**
-			 * Add intermediate (not final a priori) Deny/Permit result (update applicable policies and PEP actions), i.e. a Permit (resp. Deny) result for deny-overrides (resp. permit-overrides)
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends T>> params, final Iterable<? extends T> combinedElements)
+            throws UnsupportedOperationException, IllegalArgumentException
+    {
+        // if no element -> NotApplicable
+        if (combinedElements == null)
+        {
+            LOGGER.warn("{}: no element to combine -> optimization: replacing with equivalent evaluator returning constant {} decision", this, defaultCombiningAlgEvaluator.getReturnedDecision().getDecision());
+            return defaultCombiningAlgEvaluator;
+        }
+
+        final Iterator<? extends Decidable> combinedEltIterator = combinedElements.iterator();
+        if (!combinedEltIterator.hasNext())
+        {
+            // empty (no element to combine)
+            LOGGER.warn("{}: no element to combine -> optimization: replacing with equivalent evaluator returning constant {} decision", this, defaultCombiningAlgEvaluator.getReturnedDecision().getDecision());
+            return defaultCombiningAlgEvaluator;
+        }
+
+        // There is at least one combined element (Type of combined element(s) is either Rule or Policy/PolicySet)
+        // If combined elements are not Rules...
+        if (!RuleEvaluator.class.isAssignableFrom(getCombinedElementType()))
+        {
+            return new OrderPreservingCombiningAlgEvaluator(combinedElements, this.overridingEffect, this.isAnyIndeterminateIgnored, defaultCombiningAlgEvaluator.getReturnedDecision());
+        }
+
+        /*
+         * Else combined elements are Rule(s) and there is at least one Rule, we can optimize the combining algorithm:
+         * ("empty rule" here means it has no Target/Condition/PEP action (obligation/advice) )
+         * ("overriding_effect" is Permit in permit-overrides algorithm, or Deny in deny-overrides)
+         * ("overridden_effect" is the opposite Effect to the "overriding effect", e.g. Deny in permit-overrides)
+         * (PEP actions = Obligations/Advice)
+         *
+         * 1) If there is at least one empty rule with overriding effect, the combining algorithm shall always return overriding_effect as decision and the PEP actions from all applicable non-empty rules that return the same decision and have at least one PEP action, if any;
+         *
+         * 2) If there is no rule with overriding effect, i.e. only rules with overridden effect (and at least one as already checked), and if at least one empty rule, then the combining algorithm shall always return overridden_effect as decision and the PEP actions from all applicable non-empty rules that have the same effect and at least one PEP action, if any.
+         *
+         * In other cases, as a general optimization, we can group rules together in the following lists (order preserved):
+         * 1) Non-empty overriding_effect rules with at least one PEP action (Obligation/Advice): the combining algorithm will evaluated these first; if any one is applicable, return the overriding_effect as decision with PEP actions collected from this list. The other lists below are ignored.
+         *
+         * 2) Non-empty overriding_effect rules without PEP action: the algorithm evaluates these if nothing applicable in the previous list; if any one is applicable, return overriding_effect as decision right away (without PEP action), and therefore ignore the other lists below.
+         *
+         * 3) Non-empty overridden_effect rules with at least one PEP action (Obligation/Advice): the algo evaluates these if nothing applicable in previous lists; if any one is applicable, return overridden_effect as decision with PEP actions collected from this list. The list below is ignored.
+         *
+         * 4) Non-empty overridden_effect rules without PEP action: the algorithm evaluates these if nothing applicable in the previous list; if any one is applicable, return overridden_effect as decision right away (without PEP action).
+         *
+         * NB: as a result, the order of evaluation of the rules differs from the order of declaration in the policy, but not the order in which the PEP actions are returned in the end, which is the only thing that matters in the final result for the client (PEP).
+         */
+        boolean atLeastOneEmptyRuleWithOverridingEffect = false;
+        final List<RuleEvaluator> nonEmptyRulesWithOverridingEffectAndAtLeastOnePepAction = new ArrayList<>();
+        final List<RuleEvaluator> nonEmptyRulesWithOverridingEffectAndNoPepAction = new ArrayList<>();
+
+        boolean atLeastOneEmptyRuleWithOverriddenEffect = false;
+        final List<RuleEvaluator> nonEmptyRulesWithOverriddenEffectAndAtLeastOnePepAction = new ArrayList<>();
+        final List<RuleEvaluator> nonEmptyRulesWithOverriddenEffectAndNoPepAction = new ArrayList<>();
+
+        while (combinedEltIterator.hasNext())
+        {
+            final RuleEvaluator rule = (RuleEvaluator) combinedEltIterator.next();
+            if (rule.getEffect() == overridingEffect)
+            {
+                if (rule.isEmptyEquivalent())
+                {
+                    LOGGER.warn(
+                            "{}: {} with Effect={} is empty (no target/condition/pep_actions) => always returns {} => rule combining algorithm will always return {} with PEP actions (Obligations/Advice) from other rules with same effect if any",
+                            this, rule, this.overridingEffect, this.overridingEffect, this.overridingEffect);
+                    atLeastOneEmptyRuleWithOverridingEffect = true;
+                } else if (rule.hasAnyPepAction())
+                {
+                    nonEmptyRulesWithOverridingEffectAndAtLeastOnePepAction.add(rule);
+                } else
+                {
+                    nonEmptyRulesWithOverridingEffectAndNoPepAction.add(rule);
+                }
+            } else
+            {
+                // overridden_effect Rule
+                if (rule.isEmptyEquivalent())
+                {
+                    atLeastOneEmptyRuleWithOverriddenEffect = true;
+                } else if (rule.hasAnyPepAction())
+                {
+                    nonEmptyRulesWithOverriddenEffectAndAtLeastOnePepAction.add(rule);
+                } else
+                {
+                    nonEmptyRulesWithOverriddenEffectAndNoPepAction.add(rule);
+                }
+            }
+        }
+
+        if (atLeastOneEmptyRuleWithOverridingEffect)
+        {
+            if (nonEmptyRulesWithOverridingEffectAndAtLeastOnePepAction.isEmpty())
+            {
+                /*
+                Constant decision (= overriding_effect) and no PEP actions
+                 */
+                LOGGER.info(
+                        "{}: the only combined rule(s) is/are {} Rule(s) without PEP action => algorithm will always return {} => optimization: replacing with equivalent evaluator returning constant {} decision",
+                        this, this.overridingEffect, this.overridingEffect, this.overridingEffect);
+                return constantOverridingEffectDecisionEvaluator;
+            }
+
+            // There is at least one PEP action possibly returned
+            return new RulesWithSameEffectEvaluator(nonEmptyRulesWithOverridingEffectAndAtLeastOnePepAction, true);
+        }
+
+  		/*
+		 Create the sub-combining-algorithm that will combine only the {overridden_effect} rules and is called only after the {overriding_effect} rules and only if none of them returned the Effect (applicable).
+		 */
+        final OverriddenEffectRuleCombiningHelper overriddenEffectRulesCombiner = getOverriddenEffectRulesCombiningAlgEvaluator(atLeastOneEmptyRuleWithOverriddenEffect, nonEmptyRulesWithOverriddenEffectAndAtLeastOnePepAction, nonEmptyRulesWithOverriddenEffectAndNoPepAction);
+
+        // No empty {overriding_effect} rule
+        if (nonEmptyRulesWithOverridingEffectAndAtLeastOnePepAction.isEmpty() && nonEmptyRulesWithOverridingEffectAndNoPepAction.isEmpty())
+        {
+			/*
+			There is no {overriding_effect} rule, i.e. there are only overridden_effect rules (at least one) (we already checked that there is at least one rule).
 			 */
-			void addSubResultDP(final DecisionResult result)
-			{
-				combinedApplicablePolicyIdList.addAll(result.getApplicablePolicies());
-				if (combinedPepActions == null)
-				{
-					// first Permit
-					combinedPepActions = UpdatableCollections.newUpdatableList();
-				}
+            return overriddenEffectRulesCombiner.getOverriddenEffectRuleCombiningAlgEvaluator();
+        }
 
-				combinedPepActions.addAll(result.getPepActions());
-			}
+        // Else there is at least one non-empty {overriding_effect} rule
+        final RulesWithSameEffectEvaluator overridingEffectRulesCombiner = new RulesWithSameEffectEvaluator(nonEmptyRulesWithOverridingEffectAndAtLeastOnePepAction, nonEmptyRulesWithOverridingEffectAndNoPepAction, true);
+        return new OverridingEffectFirstRuleCombiningAlgEvaluator(overridingEffect, overridingEffectRulesCombiner, overriddenEffectRulesCombiner);
+    }
 
-			/**
-			 * Add intermediate (not final a priori) Indeterminate${overriding_effect} result (update applicable policies, etc.)
+    /**
+     * "Ordered" Deny/Permit-overrides policy combining algorithm evaluator; "ordered" means combined elements are evaluated in the same order as in the input collection (constructor parameter
+     * 'combinedElements'), i.e. no re-ordering.
+     */
+    private static final class OrderPreservingCombiningAlgEvaluator extends BaseCombiningAlg.Evaluator<Decidable>
+    {
+        private static final SubDecisionHandler OVERRIDING_SUBDECISIONHANDLER = (result, resultCollector) -> true;
+        private static final SubDecisionHandler OVERRIDDEN_DP_SUBDECISIONHANDLER = (result, resultCollector) ->
+        {
+            resultCollector.addSubResultDP(result);
+            return false;
+        };
+        private static final SubDecisionHandler NOT_APPLICABLE_SUBDECISIONHANDLER = (result, resultCollector) -> false;
+        private static final SubDecisionHandler INDETERMINATE_OVERRIDING_EFFECT_SUBDECISIONHANDLER = (result, resultCollector) ->
+        {
+            resultCollector.addSubResultIndeterminateInOverridingEffect(result);
+            return false;
+        };
+        private static final SubDecisionHandler INDETERMINATE_OVERRIDDEN_EFFECT_SUBDECISIONHANDLER = (result, resultCollector) ->
+        {
+            resultCollector.addSubResultIndeterminateInOverriddenEffect(result);
+            return false;
+        };
+        private static final SubDecisionHandler INDETERMINATE_DP_SUBDECISIONHANDLER = (result, resultCollector) ->
+        {
+            resultCollector.addSubResultIndeterminateDP(result);
+            return false;
+        };
+        private final ExtendedDecision decisionForOverridingEffect;
+        private final ExtendedDecision decisionForOverriddenEffect;
+
+        private final ExtendedDecision defaultDecision;
+
+        private final Map<DecisionType, SubDecisionHandler> resultHandlersByDecisionType = new EnumMap<>(DecisionType.class);
+
+        private final DecisionResultCollectorFactory resultCollectorFactory;
+
+        /**
+         *
+         * @param combinedElements combined elements
+         * @param overridingEffect overriding Effect, e.g. Permit in Permit-overrides
+         * @param ignoreIndeterminates ignore Indeterminate decisions like in standard *-unless-* combining algorithms
+         * @param defaultDecision default decision always returned if all NotApplicable or Indeterminate and Indeterminate decisions are ignored.
+         */
+        OrderPreservingCombiningAlgEvaluator(final Iterable<? extends Decidable> combinedElements, final EffectType overridingEffect, boolean ignoreIndeterminates, ExtendedDecision defaultDecision)
+        {
+            super(combinedElements);
+            assert overridingEffect != null && defaultDecision != null;
+            this.resultHandlersByDecisionType.put(DecisionType.NOT_APPLICABLE, NOT_APPLICABLE_SUBDECISIONHANDLER);
+            final Map<DecisionType, SubDecisionHandler> indeterminateResultHandlersByExtendedIndeterminateType = new EnumMap<>(DecisionType.class);
+            indeterminateResultHandlersByExtendedIndeterminateType.put(DecisionType.INDETERMINATE, INDETERMINATE_DP_SUBDECISIONHANDLER);
+            if (overridingEffect == EffectType.DENY)
+            {
+                // deny-overrides
+                this.decisionForOverridingEffect = ExtendedDecisions.SIMPLE_DENY;
+                this.decisionForOverriddenEffect = ExtendedDecisions.SIMPLE_PERMIT;
+                this.resultHandlersByDecisionType.put(DecisionType.DENY, OVERRIDING_SUBDECISIONHANDLER);
+                indeterminateResultHandlersByExtendedIndeterminateType.put(DecisionType.DENY, INDETERMINATE_OVERRIDING_EFFECT_SUBDECISIONHANDLER);
+                this.resultHandlersByDecisionType.put(DecisionType.PERMIT, OVERRIDDEN_DP_SUBDECISIONHANDLER);
+                indeterminateResultHandlersByExtendedIndeterminateType.put(DecisionType.PERMIT, INDETERMINATE_OVERRIDDEN_EFFECT_SUBDECISIONHANDLER);
+            } else
+            {
+                this.decisionForOverridingEffect = ExtendedDecisions.SIMPLE_PERMIT;
+                this.decisionForOverriddenEffect = ExtendedDecisions.SIMPLE_DENY;
+                this.resultHandlersByDecisionType.put(DecisionType.PERMIT, OVERRIDING_SUBDECISIONHANDLER);
+                indeterminateResultHandlersByExtendedIndeterminateType.put(DecisionType.PERMIT, INDETERMINATE_OVERRIDING_EFFECT_SUBDECISIONHANDLER);
+                this.resultHandlersByDecisionType.put(DecisionType.DENY, OVERRIDDEN_DP_SUBDECISIONHANDLER);
+                indeterminateResultHandlersByExtendedIndeterminateType.put(DecisionType.DENY, INDETERMINATE_OVERRIDDEN_EFFECT_SUBDECISIONHANDLER);
+            }
+
+            this.defaultDecision = defaultDecision;
+            if(ignoreIndeterminates) {
+                // The handler for Indeterminate decision is like the NotApplicable one, does nothing except return false.
+                this.resultHandlersByDecisionType.put(DecisionType.INDETERMINATE, NOT_APPLICABLE_SUBDECISIONHANDLER);
+                this.resultCollectorFactory = DECISION_RESULT_COLLECTOR_FACTORY_IGNORING_INDETERMINATES;
+            } else {
+                this.resultHandlersByDecisionType.put(DecisionType.INDETERMINATE, new IndeterminateSubDecisionHandler(indeterminateResultHandlersByExtendedIndeterminateType));
+                this.resultCollectorFactory = DECISION_RESULT_COLLECTOR_FACTORY_PRESERVING_INDETERMINATES;
+            }
+        }
+
+        @Override
+        public ExtendedDecision evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final UpdatableList<PepAction> outPepActions, final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
+        {
+            assert outPepActions != null;
+
+			/*
+			Combining algorithm evaluation. See for example: XACML core §C.2 Deny-overrides
 			 */
-			void addSubResultIndeterminateInOverridingEffect(final DecisionResult result)
-			{
-				combinedApplicablePolicyIdList.addAll(result.getApplicablePolicies());
-				if (firstIndeterminateOverridingEffect == null)
-				{
-					firstIndeterminateOverridingEffect = result;
-				}
-			}
+            final DecisionResultCollector resultCollector = this.resultCollectorFactory.newInstance(outApplicablePolicyIdList != null);
 
-			/**
-			 * Add intermediate (not final a priori) Indeterminate${overridden_effect} result (update applicable policies, etc.)
-			 */
-			void addSubResultIndeterminateInOverriddenEffect(final DecisionResult result)
-			{
-				combinedApplicablePolicyIdList.addAll(result.getApplicablePolicies());
-				if (firstIndeterminateOverriddenEffect == null)
-				{
-					firstIndeterminateOverriddenEffect = result;
-				}
-			}
+            for (final Decidable combinedElement : getCombinedElements())
+            {
+                // evaluate the policy
+                final DecisionResult result = combinedElement.evaluate(context, mdpContext);
+                final SubDecisionHandler resultHandler = resultHandlersByDecisionType.get(result.getDecision());
+                final boolean isTheResultDecisionOverriding = resultHandler.handle(result, resultCollector);
 
-			/**
-			 * Add intermediate (not final a priori) IndeterminateDP result (update applicable policies, etc.)
-			 */
-			void addSubResultIndeterminateDP(final DecisionResult result)
-			{
-				combinedApplicablePolicyIdList.addAll(result.getApplicablePolicies());
-				if (firstIndeterminateDPResult == null)
-				{
-					firstIndeterminateDPResult = result;
-				}
-			}
+                /*
+                 * XACML §7.18: Obligations & Advice: do not return Obligations/Advice of the rule, policy, or policy set that does not match the decision resulting from evaluating the enclosing
+                 * policy set. For example, if the final decision is Permit, we should add to outPepActions only the PEP actions from Permit decisions (permitPepActions)
+                 */
+                if (isTheResultDecisionOverriding)
+                {
+                    /*
+                     * result decision overrides all others, return it right away after updating output applicable policies and PEP actions
+                     */
+                    if (outApplicablePolicyIdList != null)
+                    {
+                        outApplicablePolicyIdList.addAll(resultCollector.getApplicablePolicies(result));
+                    }
 
-			/**
-			 * Get any occurred IndeterminateDP result
-			 */
-			ExtendedDecision getFirstIndeterminateDP()
-			{
-				return firstIndeterminateDPResult;
-			}
+                    outPepActions.addAll(result.getPepActions());
+                    /*
+                     Collect PEP actions from the current element only. Section 7.8 says: "no obligations or advice SHALL be returned to the PEP if the rule, policies, or policy sets from which they are drawn are not evaluated".
+                     */
+                    return this.decisionForOverridingEffect;
+                }
 
-			/**
-			 * Get any occurred Indeterminate${overriding_effect} result
-			 */
-			ExtendedDecision getFirstIndeterminateWithOverridingEffect()
-			{
-				return firstIndeterminateOverridingEffect;
-			}
+                // The result decision is not the one that overrides, we go on
+            }
 
-			/**
-			 * Get any occurred Indeterminate${overridden_effect} result
-			 */
-			ExtendedDecision getFirstIndeterminateWithOverriddenEffect()
-			{
-				return firstIndeterminateOverriddenEffect;
-			}
+            /*
+             * There was no overriding Deny/Permit decision, i.e. no Deny (resp. no Permit) in case of deny-overrides (resp. permit-overrides) alg, else: if any Indeterminate{DP}, then Indeterminate{DP}
+             *
+             * From XACML x-overrides alg's pseudo-core (e.g. Annex C.2 Deny-overrides):
+             * if(atLeastOneErrorDP) return Indeterminate{DP};
+             */
+            // In case of DPUnlessPDCombiningAlg, firstIndeterminateDP set null (Indeterminates are ignored)
+            final ExtendedDecision firstIndeterminateDP = resultCollector.getFirstIndeterminateDP();
+            if (firstIndeterminateDP != null)
+            {
+                // at least one Indeterminate{DP}
+                if (outApplicablePolicyIdList != null)
+                {
+                    outApplicablePolicyIdList.addAll(resultCollector.getApplicablePolicies(null));
+                }
 
-			/**
-			 * Get combined PEP actions of intermediate results
-			 */
-			UpdatableList<PepAction> getPepActions()
-			{
-				return combinedPepActions;
-			}
-		}
+                return firstIndeterminateDP;
+            }
 
-		private interface SubDecisionHandler
-		{
-			/**
-			 * Handles the decision result of one of the combined elements
-			 * 
-			 * @param result
-			 *            decision result of a combined element to handle
-			 * @param resultCollector
-			 *            used to collect the result (added/combined with previous ones), if the decision does not override, to be reused later at the end of the evaluation
-			 * @return true iff the result overrides all others (is final), e.g. Deny for deny-overrides
-			 */
-			boolean handle(DecisionResult result, DecisionResultCollector resultCollector);
-		}
+            final List<PrimaryPolicyMetadata> combinedApplicablePolicies = resultCollector.getApplicablePolicies(null);
+            final UpdatableList<PepAction> combinedPepActionsAppliedToOverriddenEffect = resultCollector.getPepActions();
+            // combinedPepActionsAppliedTo${overridden_effect} != null if at least one Deny/Permit result in resultCollector (see Javadoc of resultCollector.getPepActions() ), i.e. if at least one {overridden_effect} result (because it cannot be the {overridding_effect} at this stage anymore)
 
-		private static final SubDecisionHandler OVERRIDING_SUBDECISIONHANDLER = (result, resultCollector) -> true;
+            // In case of DPUnlessPDCombiningAlg, firstIndeterminateWithOverridingEffect and firstIndeterminateWithOverriddenEffect set null (Indeterminates are ignored).
+            final ExtendedDecision firstIndeterminateWithOverridingEffect = resultCollector.getFirstIndeterminateWithOverridingEffect();
+            final ExtendedDecision firstIndeterminateWithOverriddenEffect = resultCollector.getFirstIndeterminateWithOverriddenEffect();
 
-		private static final SubDecisionHandler OVERRIDDEN_DP_SUBDECISIONHANDLER = (result, resultCollector) -> {
-			resultCollector.addSubResultDP(result);
-			return false;
-		};
+            /*
+             * ${overriding_effect} = Deny (resp. Permit) and ${overridden_effect} = Permit (resp. Deny) in case of deny-overrides (resp. permit-overrides) algorithm.
+             */
 
-		private static final SubDecisionHandler NOT_APPLICABLE_SUBDECISIONHANDLER = (result, resultCollector) -> false;
+            // In case of DPUnlessPDCombiningAlg, since firstIndeterminateWithOverridingEffect = null, skip.
+            /*
+             * The spec (pseudo-code) says:
+             * - if atLeastOneError{overriding_effect} && (atLeastOneError{overridden_effect} || atLeastOne{overridden_effect}), return Indeterminate{DP};
+             * - if atLeastOneError{overriding_effect} return Indeterminate{overriding_effect};
+             *
+             * Can be re-written as follows:
+             * if atLeastOneError{overriding_effect}
+             * {
+             *  indeterminate_type = atLeastOneError{overridden_effect} || atLeastOne{overridden_effect} ? {DP}: {overriding_effect};
+             *  return Indeterminate{indeterminate_type};
+             * }
+             */
+            // if atLeastOneError{overriding_effect}
+            if (firstIndeterminateWithOverridingEffect != null)
+            {
+                // atLeastOneErrorD
+                if (outApplicablePolicyIdList != null)
+                {
+                    outApplicablePolicyIdList.addAll(combinedApplicablePolicies);
+                }
 
-		private static final SubDecisionHandler INDETERMINATE_OVERRIDING_EFFECT_SUBDECISIONHANDLER = (result, resultCollector) -> {
-			resultCollector.addSubResultIndeterminateInOverridingEffect(result);
-			return false;
-		};
+                // extended_indeterminate_type = atLeastOneError{overridden_effect} || atLeastOne{overridden_effect} ? {DP}: {overriding_effect};
+                // atLeastOne${overridden_effect} == true <=> combinedPepActionsAppliedTo${overridden_effect} != null (see Javadoc of resultCollector.getPepActions() )
+                final DecisionType extIndeterminateType = firstIndeterminateWithOverriddenEffect != null || combinedPepActionsAppliedToOverriddenEffect != null ? DecisionType.INDETERMINATE /* DP */ : decisionForOverridingEffect.getDecision();
+                return ExtendedDecisions.newIndeterminate(extIndeterminateType,
+                        firstIndeterminateWithOverridingEffect.getCauseForIndeterminate().orElse(new IndeterminateEvaluationException("Unknown cause for " + firstIndeterminateWithOverridingEffect + " in deny/permit-overrides combining algorithm", XacmlStatusCode.PROCESSING_ERROR.value())));
+            }
 
-		private static final SubDecisionHandler INDETERMINATE_OVERRIDDEN_EFFECT_SUBDECISIONHANDLER = (result, resultCollector) -> {
-			resultCollector.addSubResultIndeterminateInOverriddenEffect(result);
-			return false;
-		};
+            /*
+             * The rest of the spec (pseudo-code) says:
+             * if atLeastOne{overridden_effect} return {overriden_effect};
+             * if atLeastOneError{overridden_effect} return Indeterminate{overriden_effect};
+             *
+             * If we got a decision with overridden effect (e.g. Permit in case of deny-overrides algo) or Indeterminate{overridden_effect}, return it, otherwise it's NOT_APPLICABLE
+             */
+            if (combinedPepActionsAppliedToOverriddenEffect != null)
+            {
+                if (outApplicablePolicyIdList != null)
+                {
+                    outApplicablePolicyIdList.addAll(combinedApplicablePolicies);
+                }
 
-		private static final SubDecisionHandler INDETERMINATE_DP_SUBDECISIONHANDLER = (result, resultCollector) -> {
-			resultCollector.addSubResultIndeterminateDP(result);
-			return false;
-		};
+                outPepActions.addAll(combinedPepActionsAppliedToOverriddenEffect);
+                return decisionForOverriddenEffect;
+            }
 
-		private static final class IndeterminateSubDecisionHandler implements SubDecisionHandler
-		{
-			private final Map<DecisionType, SubDecisionHandler> indeterminateResultHandlersByExtendedIndeterminateType;
+            // In case of DPUnlessPDCombiningAlg, since firstIndeterminateWithOverriddenEffect = null, skip.
+            if (firstIndeterminateWithOverriddenEffect != null)
+            {
+                if (outApplicablePolicyIdList != null)
+                {
+                    outApplicablePolicyIdList.addAll(combinedApplicablePolicies);
+                }
 
-			private IndeterminateSubDecisionHandler(final Map<DecisionType, SubDecisionHandler> indeterminateResultHandlersByExtendedIndeterminateType)
-			{
-				this.indeterminateResultHandlersByExtendedIndeterminateType = indeterminateResultHandlersByExtendedIndeterminateType;
-			}
+                return firstIndeterminateWithOverriddenEffect;
+            }
 
-			@Override
-			public boolean handle(final DecisionResult result, final DecisionResultCollector resultCollector)
-			{
-				final DecisionType extIndeterminate = result.getExtendedIndeterminate();
-				assert extIndeterminate != null && extIndeterminate != DecisionType.NOT_APPLICABLE;
-				return this.indeterminateResultHandlersByExtendedIndeterminateType.get(extIndeterminate).handle(result, resultCollector);
-			}
+            return defaultDecision;
+        }
 
-		}
+        private interface SubDecisionHandler
+        {
+            /**
+             * Handles the decision result of one of the combined elements, in particular, adds the result to a collection of previous results for final processing, if the decision does not overrides.
+             *
+             * @param result          decision result of a combined element to handle
+             * @param resultCollector used to collect the result (added/combined with previous ones), if the decision does not override, to be reused later at the end of the evaluation
+             * @return true iff the result overrides all others (is final), e.g. Deny for deny-overrides
+             */
+            boolean handle(DecisionResult result, DecisionResultCollector resultCollector);
+        }
 
-		private final ExtendedDecision decisionForOverridingEffect;
-		private final ExtendedDecision decisionForOverriddenEffect;
-		private final Map<DecisionType, SubDecisionHandler> resultHandlersByDecisionType = new EnumMap<>(DecisionType.class);
+        /**
+         * Helper to combine (not-overriding) decision results until a decision overrides or there is no more element to combine
+         * Indeterminate results may be handled differently, e.g. ignored in the case of *-unless-* standard algorithms. See the subclasses for the different modes.
+         *
+         * Mutable / not thread-safe.
+         */
+        private static abstract class DecisionResultCollector {
+            protected final UpdatableList<PrimaryPolicyMetadata> combinedApplicablePolicyIdList;
 
-		OrderPreservingCombiningAlgEvaluator(final Iterable<? extends Decidable> combinedElements, final EffectType overridingEffect)
-		{
-			super(combinedElements);
-			resultHandlersByDecisionType.put(DecisionType.NOT_APPLICABLE, NOT_APPLICABLE_SUBDECISIONHANDLER);
-			final Map<DecisionType, SubDecisionHandler> indeterminateResultHandlersByExtendedIndeterminateType = new EnumMap<>(DecisionType.class);
-			indeterminateResultHandlersByExtendedIndeterminateType.put(DecisionType.INDETERMINATE, INDETERMINATE_DP_SUBDECISIONHANDLER);
-			if (overridingEffect == EffectType.DENY)
-			{
-				// deny-overrides
-				this.decisionForOverridingEffect = ExtendedDecisions.SIMPLE_DENY;
-				this.decisionForOverriddenEffect = ExtendedDecisions.SIMPLE_PERMIT;
-				resultHandlersByDecisionType.put(DecisionType.DENY, OVERRIDING_SUBDECISIONHANDLER);
-				indeterminateResultHandlersByExtendedIndeterminateType.put(DecisionType.DENY, INDETERMINATE_OVERRIDING_EFFECT_SUBDECISIONHANDLER);
-				resultHandlersByDecisionType.put(DecisionType.PERMIT, OVERRIDDEN_DP_SUBDECISIONHANDLER);
-				indeterminateResultHandlersByExtendedIndeterminateType.put(DecisionType.PERMIT, INDETERMINATE_OVERRIDDEN_EFFECT_SUBDECISIONHANDLER);
-			} else
-			{
-				this.decisionForOverridingEffect = ExtendedDecisions.SIMPLE_PERMIT;
-				this.decisionForOverriddenEffect = ExtendedDecisions.SIMPLE_DENY;
-				resultHandlersByDecisionType.put(DecisionType.PERMIT, OVERRIDING_SUBDECISIONHANDLER);
-				indeterminateResultHandlersByExtendedIndeterminateType.put(DecisionType.PERMIT, INDETERMINATE_OVERRIDING_EFFECT_SUBDECISIONHANDLER);
-				resultHandlersByDecisionType.put(DecisionType.DENY, OVERRIDDEN_DP_SUBDECISIONHANDLER);
-				indeterminateResultHandlersByExtendedIndeterminateType.put(DecisionType.DENY, INDETERMINATE_OVERRIDDEN_EFFECT_SUBDECISIONHANDLER);
-			}
+            /**
+             * Replaces atLeastOnePermit (resp. atLeastOneDeny) from description of permit-overrides (resp. deny-overrides) in the XACML spec.
+             * <p>
+             * atLeastOnePermit (resp. atLeastOneDeny) == false <=> combinedPepActions == null.
+             * <p>
+             * At this point, we don't know yet whether the PEP actions of combined/children's Permit/Deny decisions will be added to the final result's PEP actions, since we don't know yet whether
+             * the final decision is Permit/Deny.
+             */
+            private UpdatableList<PepAction> combinedPepActions = null;
 
-			resultHandlersByDecisionType.put(DecisionType.INDETERMINATE, new IndeterminateSubDecisionHandler(indeterminateResultHandlersByExtendedIndeterminateType));
-		}
+            DecisionResultCollector(final boolean returnApplicablePolicyIdList)
+            {
+                /*
+                 * Since we may combine multiple elements before returning a final decision, we have to collect them in a list; and since we don't know yet whether the final decision is NotApplicable,
+                 * we cannot add collected applicable policies straight to outApplicablePolicyIdList. So we create a temporary list until we know the final decision applies.
+                 */
+                combinedApplicablePolicyIdList = returnApplicablePolicyIdList ? UpdatableCollections.newUpdatableList()
+                        : UpdatableCollections.emptyList();
+            }
 
-		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final UpdatableList<PepAction> outPepActions, final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
-		{
-			assert outPepActions != null;
-			final DecisionResultCollector resultCollector = new DecisionResultCollector(outApplicablePolicyIdList != null);
+            /**
+             * Return new result's applicable policies combined (added last) with the ones previously found, or only the ones combined so far if result == null
+             */
+            List<PrimaryPolicyMetadata> getApplicablePolicies(final DecisionResult result)
+            {
+                if (result != null)
+                {
+                    combinedApplicablePolicyIdList.addAll(result.getApplicablePolicies());
+                }
+                return combinedApplicablePolicyIdList.copy();
+            }
 
-			for (final Decidable combinedElement : getCombinedElements())
-			{
-				// evaluate the policy
-				final DecisionResult result = combinedElement.evaluate(context, mdpContext);
-				final boolean isResultOverriding = resultHandlersByDecisionType.get(result.getDecision()).handle(result, resultCollector);
+            /**
+             * Add intermediate (not final a priori) Deny/Permit result (update applicable policies and PEP actions), i.e. a Permit (resp. Deny) result for deny-overrides (resp. permit-overrides)
+             */
+            void addSubResultDP(final DecisionResult result)
+            {
+                combinedApplicablePolicyIdList.addAll(result.getApplicablePolicies());
+                if (combinedPepActions == null)
+                {
+                    // first Permit
+                    combinedPepActions = UpdatableCollections.newUpdatableList();
+                }
 
+                combinedPepActions.addAll(result.getPepActions());
+            }
+
+            /**
+             * Get combined PEP actions of intermediate results, null if no Deny/Permit result collected, i.e. non-null of at least one DP result (may be empty if no PEP action part of the DP results)
+             */
+            UpdatableList<PepAction> getPepActions()
+            {
+                return combinedPepActions;
+            }
+
+            /**
+             * Add intermediate (not final a priori) Indeterminate${overriding_effect} result (update applicable policies, etc.). May be ignored in some cases, e.g. *-unless-* algorithms.
+             */
+            abstract void addSubResultIndeterminateInOverridingEffect(final DecisionResult result);
+
+            /**
+             * Add intermediate (not final a priori) Indeterminate${overridden_effect} result (update applicable policies, etc.). May be ignored in some cases, e.g. *-unless-* algorithms.
+             */
+            abstract void addSubResultIndeterminateInOverriddenEffect(final DecisionResult result);
+
+            /**
+             * Add intermediate (not final a priori) IndeterminateDP result (update applicable policies, etc.). May be ignored in some cases, e.g. *-unless-* algorithms.
+             */
+            abstract void addSubResultIndeterminateDP(final DecisionResult result);
+
+            /**
+             * Get any occurred IndeterminateDP result. May be ignored in some cases, e.g. *-unless-* algorithms.
+             */
+            abstract ExtendedDecision getFirstIndeterminateDP();
+
+            /**
+             * Get any occurred Indeterminate${overriding_effect} result. May be ignored in some cases, e.g. *-unless-* algorithms.
+             */
+            abstract ExtendedDecision getFirstIndeterminateWithOverridingEffect();
+
+            /**
+             * Get any occurred Indeterminate${overridden_effect} result. May be ignored in some cases, e.g. *-unless-* algorithms.
+             */
+            abstract ExtendedDecision getFirstIndeterminateWithOverriddenEffect();
+        }
+
+        private interface DecisionResultCollectorFactory {
+            DecisionResultCollector newInstance(boolean returnApplicablePolicyIdList);
+        }
+
+        private static final DecisionResultCollectorFactory DECISION_RESULT_COLLECTOR_FACTORY_IGNORING_INDETERMINATES = DecisionResultCollectorIgnoringIndeterminates::new;
+
+        private static final DecisionResultCollectorFactory DECISION_RESULT_COLLECTOR_FACTORY_PRESERVING_INDETERMINATES = DecisionResultCollectorPreservingIndeterminates::new;
+
+        /*
+        DecisionResultCollector Ignoring Indeterminate results, e.g. for standard *-unless-* algorithms where Indeterminate results are ignored.
+         */
+        private static final class DecisionResultCollectorIgnoringIndeterminates extends DecisionResultCollector {
+
+            DecisionResultCollectorIgnoringIndeterminates(boolean returnApplicablePolicyIdList)
+            {
+                super(returnApplicablePolicyIdList);
+            }
+
+            @Override
+            void addSubResultIndeterminateInOverridingEffect(DecisionResult result)
+            {
+                // ignore
+            }
+
+            @Override
+            void addSubResultIndeterminateInOverriddenEffect(DecisionResult result)
+            {
+                // ignore
+            }
+
+            @Override
+            void addSubResultIndeterminateDP(DecisionResult result)
+            {
+                // ignore
+            }
+
+            /**
+             * Get any occurred IndeterminateDP result
+             */
+            ExtendedDecision getFirstIndeterminateDP()
+            {
+                return null;
+            }
+
+            /**
+             * Get any occurred Indeterminate${overriding_effect} result
+             */
+            ExtendedDecision getFirstIndeterminateWithOverridingEffect()
+            {
+                return null;
+            }
+
+            /**
+             * Get any occurred Indeterminate${overridden_effect} result
+             */
+            ExtendedDecision getFirstIndeterminateWithOverriddenEffect()
+            {
+                return null;
+            }
+        }
+
+        /*
+        Opposite to DecisionResultCollectorIgnoringIndeterminates, e.g. for standard *-overrides algorithms where Indeterminate results may change the final combined result if no {overriding_effect} was returned by any combined element.
+         */
+        private static final class DecisionResultCollectorPreservingIndeterminates extends DecisionResultCollector
+        {
+
+            /*
+             * Replaces atLeastOneErrorDP from XACML spec. atLeastOneErrorDP == true <=> firstIndeterminateDPResult != null
+             */
+            private ExtendedDecision firstIndeterminateDPResult = null;
+            /*
+             * Replaces atLeastOneError${overriding_effect} from XACML spec. atLeastOneError${overriding_effect} == true <=> firstIndeterminate${overriding_effect} != null
+             */
+            private ExtendedDecision firstIndeterminateOverridingEffect = null;
+            /*
+             * Replaces atLeastOneError${overridden_effect} from XACML spec. atLeastOneError${overridden_effect} == true <=> firstIndeterminate${overridden_effect} != null
+             */
+            private ExtendedDecision firstIndeterminateOverriddenEffect = null;
+
+            DecisionResultCollectorPreservingIndeterminates(boolean returnApplicablePolicyIdList)
+            {
+                super(returnApplicablePolicyIdList);
+            }
+
+            /**
+             * Add intermediate (not final a priori) Indeterminate${overriding_effect} result (update applicable policies, etc.)
+             */
+            void addSubResultIndeterminateInOverridingEffect(final DecisionResult result)
+            {
+                combinedApplicablePolicyIdList.addAll(result.getApplicablePolicies());
+                if (firstIndeterminateOverridingEffect == null)
+                {
+                    firstIndeterminateOverridingEffect = result;
+                }
+            }
+
+            /**
+             * Add intermediate (not final a priori) Indeterminate${overridden_effect} result (update applicable policies, etc.)
+             */
+            void addSubResultIndeterminateInOverriddenEffect(final DecisionResult result)
+            {
+                combinedApplicablePolicyIdList.addAll(result.getApplicablePolicies());
+                if (firstIndeterminateOverriddenEffect == null)
+                {
+                    firstIndeterminateOverriddenEffect = result;
+                }
+            }
+
+            /**
+             * Add intermediate (not final a priori) IndeterminateDP result (update applicable policies, etc.)
+             */
+            void addSubResultIndeterminateDP(final DecisionResult result)
+            {
+                combinedApplicablePolicyIdList.addAll(result.getApplicablePolicies());
+                if (firstIndeterminateDPResult == null)
+                {
+                    firstIndeterminateDPResult = result;
+                }
+            }
+
+            /**
+             * Get any occurred IndeterminateDP result
+             */
+            ExtendedDecision getFirstIndeterminateDP()
+            {
+                return firstIndeterminateDPResult;
+            }
+
+            /**
+             * Get any occurred Indeterminate${overriding_effect} result
+             */
+            ExtendedDecision getFirstIndeterminateWithOverridingEffect()
+            {
+                return firstIndeterminateOverridingEffect;
+            }
+
+            /**
+             * Get any occurred Indeterminate${overridden_effect} result
+             */
+            ExtendedDecision getFirstIndeterminateWithOverriddenEffect()
+            {
+                return firstIndeterminateOverriddenEffect;
+            }
+        }
+
+        private record IndeterminateSubDecisionHandler(
+                Map<DecisionType, SubDecisionHandler> indeterminateResultHandlersByExtendedIndeterminateType) implements SubDecisionHandler
+        {
+
+            @Override
+            public boolean handle(final DecisionResult result, final DecisionResultCollector resultCollector)
+            {
+                final DecisionType extIndeterminate = result.getExtendedIndeterminate();
+                assert extIndeterminate != null && extIndeterminate != DecisionType.NOT_APPLICABLE;
+                return this.indeterminateResultHandlersByExtendedIndeterminateType.get(extIndeterminate).handle(result, resultCollector);
+            }
+        }
+    }
+
+    /**
+     * Combining algorithm evaluator that evaluates rules with overriding Effect first, then rules with overridden effect
+     * rules (with overridden effect)
+     */
+    protected static class OverridingEffectFirstRuleCombiningAlgEvaluator implements CombiningAlg.Evaluator
+    {
+        private final RulesWithSameEffectEvaluator overridingEffectRulesCombiner;
+        private final OverriddenEffectRuleCombiningHelper overriddenEffectRulesCombiner;
+
+        private final DecisionType overridingDecision;
+
+        /**
+         * Constructor
+         *
+         * @param overridingEffect              overriding Effect
+         * @param overridingEffectRulesCombiner Evaluator combining Rules with overriding Effect. Must be non-null.
+         * @param overriddenEffectRulesCombiner Evaluator combining Rules with the opposite/overridden Effect. Must be non-null.
+         */
+         OverridingEffectFirstRuleCombiningAlgEvaluator(final EffectType overridingEffect, final RulesWithSameEffectEvaluator overridingEffectRulesCombiner, final OverriddenEffectRuleCombiningHelper overriddenEffectRulesCombiner)
+        {
+            assert overridingEffect != null && overridingEffectRulesCombiner != null && overriddenEffectRulesCombiner != null;
+            this.overridingDecision = overridingEffect == EffectType.DENY ? DecisionType.DENY : DecisionType.PERMIT;
+            this.overridingEffectRulesCombiner = overridingEffectRulesCombiner;
+            this.overriddenEffectRulesCombiner = overriddenEffectRulesCombiner;
+        }
+
+        @Override
+        public ExtendedDecision evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final UpdatableList<PepAction> updatablePepActions,
+                                         final UpdatableList<PrimaryPolicyMetadata> updatableApplicablePolicyIdList)
+        {
+            final ExtendedDecision extDecisionFromRulesWithOverridingEffect = overridingEffectRulesCombiner.evaluate(context, mdpContext, updatablePepActions, updatableApplicablePolicyIdList);
+            final DecisionType decisionFromRulesWithOverridingEffect = extDecisionFromRulesWithOverridingEffect.getDecision();
+            if (decisionFromRulesWithOverridingEffect == overridingDecision)
+            {
 				/*
-				 * XACML §7.18: Obligations & Advice: do not return Obligations/Advice of the rule, policy, or policy set that does not match the decision resulting from evaluating the enclosing
-				 * policy set. For example, if the final decision is Permit, we should add to outPepActions only the PEP actions from Permit decisions (permitPepActions)
+				Overriding effect returned as decision
 				 */
-				if (isResultOverriding)
-				{
-					/*
-					 * result overrides all others, return it right away after updating output applicable policies and PEP actions
-					 */
-					if (outApplicablePolicyIdList != null)
-					{
-						outApplicablePolicyIdList.addAll(resultCollector.getApplicablePolicies(result));
-					}
-
-					outPepActions.addAll(result.getPepActions());
-					return this.decisionForOverridingEffect;
-				}
-
-			}
-
-			/*
-			 * There was no overriding Deny/Permit decision, i.e. Deny (resp. Permit) in case of deny-overrides (resp. permit-overrides) alg, else: if any Indeterminate{DP}, then Indeterminate{DP}
-			 */
-			final ExtendedDecision firstIndeterminateDP = resultCollector.getFirstIndeterminateDP();
-			if (firstIndeterminateDP != null)
-			{
-				// at least one Indeterminate{DP}
-				if (outApplicablePolicyIdList != null)
-				{
-					outApplicablePolicyIdList.addAll(resultCollector.getApplicablePolicies(null));
-				}
-
-				return firstIndeterminateDP;
-			}
-
-			final List<PrimaryPolicyMetadata> combinedApplicablePolicies = resultCollector.getApplicablePolicies(null);
-			final UpdatableList<PepAction> combinedPepActionsOfNotOverridingDP = resultCollector.getPepActions();
-			final ExtendedDecision firstIndeterminateWithOverridingEffect = resultCollector.getFirstIndeterminateWithOverridingEffect();
-			final ExtendedDecision firstIndeterminateWithOverriddenEffect = resultCollector.getFirstIndeterminateWithOverriddenEffect();
-
-			/*
-			 * ${overriding_effect} = Deny and ${overridden_effect} = Permit (resp. Deny) in case of deny-overrides (resp. permit-overrides) algorithm.
-			 * 
-			 * If any Indeterminate{overriding_effect}, then: if ( any Indeterminate{overridden_effect} or any decision with ${overridden_effect} ) -> Indeterminate{DP}; else ->
-			 * Indeterminate{overriding_effect} (this is a simplified equivalent of the algo in the spec)
-			 */
-			/*
-			 * atLeastOne${overridden_effect} == true <=> ${overridden_effect}PepActions != null
-			 */
-			if (firstIndeterminateWithOverridingEffect != null)
-			{
-				if (outApplicablePolicyIdList != null)
-				{
-					outApplicablePolicyIdList.addAll(combinedApplicablePolicies);
-				}
-
-				return ExtendedDecisions.newIndeterminate(
-				        firstIndeterminateWithOverriddenEffect != null || combinedPepActionsOfNotOverridingDP != null ? DecisionType.INDETERMINATE : decisionForOverridingEffect.getDecision(),
-				        firstIndeterminateWithOverridingEffect.getCauseForIndeterminate().orElse(new IndeterminateEvaluationException("Unknown cause for " +  firstIndeterminateWithOverridingEffect + " in deny/permit-overrides combining algorithm", XacmlStatusCode.PROCESSING_ERROR.value())));
-			}
-
-			/*
-			 * If we got a decision with overridden effect (e.g. Permit in case of deny-overrides algo) or Indeterminate{overridden_effect}, return it, otherwise it's NOT_APPLICABLE
-			 */
-			if (combinedPepActionsOfNotOverridingDP != null)
-			{
-				if (outApplicablePolicyIdList != null)
-				{
-					outApplicablePolicyIdList.addAll(combinedApplicablePolicies);
-				}
-
-				outPepActions.addAll(combinedPepActionsOfNotOverridingDP);
-				return decisionForOverriddenEffect;
-			}
-
-			if (firstIndeterminateWithOverriddenEffect != null)
-			{
-				if (outApplicablePolicyIdList != null)
-				{
-					outApplicablePolicyIdList.addAll(combinedApplicablePolicies);
-				}
-
-				return firstIndeterminateWithOverriddenEffect;
-			}
-
-			return ExtendedDecisions.SIMPLE_NOT_APPLICABLE;
-		}
-	}
-
-	/**
-	 * Combining algorithm evaluator that evaluates rules in a specific order: 1) rules with overriding Effect (in same order as in the constructor argument 'rulesWithOverridingEffect'), 2) other
-	 * rules (with overridden effect)
-	 */
-	private static final class OverridingEffectFirstRuleCombiningAlgEvaluator extends RulesWithSameEffectEvaluator
-	{
-		private final ImmutableList<RuleEvaluator> otherRules;
-		private final DecisionType overriddenEffectAsDecision;
-		private final ExtendedDecision overriddenEffectAsExtDecision;
-
-		/**
-		 * Constructor
-		 * 
-		 * @param rulesWithOverridingEffect
-		 *            combined Rules with overriding Effect. Must be non-null and non-empty.
-		 * @param otherRules
-		 *            combined Rules with opposite/overridden Effect. Must be non-null and non-empty.
-		 */
-		OverridingEffectFirstRuleCombiningAlgEvaluator(final Collection<RuleEvaluator> rulesWithOverridingEffect, final Collection<RuleEvaluator> otherRules)
-		{
-			super(rulesWithOverridingEffect);
-
-			assert otherRules != null && !otherRules.isEmpty();
-
-			// first rule's effect assumed the same for all
-			final EffectType overriddenEffect = otherRules.iterator().next().getEffect();
-
-			assert rulesWithOverridingEffect.iterator().next().getEffect() != overriddenEffect && haveSameEffect(overriddenEffect, otherRules);
-
-			if (overriddenEffect == EffectType.DENY)
-			{
-				this.overriddenEffectAsDecision = DecisionType.DENY;
-				this.overriddenEffectAsExtDecision = ExtendedDecisions.SIMPLE_DENY;
-			} else
-			{
-				this.overriddenEffectAsDecision = DecisionType.PERMIT;
-				this.overriddenEffectAsExtDecision = ExtendedDecisions.SIMPLE_PERMIT;
-			}
-
-			this.otherRules = ImmutableList.copyOf(otherRules);
-		}
-
-		/**
-		 * Evaluate rules with overridden Effect in the case when the evaluation of the rules with overriding Effect returned Indeterminate
-		 * 
-		 * @param indeterminateFromRulesWithOverridingEffect
-		 *            Indeterminate result from previous evaluation of rules with overriding effect
-		 * @return final decision
-		 */
-		private ExtendedDecision evaluateRulesWithOverriddenEffect(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final ExtendedDecision indeterminateFromRulesWithOverridingEffect)
-		{
-			/*
-			 * indeterminateFromRulesWithOverridingEffect's decision assumed Indeterminate{overriding_effect}, overriding_effect = D (resp. P) if overriding Effect is Deny (resp. Permit)
-			 */
-			assert indeterminateFromRulesWithOverridingEffect != null && indeterminateFromRulesWithOverridingEffect.getDecision() == DecisionType.INDETERMINATE;
-
-			for (final RuleEvaluator rule : otherRules)
-			{
-				final DecisionResult evalResult = rule.evaluate(context, mdpContext);
-				if (evalResult.getDecision() != DecisionType.NOT_APPLICABLE)
-				{
-					/*
-					 * decision is the overridden Effect or Indeterminate{overridden_effect}, which we have to combine with previous result (from rules with overriding Effect)
-					 * Indeterminate{overriding_effect}. For example,
-					 * <p>
-					 * IndeterminateD and (IndeterminateP or Permit)
-					 * </p>
-					 * <p>
-					 * OR
-					 * </p>
-					 * <p>
-					 * IndeterminateP and (IndeterminateD or Deny)
-					 * </p>
-					 * <p>
-					 * => IndeterminateDP in both cases
-					 * </p>
-					 */
-					return ExtendedDecisions.newIndeterminate(DecisionType.INDETERMINATE, indeterminateFromRulesWithOverridingEffect.getCauseForIndeterminate().orElse(new IndeterminateEvaluationException("Unknown cause for " +  indeterminateFromRulesWithOverridingEffect + " in deny/permit-overrides combining algorithm", XacmlStatusCode.PROCESSING_ERROR.value())));
-				}
-
-				// Else decision is NotApplicable, do nothing, continue
-			}
-
-			/*
-			 * All other rules (with overridden effect) NotApplicable -> initial Indeterminate result unchanged
-			 */
-			return indeterminateFromRulesWithOverridingEffect;
-		}
-
-		/**
-		 * Evaluate rules with overridden Effect in the case when the evaluation of the rules with overriding Effect returned NotApplicable
-		 * 
-		 * @return final decision
-		 */
-		private ExtendedDecision evaluateRulesWithOverriddenEffect(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final UpdatableList<PepAction> updatablePepActions)
-		{
-			/*
-			 * Replaces atLeastOnePermit (resp. atLeastOneDeny) from description of deny-overrides (resp. permit-overrides) in the XACML spec.
-			 * <p>
-			 * atLeastOnePermit/atLeastOneDeny == false <=> combinedPepActions == null.
-			 * <p>
-			 * At this point, we don't know yet whether the PEP actions of combined/children's Permit/Deny decisions will be added to the final result's PEP actions, since we don't know yet whether
-			 * the final decision is Permit/Deny.
-			 */
-			UpdatableList<PepAction> combinedPepActions = null;
-
-			ExtendedDecision firstIndeterminateInOverriddenEffect = null;
-			for (final RuleEvaluator rule : otherRules)
-			{
-				final DecisionResult evalResult = rule.evaluate(context, mdpContext);
-				final DecisionType decision = evalResult.getDecision();
-				if (decision == overriddenEffectAsDecision)
-				{
-					// Permit/Deny
-					if (combinedPepActions == null)
-					{
-						combinedPepActions = UpdatableCollections.newUpdatableList();
-					}
-
-					combinedPepActions.addAll(evalResult.getPepActions());
-				}
-
-				/*
-				 * If the decision is Indeterminate, save the indeterminate cause for the final Indeterminate result (if first Indeterminate), only used if no other rule with determinate result
-				 * checked above is found.
-				 */
-				if (decision == DecisionType.INDETERMINATE && firstIndeterminateInOverriddenEffect == null)
-				{
-					// first Indeterminate for overridden effect
-					firstIndeterminateInOverriddenEffect = evalResult;
-				}
-			}
-
-			// if(atLeastOnePermit/atLeastOneDeny)...
-			if (combinedPepActions != null)
-			{
-				updatablePepActions.addAll(combinedPepActions);
-				return this.overriddenEffectAsExtDecision;
-			}
-
-			/*
-			 * All decisions were NotApplicable or Indeterminate{overridden_effect}
-			 *
-			 * There's at Least One Indeterminate; else all decisions were NotApplicable -> NotApplicable
-			 */
-			return Objects.requireNonNullElse(firstIndeterminateInOverriddenEffect, ExtendedDecisions.SIMPLE_NOT_APPLICABLE);
-		}
-
-		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final UpdatableList<PepAction> updatablePepActions,
-		        final UpdatableList<PrimaryPolicyMetadata> updatableApplicablePolicyIdList)
-		{
-			final ExtendedDecision extDecisionFromRulesWithOverridingEffect = super.evaluate(context, mdpContext, updatablePepActions, updatableApplicablePolicyIdList);
-			switch (extDecisionFromRulesWithOverridingEffect.getDecision())
-			{
-				case DENY:
-				case PERMIT:
-					return extDecisionFromRulesWithOverridingEffect;
-
-				case INDETERMINATE:
-					// Optimize
-					return evaluateRulesWithOverriddenEffect(context, mdpContext, extDecisionFromRulesWithOverridingEffect);
-				default:
-					// NotApplicable
-					// Optimize
-					return evaluateRulesWithOverriddenEffect(context, mdpContext, updatablePepActions);
-			}
-		}
-
-	}
-
-	private interface RuleCollector
-	{
-		void addNonEmptyRuleWithOverridingEffect(RuleEvaluator rule);
-
-		boolean hasRuleWithOverriddenEffectAndPepAction();
-
-		void addFirstEmptyRuleWithOverriddenEffect(RuleEvaluator rule);
-
-		void addNonEmptyRuleWithOverriddenEffectButNoPepAction(RuleEvaluator rule);
-
-		void addRuleWithOverriddenEffectAndPepActions(RuleEvaluator rule);
-
-		boolean hasRuleWithOverridingEffect();
-
-		boolean hasRuleWithOverriddenEffect();
-
-		CombiningAlg.Evaluator getRuleCombiningAlgEvaluatorAssumingAllWithOverridingEffect();
-
-		CombiningAlg.Evaluator getRuleCombiningAlgEvaluatorAssumingAllWithOverriddenEffect();
-
-		CombiningAlg.Evaluator getDPOverridesRuleCombiningAlgEvaluator(EffectType overridingEffect);
-	}
-
-	private interface RuleCollectorFactory
-	{
-		RuleCollector newInstance();
-	}
-
-	/**
-	 * Rule collector that preserve the order of the rules, i.e. order of insertion/appending, as opposed to OverridingEffectFirstRuleCollector
-	 */
-	private static class OrderPreservingRuleCollector implements RuleCollector
-	{
-		boolean atLeastOneRuleWithOverridingEffect = false;
-		boolean atLeastOneRuleWithOverriddenEffectButNoPepAction = false;
-		boolean atLeastOneRuleWithOverriddenEffectAndPepAction = false;
-		final List<RuleEvaluator> addedRules = new ArrayList<>();
-
-		@Override
-		public void addNonEmptyRuleWithOverridingEffect(final RuleEvaluator rule)
-		{
-			atLeastOneRuleWithOverridingEffect = true;
-			addedRules.add(rule);
-		}
-
-		@Override
-		public void addNonEmptyRuleWithOverriddenEffectButNoPepAction(final RuleEvaluator rule)
-		{
-			assert !rule.hasAnyPepAction();
-			atLeastOneRuleWithOverriddenEffectButNoPepAction = true;
-			addedRules.add(rule);
-		}
-
-		@Override
-		public void addRuleWithOverriddenEffectAndPepActions(final RuleEvaluator rule)
-		{
-			assert rule.hasAnyPepAction();
-			atLeastOneRuleWithOverriddenEffectAndPepAction = true;
-			addedRules.add(rule);
-		}
-
-		@Override
-		public void addFirstEmptyRuleWithOverriddenEffect(final RuleEvaluator rule)
-		{
-			atLeastOneRuleWithOverriddenEffectButNoPepAction = true;
-			/*
-			 * Remove all rules with overridden Effect but no PEP action, since they have no effect if there is an empty rule (that always successfully evaluate to overridden Effect)
-			 */
-			final Iterator<RuleEvaluator> it = addedRules.iterator();
-			while (it.hasNext())
-			{
-				final RuleEvaluator addedRule = it.next();
-				if (!addedRule.hasAnyPepAction())
-				{
-					/*
-					 * No PEP action
-					 */
-					it.remove();
-					if (LOGGER.isWarnEnabled())
-					{
-						LOGGER.warn(
-						        "ordered-{}-overrides algorithm: Ignoring/removing {} (Effect={}) because it does not affect the result, since it does no have any PEP action and we already found an empty Rule ({}) with same Effect (always returns {}).",
-						        rule.getEffect() == EffectType.DENY ? "permit" : "deny", addedRule, addedRule.getEffect(), rule, addedRule.getEffect());
-					}
-				}
-			}
-
-			addedRules.add(rule);
-		}
-
-		@Override
-		public boolean hasRuleWithOverridingEffect()
-		{
-			return atLeastOneRuleWithOverridingEffect;
-		}
-
-		@Override
-		public boolean hasRuleWithOverriddenEffect()
-		{
-			return atLeastOneRuleWithOverriddenEffectButNoPepAction || atLeastOneRuleWithOverriddenEffectAndPepAction;
-		}
-
-		@Override
-		public boolean hasRuleWithOverriddenEffectAndPepAction()
-		{
-			return atLeastOneRuleWithOverriddenEffectAndPepAction;
-		}
-
-		@Override
-		public CombiningAlg.Evaluator getRuleCombiningAlgEvaluatorAssumingAllWithOverridingEffect()
-		{
-			assert !hasRuleWithOverriddenEffect();
-			return new CombiningAlgEvaluators.RulesWithSameEffectEvaluator(addedRules);
-		}
-
-		@Override
-		public CombiningAlg.Evaluator getRuleCombiningAlgEvaluatorAssumingAllWithOverriddenEffect()
-		{
-			assert !hasRuleWithOverridingEffect();
-			return new CombiningAlgEvaluators.RulesWithSameEffectEvaluator(addedRules);
-		}
-
-		@Override
-		public CombiningAlg.Evaluator getDPOverridesRuleCombiningAlgEvaluator(final EffectType overridingEffect)
-		{
-			return new OrderPreservingCombiningAlgEvaluator(addedRules, overridingEffect);
-		}
-
-	}
-
-	/**
-	 * 
-	 * Rule collector that groups rules by Effect, with overriding Effect first (e.g. Deny rules before Permit rules if algorithm is deny-overrides)
-	 *
-	 */
-	private static class OverridingEffectFirstRuleCollector implements RuleCollector
-	{
-		/*
-		 * We will reorder rules with overriding Effect (e.g. Deny for deny-overrides algorithm) before rules with overridden Effect (e.g. Permit for deny-overrides algorithm) since order does not
-		 * matter and overriding Effect overrides/prevails.
-		 */
-		final Deque<RuleEvaluator> nonEmptyRulesWithOverridingEffect = new ArrayDeque<>();
-		final Deque<RuleEvaluator> rulesWithOverriddenEffectButNoPepAction = new ArrayDeque<>();
-		final Deque<RuleEvaluator> rulesWithOverriddenEffectAndPepActions = new ArrayDeque<>();
-
-		@Override
-		public void addNonEmptyRuleWithOverridingEffect(final RuleEvaluator rule)
-		{
-			nonEmptyRulesWithOverridingEffect.addLast(rule);
-		}
-
-		@Override
-		public void addNonEmptyRuleWithOverriddenEffectButNoPepAction(final RuleEvaluator rule)
-		{
-			assert !rule.hasAnyPepAction();
-			rulesWithOverriddenEffectButNoPepAction.addLast(rule);
-		}
-
-		@Override
-		public void addRuleWithOverriddenEffectAndPepActions(final RuleEvaluator rule)
-		{
-			assert rule.hasAnyPepAction();
-			rulesWithOverriddenEffectAndPepActions.addLast(rule);
-		}
-
-		@Override
-		public void addFirstEmptyRuleWithOverriddenEffect(final RuleEvaluator rule)
-		{
-			/*
-			 * We may ignore all other rules with same overridden Effect and without PEP action
-			 */
-			if (LOGGER.isWarnEnabled())
-			{
-				LOGGER.warn(
-				        "{}-overrides algorithm: found empty rule {} (Effect = {}) -> Ignoring/removing all rules found so far with same Effect and without any PEP action ( {} ) because they do not affect the final result.",
-				        rule.getEffect() == EffectType.DENY ? "permit" : "deny", rule, rule.getEffect(), rulesWithOverriddenEffectButNoPepAction);
-			}
-			rulesWithOverriddenEffectButNoPepAction.clear();
-			rulesWithOverriddenEffectButNoPepAction.addLast(rule);
-		}
-
-		@Override
-		public boolean hasRuleWithOverridingEffect()
-		{
-			return !nonEmptyRulesWithOverridingEffect.isEmpty();
-		}
-
-		@Override
-		public boolean hasRuleWithOverriddenEffect()
-		{
-			return !rulesWithOverriddenEffectButNoPepAction.isEmpty() || !rulesWithOverriddenEffectAndPepActions.isEmpty();
-		}
-
-		@Override
-		public boolean hasRuleWithOverriddenEffectAndPepAction()
-		{
-			return !rulesWithOverriddenEffectAndPepActions.isEmpty();
-		}
-
-		@Override
-		public CombiningAlg.Evaluator getRuleCombiningAlgEvaluatorAssumingAllWithOverridingEffect()
-		{
-			assert rulesWithOverriddenEffectButNoPepAction.isEmpty() && rulesWithOverriddenEffectAndPepActions.isEmpty();
-			return new CombiningAlgEvaluators.RulesWithSameEffectEvaluator(nonEmptyRulesWithOverridingEffect);
-		}
-
-		private Deque<RuleEvaluator> getRulesWithOverriddenEffect()
-		{
-			if (rulesWithOverriddenEffectButNoPepAction.isEmpty())
-			{
-				return rulesWithOverriddenEffectAndPepActions;
-			}
-
-			if (rulesWithOverriddenEffectAndPepActions.isEmpty())
-			{
-				return rulesWithOverriddenEffectButNoPepAction;
-			}
-
-			final Deque<RuleEvaluator> rulesWithOverriddenEffect = new ArrayDeque<>(rulesWithOverriddenEffectButNoPepAction.size() + rulesWithOverriddenEffectAndPepActions.size());
-			rulesWithOverriddenEffect.addAll(rulesWithOverriddenEffectButNoPepAction);
-			rulesWithOverriddenEffect.addAll(rulesWithOverriddenEffectAndPepActions);
-			return rulesWithOverriddenEffect;
-		}
-
-		@Override
-		public CombiningAlg.Evaluator getRuleCombiningAlgEvaluatorAssumingAllWithOverriddenEffect()
-		{
-			assert nonEmptyRulesWithOverridingEffect.isEmpty();
-			return new CombiningAlgEvaluators.RulesWithSameEffectEvaluator(getRulesWithOverriddenEffect());
-		}
-
-		@Override
-		public CombiningAlg.Evaluator getDPOverridesRuleCombiningAlgEvaluator(final EffectType overridingEffect)
-		{
-			return new OverridingEffectFirstRuleCombiningAlgEvaluator(nonEmptyRulesWithOverridingEffect, getRulesWithOverriddenEffect());
-		}
-	}
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(DPOverridesCombiningAlg.class);
-
-	private static final RuleCollectorFactory OVERRIDING_EFFECT_FIRST_RULE_COLLECTOR_FACTORY = () -> {
-		LOGGER.debug(
-		        "Rule combining algorithm is permit/deny-overrides: 'children may be processed in any order' (XACML). This implementation will process Rules with overriding Effect first, then the others without PEP action, and finally the others with PEP action(s)");
-		return new OverridingEffectFirstRuleCollector();
-	};
-
-	private static final RuleCollectorFactory ORDER_PRESERVING_RULE_COLLECTOR_FACTORY = OrderPreservingRuleCollector::new;
-
-	private final EffectType overridingEffect;
-	private final EffectType overriddenEffect;
-	private final RuleCollectorFactory ruleCollectorFactory;
-	private final CombiningAlg.Evaluator constantOverridingEffectDecisionEvaluator;
-	private final CombiningAlg.Evaluator constantOverriddenEffectDecisionEvaluator;
-
-	/**
-	 * Constructor
-	 * 
-	 * @param algId
-	 *            combining algorithm ID
-	 * @param overridingEffect
-	 *            overriding effect (e.g. Deny for deny-overrides algorithm)
-	 * @param isOrdered
-	 *            true iff combined elements must be evaluated in order of declaration, i.e. in same order as in 'combinedElements' argument of {@link #getInstance(Iterable, Iterable)}. If false, the
-	 *            order is changed, in particular optimized by evaluating rules with overriding Effect first.
-	 */
-	DPOverridesCombiningAlg(final String algId, final Class<T> combinedType, final EffectType overridingEffect, final boolean isOrdered)
-	{
-		super(algId, combinedType);
-		this.overridingEffect = overridingEffect;
-		if (overridingEffect == EffectType.DENY)
-		{
-			overriddenEffect = EffectType.PERMIT;
-			constantOverridingEffectDecisionEvaluator = CombiningAlgEvaluators.DENY_CONSTANT_EVALUATOR;
-			constantOverriddenEffectDecisionEvaluator = CombiningAlgEvaluators.PERMIT_CONSTANT_EVALUATOR;
-		} else
-		{
-			// Overriding Effect is Permit
-			overriddenEffect = EffectType.DENY;
-			constantOverridingEffectDecisionEvaluator = CombiningAlgEvaluators.PERMIT_CONSTANT_EVALUATOR;
-			constantOverriddenEffectDecisionEvaluator = CombiningAlgEvaluators.DENY_CONSTANT_EVALUATOR;
-		}
-
-		this.ruleCollectorFactory = isOrdered ? ORDER_PRESERVING_RULE_COLLECTOR_FACTORY : OVERRIDING_EFFECT_FIRST_RULE_COLLECTOR_FACTORY;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends T>> params, final Iterable<? extends T> combinedElements)
-	        throws UnsupportedOperationException, IllegalArgumentException
-	{
-		// if no element -> NotApplicable
-		if (combinedElements == null)
-		{
-			LOGGER.warn("{}: no element to combine -> optimization: replacing with equivalent evaluator returning constant NotApplicable decision", this);
-			return CombiningAlgEvaluators.NOT_APPLICABLE_CONSTANT_EVALUATOR;
-		}
-
-		final Iterator<? extends Decidable> combinedEltIterator = combinedElements.iterator();
-		if (!combinedEltIterator.hasNext())
-		{
-			// empty (no element to combine)
-			LOGGER.warn("{}: no element to combine -> optimization: replacing with equivalent evaluator returning constant NotApplicable decision", this);
-			return CombiningAlgEvaluators.NOT_APPLICABLE_CONSTANT_EVALUATOR;
-		}
-
-		/*
-		 * If combined elements are Rules, we can optimize
-		 */
-		if (!RuleEvaluator.class.isAssignableFrom(getCombinedElementType()))
-		{
-			return new OrderPreservingCombiningAlgEvaluator(combinedElements, this.overridingEffect);
-		}
-
-		// combined elements are Rules, we can optimize
-		/*
-		 * There is at least one Rule. Prepare to iterate over Rules and collect them in a specific way (depending on whether it is "ordered-*-overrides" kind of algorithm or not).
-		 */
-		final RuleCollector ruleCollector = ruleCollectorFactory.newInstance();
-
-		/*
-		 * 
-		 * If we find any empty Rule in overridden Effect (no target/condition/pep_action), we don't need to look at other rules with such Effect and no PEP action; because if there is no rule with
-		 * overriding Effect, this rule is enough to return the overridden Effect as decision, and PEP actions come from all other rules with same Effect and PEP actions (e.g. if algorithm is
-		 * deny-overrides, then if there is no applicable Deny rule, if there is any empty Permit rule, the result is Permit with PEP actions combined from all other Permit rules with PEP actions)
-		 */
-		RuleEvaluator firstEmptyRuleWithOverriddenEffect = null;
-
-		while (combinedEltIterator.hasNext())
-		{
-			final RuleEvaluator rule = (RuleEvaluator) combinedEltIterator.next();
-			if (rule.getEffect() == overridingEffect)
-			{
-				/*
-				 * If rule's effect is the overriding Effect, and it has no target/condition/pep_actions, then rule will always return this Effect -> {overriding_effect}-overrides alg always evaluates
-				 * to ${overriding_effect} (ignore/remove all other rules). ({overriding_effect} = Permit if algorithm is Permit-overrides, or Deny if algorithm is Deny-overrides in this statement.)
-				 */
-				if (rule.isEmptyEquivalent())
-				{
-					LOGGER.warn(
-					        "{}: {} with Effect={} is empty (no target/condition/pep_actions) => always returns {} => algorithm will always return {} => other combined rules have no effect => will be ignored/removed.",
-					        this, rule, this.overridingEffect, this.overridingEffect, this.overridingEffect);
-					return constantOverridingEffectDecisionEvaluator;
-				}
-
-				/*
-				 * Rule is not empty, i.e. has a target/condition/actions, therefore may not necessarily return its (overriding) Effect as decision
-				 */
-				ruleCollector.addNonEmptyRuleWithOverridingEffect(rule);
-				continue;
-			}
-
-			/*
-			 * Rule Effect = {overridden_Effect} (e.g. Permit if algorithm is deny-overrides)
-			 * 
-			 * In the end, if there is no applicable rule with overriding Effect, and if there is an empty rule with such overridden Effect, we already know that the result is always the overridden
-			 * Effect with PEP actions from all other rules with same Effect and PEP action(s).
-			 */
-			if (firstEmptyRuleWithOverriddenEffect != null)
-			{
-				if (rule.hasAnyPepAction())
-				{
-
-					// rule has PEP action(s), therefore it matters if final result is overridden Effect
-					ruleCollector.addRuleWithOverriddenEffectAndPepActions(rule);
-					continue;
-				}
-
-				/*
-				 * Rule has no PEP action Ignore this new Rule with overridden Effect and no PEP action; it will have no effect since we are sure the empty rule (that we already found) with overridden
-				 * Effect will successfully evaluate.
-				 */
-				LOGGER.warn(
-				        "{}: Ignoring/removing {} (Effect={}) because it does not affect the result, since it does no have any PEP action and we already found an empty Rule ({}) found with same Effect (always returns {}).",
-				        this, rule, overriddenEffect, firstEmptyRuleWithOverriddenEffect, overriddenEffect);
-				// continue looking for rules with overriding Effect
-				continue;
-
-			}
-
-			// No empty Rule with overridden Effect found yet (firstEmptyRuleWithOverriddenEffect == null)
-			if (rule.isEmptyEquivalent())
-			{
-				// rule has no PEP action -> firstEmptyRuleWithOverriddenEffect == null
-				/*
-				 * This is the first declared empty Rule with overridden Effect -> always returns the overridden Effect as decision; we can ignore/remove other Rules with overridden Effect unless they
-				 * have PEP actions (have no effect anymore)
-				 */
-				LOGGER.warn(
-				        "{}: {} (Effect={}) is empty (no target/condition/pep_actions) => always returns {} => algorithm will always return {} unless some {} rule applies => other combined {} rules without any PEP action have no effect => will be ignored/removed.",
-				        this, rule, overriddenEffect, overriddenEffect, overriddenEffect, overridingEffect, overriddenEffect);
-				firstEmptyRuleWithOverriddenEffect = rule;
-				ruleCollector.addFirstEmptyRuleWithOverriddenEffect(rule);
-				// continue looking for rules with overriding Effect or with PEP actions
-				continue;
-			}
-
-			/*
-			 * Non-empty Rule with overridden Effect found yet and current rule is not empty
-			 */
-			if (rule.hasAnyPepAction())
-			{
-				ruleCollector.addRuleWithOverriddenEffectAndPepActions(rule);
-			} else
-			{
-				ruleCollector.addNonEmptyRuleWithOverriddenEffectButNoPepAction(rule);
-			}
-
-		} // END while
-
-		/*
-		 * There is at least one rule and there is no empty Rule with overriding Effect.
-		 * 
-		 * If there is no rule with overriding Effect...
-		 */
-		if (!ruleCollector.hasRuleWithOverridingEffect())
-		{
-			/*
-			 * No Rule with overriding Effect (whether empty or not) -> at least one Rule with overridden Effect and all rules have this same overridden Effect. If we found an empty rule with
-			 * overridden Effect and no other with PEP action, the decision is the constant overridden Effect without PEP action.
-			 */
-			if (firstEmptyRuleWithOverriddenEffect != null && !ruleCollector.hasRuleWithOverriddenEffectAndPepAction())
-			{
-				/*
-				 * no Rule with overriding Effect or PEP action, but one empty rule with overridden Effect -> final result is the overridden Effect as simple decision (no PEP action) always
-				 */
-				LOGGER.warn(
-				        "{}: the only combined rule is empty {} Rule ({}) => algorithm will always return this {} => optimization: replacing with equivalent evaluator returning constant {} decision",
-				        this, this.overriddenEffect, firstEmptyRuleWithOverriddenEffect, this.overriddenEffect, this.overriddenEffect);
-				return constantOverriddenEffectDecisionEvaluator;
-			}
-
-			/*
-			 * (All rules have same overridden Effect, and) either there is no empty rule OR there is at least one with PEP action
-			 */
-			return ruleCollector.getRuleCombiningAlgEvaluatorAssumingAllWithOverriddenEffect();
-		}
-
-		/*
-		 * There is at least one non-empty rule with overriding Effect.
-		 * 
-		 * If there is no rule with overridden Effect...
-		 */
-
-		if (!ruleCollector.hasRuleWithOverriddenEffect())
-		{
-			/*
-			 * No rule with overridden Effect -> only non-empty rules with same overriding Effect
-			 */
-			return ruleCollector.getRuleCombiningAlgEvaluatorAssumingAllWithOverridingEffect();
-		}
-
-		/*
-		 * At least one Rule with overridden Effect and only non-empty rules with overriding Effect
-		 */
-		return ruleCollector.getDPOverridesRuleCombiningAlgEvaluator(overridingEffect);
-	}
+                return extDecisionFromRulesWithOverridingEffect;
+            }
+
+            // Decision is NotApplicable or Indeterminate. Final decision depends on overriddenEffectRulesCombiner result
+            return overriddenEffectRulesCombiner.evaluateAfterOverridingEffectRules(extDecisionFromRulesWithOverridingEffect, context, mdpContext, updatablePepActions);
+        }
+    }
 }

@@ -6,9 +6,14 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 21.0.1
+### Fixed
+- [GH-92] Deny-overrides rule combining algorithm - Missing obligations in case of multiple Permit Rules and no Deny Rule (only the Obligations from the first Permit Rule were returned).
+
+
 ## 21.0.0
 ### Changed
-- [GH-87] Minimum required Java version is now **Java 17**. (Java 11 no longer supported.)
+- [GH-87] Minimum required Java version is now **Java 17 LTS**. (Java 11 no longer supported.)
 - [GH-86] Upgraded **JAXB to 4.0**. All `javax.xml.bind` namespace replaced with `jakarta.xml.bind` in all package imports.
 - Upgraded parent project (authzforce-ce-parent): 9.0.0
 - Upgraded dependencies:

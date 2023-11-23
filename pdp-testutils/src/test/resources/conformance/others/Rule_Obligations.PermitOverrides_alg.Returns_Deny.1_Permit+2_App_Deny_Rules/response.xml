@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17">
+    <Result>
+        <Decision>Deny</Decision>
+        <Obligations>
+            <Obligation ObligationId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIA006ter:rule4:obligation1"/>
+            <Obligation ObligationId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIA006ter:rule4:obligation2"/>
+            <Obligation ObligationId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIA006ter:rule5:obligation1"/>
+            <Obligation ObligationId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIA006ter:rule5:obligation2"/>
+        </Obligations>
+    </Result>
+</Response>

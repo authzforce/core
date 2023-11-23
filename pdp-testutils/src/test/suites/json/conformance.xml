@@ -2,7 +2,6 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="AuthzForce.Core.PDP.JSON.Profile.Conformance" verbose="3">
    <parameter name="org.ow2.authzforce.domains.param1" value="val1" />
-
    <test name="XacmlJsonConformance" preserve-order="true" enabled="true">
       <classes>
          <class name="org.ow2.authzforce.core.pdp.testutil.test.json.XacmlJsonConformanceV3MandatoryTest" />
