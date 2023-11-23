@@ -6,6 +6,11 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 21.0.1
+### Fixed
+- [GH-92] Deny-overrides rule combining algorithm - Missing obligations in case of multiple Permit Rules and no Deny Rule (only the Obligations from the first Permit Rule were returned).
+
+
 ## 21.0.0
 ### Changed
 - [GH-87] Minimum required Java version is now **Java 17 LTS**. (Java 11 no longer supported.)
