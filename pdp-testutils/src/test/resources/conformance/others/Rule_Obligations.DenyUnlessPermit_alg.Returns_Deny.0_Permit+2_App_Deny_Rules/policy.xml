@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Policy xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17"
+        PolicyId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIA006quater:policy"
+        RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit" Version="1.0">
+    <Description>
+        Purpose: test Obligations on Rules, Case: Deny: RuleCombiningAlgorithm deny-unless-permit. No Permit Rule. Multiple applicable Deny Rules.
+    </Description>
+    <Target/>
+    <Rule Effect="Deny" RuleId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIA006quater:rule4">
+        <Description>
+            A subject whose name is Julius Hibbert may not
+            perform any action on any resource.  DENY.
+        </Description>
+        <Condition>
+            <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-one-and-only">
+                    <AttributeDesignator AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id" Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false"/>
+                </Apply>
+                <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">Julius Hibbert</AttributeValue>
+            </Apply>
+        </Condition>
+        <ObligationExpressions>
+            <ObligationExpression ObligationId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIA006quater:rule4:obligation1" FulfillOn="Deny" />
+            <ObligationExpression ObligationId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIA006quater:rule4:obligation2" FulfillOn="Deny" />
+        </ObligationExpressions>
+    </Rule>
+    <Rule Effect="Deny" RuleId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIA006quater:rule5">
+        <ObligationExpressions>
+            <ObligationExpression ObligationId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIA006quater:rule5:obligation1" FulfillOn="Deny" />
+            <ObligationExpression ObligationId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIA006quater:rule5:obligation2" FulfillOn="Deny" />
+        </ObligationExpressions>
+    </Rule>
+</Policy>

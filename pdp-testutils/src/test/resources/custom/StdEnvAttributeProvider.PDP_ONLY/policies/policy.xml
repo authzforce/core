@@ -84,7 +84,7 @@
 				</AllOf>
 			</AnyOf>
 		</Target>
-		<Rule Effect="Permit" RuleId="PermitRuleForPolicyMatchingRequestDate" />
+		<Rule Effect="Permit" RuleId="RuleForPolicyMatchingPDPDate" />
 	</Policy>
 	<Policy PolicyId="PolicyMatchingPDPTime" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit">
 		<Description>For checking that the PDP current-time value is used if no standard environment attribute provided in the request

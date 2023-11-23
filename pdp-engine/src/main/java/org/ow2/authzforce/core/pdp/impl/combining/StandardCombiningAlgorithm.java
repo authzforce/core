@@ -19,7 +19,6 @@ package org.ow2.authzforce.core.pdp.impl.combining;
 
 import com.google.common.collect.Maps;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
-import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.PdpExtensionRegistry.PdpExtensionComparator;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
@@ -183,21 +182,21 @@ public enum StandardCombiningAlgorithm
 
 	static
 	{
-		final Set<CombiningAlg<? extends Decidable>> standardAlgorithms = HashCollections.newUpdatableSet(StandardCombiningAlgorithm.values().length);
+		final Set<CombiningAlg<?>> standardAlgorithms = HashCollections.newUpdatableSet(StandardCombiningAlgorithm.values().length);
 		// XACML 3.0 algorithms
 		// deny-overrides and ordered-deny-overrides
-		standardAlgorithms.add(new DPOverridesCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_DENY_OVERRIDES.id, PolicyEvaluator.class, EffectType.DENY, false));
-		standardAlgorithms.add(new DPOverridesCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_DENY_OVERRIDES.id, RuleEvaluator.class, EffectType.DENY, false));
+		standardAlgorithms.add(new DPOverridesCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_DENY_OVERRIDES.id, PolicyEvaluator.class, EffectType.DENY));
+		standardAlgorithms.add(new DPOverridesCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_DENY_OVERRIDES.id, RuleEvaluator.class, EffectType.DENY));
 
-		standardAlgorithms.add(new DPOverridesCombiningAlg<>(XACML_3_0_POLICY_COMBINING_ORDERED_DENY_OVERRIDES.id, PolicyEvaluator.class, EffectType.DENY, true));
-		standardAlgorithms.add(new DPOverridesCombiningAlg<>(XACML_3_0_RULE_COMBINING_ORDERED_DENY_OVERRIDES.id, RuleEvaluator.class, EffectType.DENY, true));
+		standardAlgorithms.add(new DPOverridesCombiningAlg<>(XACML_3_0_POLICY_COMBINING_ORDERED_DENY_OVERRIDES.id, PolicyEvaluator.class, EffectType.DENY));
+		standardAlgorithms.add(new DPOverridesCombiningAlg<>(XACML_3_0_RULE_COMBINING_ORDERED_DENY_OVERRIDES.id, RuleEvaluator.class, EffectType.DENY));
 
 		// permit-overrides and ordered-permit-overrides
-		standardAlgorithms.add(new DPOverridesCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_PERMIT_OVERRIDES.id, PolicyEvaluator.class, EffectType.PERMIT, false));
-		standardAlgorithms.add(new DPOverridesCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_PERMIT_OVERRIDES.id, RuleEvaluator.class, EffectType.PERMIT, false));
+		standardAlgorithms.add(new DPOverridesCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_PERMIT_OVERRIDES.id, PolicyEvaluator.class, EffectType.PERMIT));
+		standardAlgorithms.add(new DPOverridesCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_PERMIT_OVERRIDES.id, RuleEvaluator.class, EffectType.PERMIT));
 
-		standardAlgorithms.add(new DPOverridesCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_ORDERED_PERMIT_OVERRIDES.id, PolicyEvaluator.class, EffectType.PERMIT, true));
-		standardAlgorithms.add(new DPOverridesCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_ORDERED_PERMIT_OVERRIDES.id, RuleEvaluator.class, EffectType.PERMIT, true));
+		standardAlgorithms.add(new DPOverridesCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_ORDERED_PERMIT_OVERRIDES.id, PolicyEvaluator.class, EffectType.PERMIT));
+		standardAlgorithms.add(new DPOverridesCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_ORDERED_PERMIT_OVERRIDES.id, RuleEvaluator.class, EffectType.PERMIT));
 
 		// deny-unless-permit
 		standardAlgorithms.add(new DPUnlessPDCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_DENY_UNLESS_PERMIT.id, PolicyEvaluator.class, EffectType.PERMIT));
