@@ -6,10 +6,9 @@ Versions currently being supported with security updates.
 
 | Version          | Supported          |
 |------------------|--------------------|
-| 18.0.0           | :white_check_mark: |
-| 17.1.2           | :white_check_mark: |
-| 17.1.1 and lower | :x:                |
+| 21.0.0 and later | :white_check_mark: |
+| 20.3.2 and lower | :x:                |
 
 ## Reporting a Vulnerability
 
-If you want to report a vulnerability, you must do so on the [OW2 Issue Tracker](https://gitlab.ow2.org/authzforce/core/issues) and **make sure the checkbox** *This issue is confidential and should only be visible to team members with at least Reporter access* **is checked when creating the issue**. Then, if the AuthzForce team can confirm it, they will uncheck it to make the issue public.
+If you want to report a vulnerability, you can do so on this Github repository by following the process: [Privately reporting a security vulnerability](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability#privately-reporting-a-security-vulnerability).
