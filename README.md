@@ -351,7 +351,7 @@ Please include as much information as possible; the more we know, the better the
 * Your code & configuration files are often useful.
 
 ## Security - Vulnerability reporting
-If you want to report a vulnerability, you must do so on the [OW2 Issue Tracker](https://gitlab.ow2.org/authzforce/core/issues) and **make sure the checkbox** *This issue is confidential and should only be visible to team members with at least Reporter access* **is checked when creating the issue**. Then, if the AuthzForce team can confirm it, they will uncheck it to make the issue public.
+See [SECURITY.md](SECURITY.md).
 
 ## Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md).
