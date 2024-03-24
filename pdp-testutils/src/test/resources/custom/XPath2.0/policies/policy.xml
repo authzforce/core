@@ -43,7 +43,7 @@ retrievable from https://nso.nato.int/nso/nsdd/main/standards/stanag-details/861
 				<AttributeSelector Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
 								   DataType="http://www.w3.org/2001/XMLSchema#integer"
 								   MustBePresent="true"
-								   Path="if (//*:Classification = 'INTERNAL') then 3 else if (//*:Classification = 'CONFIDENTIAL') then 2 else if (//*:Classification = 'PUBLIC') then 1 else 0"/>
+								   Path="for $classif_name in //*:Classification/text() return if ($classif_name = 'INTERNAL') then 3 else if ($classif_name = 'CONFIDENTIAL') then 2 else if ($classif_name = 'PUBLIC') then 1 else 0"/>
 			</Apply>
 		</VariableDefinition>
 		<VariableDefinition VariableId="subject_classif_level">
@@ -51,7 +51,7 @@ retrievable from https://nso.nato.int/nso/nsdd/main/standards/stanag-details/861
 				<AttributeSelector Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
 								   DataType="http://www.w3.org/2001/XMLSchema#integer"
 								   MustBePresent="true"
-								   Path="if (//*:Classification = 'INTERNAL') then 3 else if (//*:Classification = 'CONFIDENTIAL') then 2 else if (//*:Classification = 'PUBLIC') then 1 else 0"/>
+								   Path="for $classif_name in //*:Classification/text() return if ($classif_name = 'INTERNAL') then 3 else if ($classif_name = 'CONFIDENTIAL') then 2 else if ($classif_name = 'PUBLIC') then 1 else 0"/>
 			</Apply>
 		</VariableDefinition>
 		<Rule Effect="Permit"
