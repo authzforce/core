@@ -4,6 +4,8 @@
         <Decision>Permit</Decision>
         <Obligations>
             <Obligation ObligationId="urn:ow2:authzforce:core:pdp:test:obligation1">
+                <AttributeAssignment AttributeId="subject_classif_level" DataType="http://www.w3.org/2001/XMLSchema#integer">1</AttributeAssignment>
+                <AttributeAssignment AttributeId="subject_classif_level" DataType="http://www.w3.org/2001/XMLSchema#integer">2</AttributeAssignment>
                 <AttributeAssignment AttributeId="subject_classif_level" DataType="http://www.w3.org/2001/XMLSchema#integer">3</AttributeAssignment>
                 <AttributeAssignment AttributeId="resource_classif_level" DataType="http://www.w3.org/2001/XMLSchema#integer">3</AttributeAssignment>
             </Obligation>

@@ -46,16 +46,14 @@ retrievable from https://nso.nato.int/nso/nsdd/main/standards/stanag-details/861
 								   Path="for $classif_name in //*:Classification/text() return if ($classif_name = 'INTERNAL') then 3 else if ($classif_name = 'CONFIDENTIAL') then 2 else if ($classif_name = 'PUBLIC') then 1 else 0"/>
 			</Apply>
 		</VariableDefinition>
-		<VariableDefinition VariableId="subject_classif_level">
-			<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-one-and-only">
+		<VariableDefinition VariableId="subject_clearance_levels">
 				<AttributeSelector Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
 								   DataType="http://www.w3.org/2001/XMLSchema#integer"
 								   MustBePresent="true"
 								   Path="for $classif_name in //*:Classification/text() return if ($classif_name = 'INTERNAL') then 3 else if ($classif_name = 'CONFIDENTIAL') then 2 else if ($classif_name = 'PUBLIC') then 1 else 0"/>
-			</Apply>
 		</VariableDefinition>
 		<Rule Effect="Permit"
-			  RuleId="READ_if_subject_classif_greater_than_or_equal_to_resource_classif_R">
+			  RuleId="READ_if_any_subject_classif_greater_than_or_equal_to_resource_classif_R">
 			<Description>Bell-Lapadula: allow READ if and only if subject level ≥ object (resource) level </Description>
 			<Target>
 				<AnyOf>
@@ -71,9 +69,10 @@ retrievable from https://nso.nato.int/nso/nsdd/main/standards/stanag-details/861
 				</AnyOf>
 			</Target>
 			<Condition>
-				<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-greater-than-or-equal">
-					<VariableReference VariableId="subject_classif_level"/>
+				<Apply FunctionId="urn:oasis:names:tc:xacml:3.0:function:any-of">
+					<Function FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-less-than-or-equal" />
 					<VariableReference VariableId="resource_classif_level"/>
+					<VariableReference VariableId="subject_clearance_levels"/>
 				</Apply>
 			</Condition>
 		</Rule>
@@ -94,9 +93,10 @@ retrievable from https://nso.nato.int/nso/nsdd/main/standards/stanag-details/861
 				</AnyOf>
 			</Target>
 			<Condition>
-				<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-less-than-or-equal">
-					<VariableReference VariableId="subject_classif_level"/>
+				<Apply FunctionId="urn:oasis:names:tc:xacml:3.0:function:any-of">
+					<Function FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-greater-than-or-equal" />
 					<VariableReference VariableId="resource_classif_level"/>
+					<VariableReference VariableId="subject_clearance_levels"/>
 				</Apply>
 			</Condition>
 		</Rule>
@@ -158,7 +158,7 @@ retrievable from https://nso.nato.int/nso/nsdd/main/standards/stanag-details/861
 		<ObligationExpressions>
 			<ObligationExpression FulfillOn="Permit" ObligationId="urn:ow2:authzforce:core:pdp:test:obligation1">
 				<AttributeAssignmentExpression AttributeId="subject_classif_level">
-					<VariableReference VariableId="subject_classif_level"/>
+					<VariableReference VariableId="subject_clearance_levels"/>
 				</AttributeAssignmentExpression>
 				<AttributeAssignmentExpression AttributeId="resource_classif_level">
 					<VariableReference VariableId="resource_classif_level"/>
