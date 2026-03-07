@@ -311,7 +311,7 @@ For full support of XACML, you may use any XML editor supporting XML Schema. Mak
 ### Using ALFA plugins for VScode - ALFA to XACML
 Axiomatics provides an [VScode plugin](https://marketplace.visualstudio.com/items?itemName=Axiomatics.alfa) to edit policies in [ALFA](https://axiomatics.github.io/alfa-vscode-doc/docs/alfa-introduction/introduction/) (Abbreviated Language for Authorization) and generate XACML 3.0 policies from it automatically. Beware of the [Axiomatics license](https://marketplace.visualstudio.com/items/Axiomatics.alfa/license) and [limitations of ALFA with respect to XACML](https://axiomatics.github.io/alfa-vscode-doc/docs/xacml/limitations-with-respect-to-xacml/).
 
-Similarly, Rock Solid Knowledge provides a [VScode plugin for ALFA](https://marketplace.visualstudio.com/items?itemName=RockSolidKnowledgeLtd.alfa) as well. Again, beware of the [license](https://marketplace.visualstudio.com/items/RockSolidKnowledgeLtd.alfa/license).
+*Note: Rock Solid Knowledge provides a [VScode plugin for ALFA](https://marketplace.visualstudio.com/items?itemName=RockSolidKnowledgeLtd.alfa) as well but does not convert to XACML. Also beware of the [license](https://marketplace.visualstudio.com/items/RockSolidKnowledgeLtd.alfa/license).*
 
 ### From XACML 2.0 policies - XACML 2.0 to 3.0
 
