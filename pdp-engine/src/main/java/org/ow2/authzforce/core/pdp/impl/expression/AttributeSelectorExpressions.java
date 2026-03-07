@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 THALES.
+ * Copyright 2012-2026 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -378,7 +378,7 @@ public final class AttributeSelectorExpressions
                         throw new IndeterminateEvaluationException(
                                 this + ": Error creating attribute value of type '" + attributeDatatype + "' from result #" + xpathEvalResultItemIndex
                                         + " of evaluating XPath against XML node from Content of Attributes Category='" + attributeSelectorId.getCategory()
-                                        + (contextSelectorId.map(id -> "' selected by ContextSelectorId='" + id + "'").orElse("")) + ": " + xpathEvalResultItem,
+                                        + contextSelectorId.map(id -> "' selected by ContextSelectorId='" + id + "'").orElse("") + ": " + xpathEvalResultItem,
                                 XacmlStatusCode.SYNTAX_ERROR.value(), e);
                     }
                 } else
@@ -386,7 +386,7 @@ public final class AttributeSelectorExpressions
                     final Optional<String> contextSelectorId = attributeSelectorId.getContextSelectorId();
                     throw new IndeterminateEvaluationException(this + ": Invalid type of result #" + xpathEvalResultItemIndex
                             + " from evaluating XPath against XML node from Content of Attributes Category='" + attributeSelectorId.getCategory()
-                            + (contextSelectorId.map(id -> "' selected by ContextSelectorId='" + id + "'").orElse("")) + ": " + xpathEvalResultItem.getClass().getName(),
+                            + contextSelectorId.map(id -> "' selected by ContextSelectorId='" + id + "'").orElse("") + ": " + xpathEvalResultItem.getClass().getName(),
                             XacmlStatusCode.SYNTAX_ERROR.value());
                 }
 
@@ -400,7 +400,7 @@ public final class AttributeSelectorExpressions
                     throw new IndeterminateEvaluationException(
                             this + ": Error creating attribute value of type '" + attributeDatatype + "' from result #" + xpathEvalResultItemIndex
                                     + " of evaluating XPath against XML node from Content of Attributes Category='" + attributeSelectorId.getCategory() + "'"
-                                    + (contextSelectorId.map(id -> "' selected by ContextSelectorId='" + id + "'").orElse("")) + ": " + xpathEvalResultItem,
+                                    + contextSelectorId.map(id -> "' selected by ContextSelectorId='" + id + "'").orElse("") + ": " + xpathEvalResultItem,
                             XacmlStatusCode.SYNTAX_ERROR.value(), e);
                 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 THALES.
+ * Copyright 2012-2026 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -155,13 +155,12 @@ public final class SingleDecisionXacmlJsonRequestPreprocessor extends BaseXacmlJ
 
 		for (final Object requestAttributeCategoryObject : jsonArrayOfRequestAttributeCategoryObjects)
 		{
-			if (!(requestAttributeCategoryObject instanceof JSONObject))
+			if (!(requestAttributeCategoryObject instanceof JSONObject requestAttCatJsonObj))
 			{
 				throw INVALID_REQUEST_CATEGORY_ARRAY_ELEMENT_TYPE_EXCEPTION;
 			}
 
-			final JSONObject requestAttCatJsonObj = (JSONObject) requestAttributeCategoryObject;
-			final SingleCategoryAttributes<?, JSONObject> categorySpecificAttributes = xacmlAttrsParser.parseAttributes(requestAttCatJsonObj, xPathCompiler);
+            final SingleCategoryAttributes<?, JSONObject> categorySpecificAttributes = xacmlAttrsParser.parseAttributes(requestAttCatJsonObj, xPathCompiler);
 			if (categorySpecificAttributes == null)
 			{
 				// skip this empty Attributes

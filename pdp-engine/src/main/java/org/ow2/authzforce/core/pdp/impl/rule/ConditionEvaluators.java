@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 THALES.
+ * Copyright 2012-2026 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -111,7 +111,7 @@ public final class ConditionEvaluators
 		final Expression<?> expr = expressionFactory.getInstance(exprElt,null, xPathCompiler);
 
 		// make sure it's a boolean expression...
-		if (!(expr.getReturnType().equals(StandardDatatypes.BOOLEAN)))
+		if (!expr.getReturnType().equals(StandardDatatypes.BOOLEAN))
 		{
 			throw new IllegalArgumentException("Invalid return datatype (" + expr.getReturnType() + ") for Expression (" + expr.getClass().getSimpleName() + ") in Condition. Expected: Boolean.");
 		}

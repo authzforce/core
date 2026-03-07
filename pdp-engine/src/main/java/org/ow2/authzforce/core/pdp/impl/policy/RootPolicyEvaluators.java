@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 THALES.
+ * Copyright 2012-2026 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -208,7 +208,7 @@ public final class RootPolicyEvaluators
 			if (this.staticRootPolicyEvaluator == null)
 			{
 				throw new IllegalArgumentException("No such " + (rootPolicyElementType.isPresent() ? rootPolicyElementType.get() : "Policy(Set)") + " found: ID = '" + rootPolicyId + "'"
-				        + (optRootPolicyVersionPatterns.map(policyVersionPatterns -> ", version pattern = " + policyVersionPatterns).orElse("")));
+				        + optRootPolicyVersionPatterns.map(policyVersionPatterns -> ", version pattern = " + policyVersionPatterns).orElse(""));
 			}
 
 			this.staticApplicablePolicies = new FlattenedPolicyTree(staticRootPolicyEvaluator.getPrimaryPolicyMetadata(), staticRootPolicyEvaluator.getPolicyRefsMetadata());

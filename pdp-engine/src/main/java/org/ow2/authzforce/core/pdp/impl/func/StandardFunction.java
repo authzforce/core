@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 THALES.
+ * Copyright 2012-2026 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -582,7 +582,7 @@ public enum StandardFunction
     private static final PdpExtensionComparator<Function<?>> FUNCTION_COMPARATOR = new PdpExtensionComparator<>();
     private static final PdpExtensionComparator<GenericHigherOrderFunctionFactory> FUNCTION_FACTORY_COMPARATOR = new PdpExtensionComparator<>();
 
-    private static final Map<String, StandardFunction> ID_TO_STD_FUNC_MAP = Maps.uniqueIndex(Arrays.asList(StandardFunction.values()),
+    private static final Map<String, StandardFunction> ID_TO_STD_FUNC_MAP = Maps.uniqueIndex(Arrays.asList(values()),
             input ->
             {
                 assert input != null;
@@ -621,7 +621,7 @@ public enum StandardFunction
             /*
              * A.3.15. Optional XPath-based functions: only xpath-node-count supported
              */
-            nonGenericFunctions.add(new XPathNodeCountFunction(StandardFunction.XPATH_NODE_COUNT.id));
+            nonGenericFunctions.add(new XPathNodeCountFunction(XPATH_NODE_COUNT.id));
         } else
         {
             nonGenericFunctions = HashCollections.newUpdatableSet(249);
@@ -634,122 +634,122 @@ public enum StandardFunction
         /*
          * Match functions taking only one type of parameter: Equality predicates (A.3.1) + special match function 'x500Name-match' (A.3.14)
          */
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.STRING_EQUAL.id, StandardDatatypes.STRING, new EqualMatcher<>()));
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.BOOLEAN_EQUAL.id, StandardDatatypes.BOOLEAN, new EqualMatcher<>()));
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.INTEGER_EQUAL.id, StandardDatatypes.INTEGER, new EqualMatcher<>()));
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.DOUBLE_EQUAL.id, StandardDatatypes.DOUBLE, new EqualMatcher<>()));
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.DATE_EQUAL.id, StandardDatatypes.DATE, new EqualMatcher<>()));
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.TIME_EQUAL.id, StandardDatatypes.TIME, new EqualMatcher<>()));
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.DATETIME_EQUAL.id, StandardDatatypes.DATETIME, new EqualMatcher<>()));
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.DAYTIME_DURATION_EQUAL.id, StandardDatatypes.DAYTIMEDURATION, new EqualMatcher<>()));
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.YEARMONTH_DURATION_EQUAL.id, StandardDatatypes.YEARMONTHDURATION, new EqualMatcher<>()));
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.ANYURI_EQUAL.id, StandardDatatypes.ANYURI, new EqualMatcher<>()));
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.X500NAME_EQUAL.id, StandardDatatypes.X500NAME, new EqualMatcher<>()));
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.RFC822NAME_EQUAL.id, StandardDatatypes.RFC822NAME, new EqualMatcher<>()));
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.HEXBINARY_EQUAL.id, StandardDatatypes.HEXBINARY, new EqualMatcher<>()));
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.BASE64BINARY_EQUAL.id, StandardDatatypes.BASE64BINARY, new EqualMatcher<>()));
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.STRING_EQUAL_IGNORE_CASE.id, StandardDatatypes.STRING, new EqualIgnoreCaseMatcher<>()));
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.X500NAME_MATCH.id, StandardDatatypes.X500NAME, StandardEqualTypeMatchers.X500NAME_MATCHER));
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.STRING_STARTS_WITH.id, StandardDatatypes.STRING, StandardEqualTypeMatchers.STRING_STARTS_WITH_MATCHER));
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.STRING_ENDS_WITH.id, StandardDatatypes.STRING, StandardEqualTypeMatchers.STRING_ENDS_WITH_MATCHER));
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.STRING_CONTAINS.id, StandardDatatypes.STRING, StandardEqualTypeMatchers.STRING_CONTAINS_MATCHER));
-        nonGenericFunctions.add(new EqualTypeMatchFunction<>(StandardFunction.STRING_REGEXP_MATCH.id, StandardDatatypes.STRING, StandardEqualTypeMatchers.STRING_REGEXP_MATCH_CALL_FACTORY_BUILDER));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(STRING_EQUAL.id, StandardDatatypes.STRING, new EqualMatcher<>()));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(BOOLEAN_EQUAL.id, StandardDatatypes.BOOLEAN, new EqualMatcher<>()));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(INTEGER_EQUAL.id, StandardDatatypes.INTEGER, new EqualMatcher<>()));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(DOUBLE_EQUAL.id, StandardDatatypes.DOUBLE, new EqualMatcher<>()));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(DATE_EQUAL.id, StandardDatatypes.DATE, new EqualMatcher<>()));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(TIME_EQUAL.id, StandardDatatypes.TIME, new EqualMatcher<>()));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(DATETIME_EQUAL.id, StandardDatatypes.DATETIME, new EqualMatcher<>()));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(DAYTIME_DURATION_EQUAL.id, StandardDatatypes.DAYTIMEDURATION, new EqualMatcher<>()));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(YEARMONTH_DURATION_EQUAL.id, StandardDatatypes.YEARMONTHDURATION, new EqualMatcher<>()));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(ANYURI_EQUAL.id, StandardDatatypes.ANYURI, new EqualMatcher<>()));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(X500NAME_EQUAL.id, StandardDatatypes.X500NAME, new EqualMatcher<>()));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(RFC822NAME_EQUAL.id, StandardDatatypes.RFC822NAME, new EqualMatcher<>()));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(HEXBINARY_EQUAL.id, StandardDatatypes.HEXBINARY, new EqualMatcher<>()));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(BASE64BINARY_EQUAL.id, StandardDatatypes.BASE64BINARY, new EqualMatcher<>()));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(STRING_EQUAL_IGNORE_CASE.id, StandardDatatypes.STRING, new EqualIgnoreCaseMatcher<>()));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(X500NAME_MATCH.id, StandardDatatypes.X500NAME, StandardEqualTypeMatchers.X500NAME_MATCHER));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(STRING_STARTS_WITH.id, StandardDatatypes.STRING, StandardEqualTypeMatchers.STRING_STARTS_WITH_MATCHER));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(STRING_ENDS_WITH.id, StandardDatatypes.STRING, StandardEqualTypeMatchers.STRING_ENDS_WITH_MATCHER));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(STRING_CONTAINS.id, StandardDatatypes.STRING, StandardEqualTypeMatchers.STRING_CONTAINS_MATCHER));
+        nonGenericFunctions.add(new EqualTypeMatchFunction<>(STRING_REGEXP_MATCH.id, StandardDatatypes.STRING, StandardEqualTypeMatchers.STRING_REGEXP_MATCH_CALL_FACTORY_BUILDER));
 
         /*
          * Numeric Arithmetic functions (A.3.2)
          */
-        nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.INTEGER_ABS.id, false, Collections.singletonList(StandardDatatypes.INTEGER), new AbsOperator<>()));
-        nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.DOUBLE_ABS.id, false, Collections.singletonList(StandardDatatypes.DOUBLE), new AbsOperator<>()));
-        nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.INTEGER_ADD.id, true, Arrays.asList(StandardDatatypes.INTEGER, StandardDatatypes.INTEGER, StandardDatatypes.INTEGER),
+        nonGenericFunctions.add(new NumericArithmeticFunction<>(INTEGER_ABS.id, false, Collections.singletonList(StandardDatatypes.INTEGER), new AbsOperator<>()));
+        nonGenericFunctions.add(new NumericArithmeticFunction<>(DOUBLE_ABS.id, false, Collections.singletonList(StandardDatatypes.DOUBLE), new AbsOperator<>()));
+        nonGenericFunctions.add(new NumericArithmeticFunction<>(INTEGER_ADD.id, true, Arrays.asList(StandardDatatypes.INTEGER, StandardDatatypes.INTEGER, StandardDatatypes.INTEGER),
                 new AddOperator<>()));
-        nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.DOUBLE_ADD.id, true, Arrays.asList(StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE),
+        nonGenericFunctions.add(new NumericArithmeticFunction<>(DOUBLE_ADD.id, true, Arrays.asList(StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE),
                 new AddOperator<>()));
-        nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.INTEGER_MULTIPLY.id, true,
+        nonGenericFunctions.add(new NumericArithmeticFunction<>(INTEGER_MULTIPLY.id, true,
                 Arrays.asList(StandardDatatypes.INTEGER, StandardDatatypes.INTEGER, StandardDatatypes.INTEGER), new MultiplyOperator<>()));
-        nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.DOUBLE_MULTIPLY.id, true, Arrays.asList(StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE),
+        nonGenericFunctions.add(new NumericArithmeticFunction<>(DOUBLE_MULTIPLY.id, true, Arrays.asList(StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE),
                 new MultiplyOperator<>()));
-        nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.INTEGER_SUBTRACT.id, false, Arrays.asList(StandardDatatypes.INTEGER, StandardDatatypes.INTEGER),
+        nonGenericFunctions.add(new NumericArithmeticFunction<>(INTEGER_SUBTRACT.id, false, Arrays.asList(StandardDatatypes.INTEGER, StandardDatatypes.INTEGER),
                 new SubtractOperator<>()));
         nonGenericFunctions.add(
-                new NumericArithmeticFunction<>(StandardFunction.DOUBLE_SUBTRACT.id, false, Arrays.asList(StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE), new SubtractOperator<>()));
+                new NumericArithmeticFunction<>(DOUBLE_SUBTRACT.id, false, Arrays.asList(StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE), new SubtractOperator<>()));
         nonGenericFunctions.add(
-                new NumericArithmeticFunction<>(StandardFunction.INTEGER_DIVIDE.id, false, Arrays.asList(StandardDatatypes.INTEGER, StandardDatatypes.INTEGER), new DivideOperator<>()));
+                new NumericArithmeticFunction<>(INTEGER_DIVIDE.id, false, Arrays.asList(StandardDatatypes.INTEGER, StandardDatatypes.INTEGER), new DivideOperator<>()));
         nonGenericFunctions
-                .add(new NumericArithmeticFunction<>(StandardFunction.DOUBLE_DIVIDE.id, false, Arrays.asList(StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE), new DivideOperator<>()));
-        nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.INTEGER_MOD.id, false, Arrays.asList(StandardDatatypes.INTEGER, StandardDatatypes.INTEGER),
+                .add(new NumericArithmeticFunction<>(DOUBLE_DIVIDE.id, false, Arrays.asList(StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE), new DivideOperator<>()));
+        nonGenericFunctions.add(new NumericArithmeticFunction<>(INTEGER_MOD.id, false, Arrays.asList(StandardDatatypes.INTEGER, StandardDatatypes.INTEGER),
                 NumericArithmeticOperators.INTEGER_MOD_OPERATOR));
-        nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.FLOOR.id, false, Collections.singletonList(StandardDatatypes.DOUBLE), NumericArithmeticOperators.FLOOR_OPERATOR));
-        nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.ROUND.id, false, Collections.singletonList(StandardDatatypes.DOUBLE), NumericArithmeticOperators.ROUND_OPERATOR));
+        nonGenericFunctions.add(new NumericArithmeticFunction<>(FLOOR.id, false, Collections.singletonList(StandardDatatypes.DOUBLE), NumericArithmeticOperators.FLOOR_OPERATOR));
+        nonGenericFunctions.add(new NumericArithmeticFunction<>(ROUND.id, false, Collections.singletonList(StandardDatatypes.DOUBLE), NumericArithmeticOperators.ROUND_OPERATOR));
 
         /*
          * String-normalize functions (= A.3.3 String conversion functions in the spec)
          */
-        nonGenericFunctions.add(new StringN11nFunction(StandardFunction.STRING_NORMALIZE_SPACE.id, StringN11nFunction.STRING_NORMALIZE_SPACE_FUNCTION_CALL_FACTORY));
-        nonGenericFunctions.add(new StringN11nFunction(StandardFunction.STRING_NORMALIZE_TO_LOWER_CASE.id, StringN11nFunction.STRING_NORMALIZE_TO_LOWER_CASE_FUNCTION_CALL_FACTORY));
+        nonGenericFunctions.add(new StringN11nFunction(STRING_NORMALIZE_SPACE.id, StringN11nFunction.STRING_NORMALIZE_SPACE_FUNCTION_CALL_FACTORY));
+        nonGenericFunctions.add(new StringN11nFunction(STRING_NORMALIZE_TO_LOWER_CASE.id, StringN11nFunction.STRING_NORMALIZE_TO_LOWER_CASE_FUNCTION_CALL_FACTORY));
 
         /*
          * Primitive data-type conversion functions: A.3.4 Numeric data-type conversion functions, and all {type}-from-string / string-from-{type} functions from A.3.9 (other parts of A.3.9 addressed
          * below by StringConcatenateFunction, NonEqualTypeMatchFunction, SubstringFunction)
          */
         nonGenericFunctions
-                .add(new DatatypeConversionFunction<>(StandardFunction.DOUBLE_TO_INTEGER.id, StandardDatatypes.DOUBLE, StandardDatatypes.INTEGER, StandardDatatypeConverters.DOUBLE_TO_INTEGER));
+                .add(new DatatypeConversionFunction<>(DOUBLE_TO_INTEGER.id, StandardDatatypes.DOUBLE, StandardDatatypes.INTEGER, StandardDatatypeConverters.DOUBLE_TO_INTEGER));
         nonGenericFunctions
-                .add(new DatatypeConversionFunction<>(StandardFunction.INTEGER_TO_DOUBLE.id, StandardDatatypes.INTEGER, StandardDatatypes.DOUBLE, StandardDatatypeConverters.INTEGER_TO_DOUBLE));
-        nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.BOOLEAN_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.BOOLEAN,
+                .add(new DatatypeConversionFunction<>(INTEGER_TO_DOUBLE.id, StandardDatatypes.INTEGER, StandardDatatypes.DOUBLE, StandardDatatypeConverters.INTEGER_TO_DOUBLE));
+        nonGenericFunctions.add(new DatatypeConversionFunction<>(BOOLEAN_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.BOOLEAN,
                 new FromStringConverter<>(StandardAttributeValueFactories.BOOLEAN)));
         nonGenericFunctions
-                .add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_BOOLEAN.id, StandardDatatypes.BOOLEAN, StandardDatatypes.STRING, StandardDatatypeConverters.BOOLEAN_TO_STRING));
+                .add(new DatatypeConversionFunction<>(STRING_FROM_BOOLEAN.id, StandardDatatypes.BOOLEAN, StandardDatatypes.STRING, StandardDatatypeConverters.BOOLEAN_TO_STRING));
         nonGenericFunctions
-                .add(new DatatypeConversionFunction<>(StandardFunction.INTEGER_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.INTEGER, new FromStringConverter<>(stdIntValueFactory)));
-        nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_INTEGER.id, StandardDatatypes.INTEGER, StandardDatatypes.STRING, new ToStringConverter<>()));
-        nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.DOUBLE_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.DOUBLE,
+                .add(new DatatypeConversionFunction<>(INTEGER_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.INTEGER, new FromStringConverter<>(stdIntValueFactory)));
+        nonGenericFunctions.add(new DatatypeConversionFunction<>(STRING_FROM_INTEGER.id, StandardDatatypes.INTEGER, StandardDatatypes.STRING, new ToStringConverter<>()));
+        nonGenericFunctions.add(new DatatypeConversionFunction<>(DOUBLE_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.DOUBLE,
                 new FromStringConverter<>(StandardAttributeValueFactories.DOUBLE)));
-        nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_DOUBLE.id, StandardDatatypes.DOUBLE, StandardDatatypes.STRING, new ToStringConverter<>()));
-        nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.TIME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.TIME,
+        nonGenericFunctions.add(new DatatypeConversionFunction<>(STRING_FROM_DOUBLE.id, StandardDatatypes.DOUBLE, StandardDatatypes.STRING, new ToStringConverter<>()));
+        nonGenericFunctions.add(new DatatypeConversionFunction<>(TIME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.TIME,
                 new FromStringConverter<>(StandardAttributeValueFactories.TIME)));
-        nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_TIME.id, StandardDatatypes.TIME, StandardDatatypes.STRING, new ToStringConverter<>()));
-        nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.DATE_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.DATE,
+        nonGenericFunctions.add(new DatatypeConversionFunction<>(STRING_FROM_TIME.id, StandardDatatypes.TIME, StandardDatatypes.STRING, new ToStringConverter<>()));
+        nonGenericFunctions.add(new DatatypeConversionFunction<>(DATE_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.DATE,
                 new FromStringConverter<>(StandardAttributeValueFactories.DATE)));
-        nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_DATE.id, StandardDatatypes.DATE, StandardDatatypes.STRING, new ToStringConverter<>()));
-        nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.DATETIME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.DATETIME,
+        nonGenericFunctions.add(new DatatypeConversionFunction<>(STRING_FROM_DATE.id, StandardDatatypes.DATE, StandardDatatypes.STRING, new ToStringConverter<>()));
+        nonGenericFunctions.add(new DatatypeConversionFunction<>(DATETIME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.DATETIME,
                 new FromStringConverter<>(StandardAttributeValueFactories.DATETIME)));
         nonGenericFunctions
-                .add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_DATETIME.id, StandardDatatypes.DATETIME, StandardDatatypes.STRING, new ToStringConverter<>()));
-        nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.ANYURI_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI,
+                .add(new DatatypeConversionFunction<>(STRING_FROM_DATETIME.id, StandardDatatypes.DATETIME, StandardDatatypes.STRING, new ToStringConverter<>()));
+        nonGenericFunctions.add(new DatatypeConversionFunction<>(ANYURI_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI,
                 new FromStringConverter<>(StandardAttributeValueFactories.ANYURI)));
-        nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_ANYURI.id, StandardDatatypes.ANYURI, StandardDatatypes.STRING, new ToStringConverter<>()));
-        nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.DAYTIMEDURATION_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.DAYTIMEDURATION,
+        nonGenericFunctions.add(new DatatypeConversionFunction<>(STRING_FROM_ANYURI.id, StandardDatatypes.ANYURI, StandardDatatypes.STRING, new ToStringConverter<>()));
+        nonGenericFunctions.add(new DatatypeConversionFunction<>(DAYTIMEDURATION_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.DAYTIMEDURATION,
                 new FromStringConverter<>(StandardAttributeValueFactories.DAYTIMEDURATION)));
-        nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_DAYTIMEDURATION.id, StandardDatatypes.DAYTIMEDURATION, StandardDatatypes.STRING,
+        nonGenericFunctions.add(new DatatypeConversionFunction<>(STRING_FROM_DAYTIMEDURATION.id, StandardDatatypes.DAYTIMEDURATION, StandardDatatypes.STRING,
                 new ToStringConverter<>()));
-        nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.YEARMONTHDURATION_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.YEARMONTHDURATION,
+        nonGenericFunctions.add(new DatatypeConversionFunction<>(YEARMONTHDURATION_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.YEARMONTHDURATION,
                 new FromStringConverter<>(StandardAttributeValueFactories.YEARMONTHDURATION)));
-        nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_YEARMONTHDURATION.id, StandardDatatypes.YEARMONTHDURATION, StandardDatatypes.STRING,
+        nonGenericFunctions.add(new DatatypeConversionFunction<>(STRING_FROM_YEARMONTHDURATION.id, StandardDatatypes.YEARMONTHDURATION, StandardDatatypes.STRING,
                 new ToStringConverter<>()));
-        nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.X500NAME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.X500NAME,
+        nonGenericFunctions.add(new DatatypeConversionFunction<>(X500NAME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.X500NAME,
                 new FromStringConverter<>(StandardAttributeValueFactories.X500NAME)));
         nonGenericFunctions
-                .add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_X500NAME.id, StandardDatatypes.X500NAME, StandardDatatypes.STRING, new ToStringConverter<>()));
-        nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.RFC822NAME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.RFC822NAME,
+                .add(new DatatypeConversionFunction<>(STRING_FROM_X500NAME.id, StandardDatatypes.X500NAME, StandardDatatypes.STRING, new ToStringConverter<>()));
+        nonGenericFunctions.add(new DatatypeConversionFunction<>(RFC822NAME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.RFC822NAME,
                 new FromStringConverter<>(StandardAttributeValueFactories.RFC822NAME)));
         nonGenericFunctions
-                .add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_RFC822NAME.id, StandardDatatypes.RFC822NAME, StandardDatatypes.STRING, new ToStringConverter<>()));
-        nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.IPADDRESS_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.IPADDRESS,
+                .add(new DatatypeConversionFunction<>(STRING_FROM_RFC822NAME.id, StandardDatatypes.RFC822NAME, StandardDatatypes.STRING, new ToStringConverter<>()));
+        nonGenericFunctions.add(new DatatypeConversionFunction<>(IPADDRESS_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.IPADDRESS,
                 new FromStringConverter<>(StandardAttributeValueFactories.IPADDRESS)));
         nonGenericFunctions
-                .add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_IPADDRESS.id, StandardDatatypes.IPADDRESS, StandardDatatypes.STRING, new ToStringConverter<>()));
-        nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.DNSNAME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.DNSNAME,
+                .add(new DatatypeConversionFunction<>(STRING_FROM_IPADDRESS.id, StandardDatatypes.IPADDRESS, StandardDatatypes.STRING, new ToStringConverter<>()));
+        nonGenericFunctions.add(new DatatypeConversionFunction<>(DNSNAME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.DNSNAME,
                 new FromStringConverter<>(StandardAttributeValueFactories.DNSNAME)));
         nonGenericFunctions.add(
-                new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_DNSNAME.id, StandardDatatypes.DNSNAME, StandardDatatypes.STRING, new ToStringConverter<>()));
+                new DatatypeConversionFunction<>(STRING_FROM_DNSNAME.id, StandardDatatypes.DNSNAME, StandardDatatypes.STRING, new ToStringConverter<>()));
 
         /*
          * Logical functions (A.3.5)
          */
-        nonGenericFunctions.add(new LogicalOrFunction(StandardFunction.OR.id));
-        nonGenericFunctions.add(new LogicalAndFunction(StandardFunction.AND.id));
-        nonGenericFunctions.add(new LogicalNOfFunction(StandardFunction.N_OF.id));
-        nonGenericFunctions.add(new LogicalNotFunction(StandardFunction.NOT.id));
+        nonGenericFunctions.add(new LogicalOrFunction(OR.id));
+        nonGenericFunctions.add(new LogicalAndFunction(AND.id));
+        nonGenericFunctions.add(new LogicalNOfFunction(N_OF.id));
+        nonGenericFunctions.add(new LogicalNotFunction(NOT.id));
 
         /*
          * Total-ordering comparison functions (all elements of a given type can be compared to each other), i.e. numeric (A.3.6) and string comparison functions (first part of A.3.8)
@@ -764,17 +764,17 @@ public enum StandardFunction
         /*
          * Date and time arithmetic functions (A.3.7)
          */
-        nonGenericFunctions.add(new TemporalArithmeticFunction<>(StandardFunction.DATETIME_ADD_DAYTIMEDURATION.id, StandardDatatypes.DATETIME, StandardDatatypes.DAYTIMEDURATION,
+        nonGenericFunctions.add(new TemporalArithmeticFunction<>(DATETIME_ADD_DAYTIMEDURATION.id, StandardDatatypes.DATETIME, StandardDatatypes.DAYTIMEDURATION,
                 new TimeAddDurationOperator<>()));
-        nonGenericFunctions.add(new TemporalArithmeticFunction<>(StandardFunction.DATETIME_SUBTRACT_DAYTIMEDURATION.id, StandardDatatypes.DATETIME, StandardDatatypes.DAYTIMEDURATION,
+        nonGenericFunctions.add(new TemporalArithmeticFunction<>(DATETIME_SUBTRACT_DAYTIMEDURATION.id, StandardDatatypes.DATETIME, StandardDatatypes.DAYTIMEDURATION,
                 new TimeSubtractDurationOperator<>()));
-        nonGenericFunctions.add(new TemporalArithmeticFunction<>(StandardFunction.DATETIME_ADD_YEARMONTHDURATION.id, StandardDatatypes.DATETIME, StandardDatatypes.YEARMONTHDURATION,
+        nonGenericFunctions.add(new TemporalArithmeticFunction<>(DATETIME_ADD_YEARMONTHDURATION.id, StandardDatatypes.DATETIME, StandardDatatypes.YEARMONTHDURATION,
                 new TimeAddDurationOperator<>()));
-        nonGenericFunctions.add(new TemporalArithmeticFunction<>(StandardFunction.DATETIME_SUBTRACT_YEARMONTHDURATION.id, StandardDatatypes.DATETIME, StandardDatatypes.YEARMONTHDURATION,
+        nonGenericFunctions.add(new TemporalArithmeticFunction<>(DATETIME_SUBTRACT_YEARMONTHDURATION.id, StandardDatatypes.DATETIME, StandardDatatypes.YEARMONTHDURATION,
                 new TimeSubtractDurationOperator<>()));
-        nonGenericFunctions.add(new TemporalArithmeticFunction<>(StandardFunction.DATE_ADD_YEARMONTHDURATION.id, StandardDatatypes.DATE, StandardDatatypes.YEARMONTHDURATION,
+        nonGenericFunctions.add(new TemporalArithmeticFunction<>(DATE_ADD_YEARMONTHDURATION.id, StandardDatatypes.DATE, StandardDatatypes.YEARMONTHDURATION,
                 new TimeAddDurationOperator<>()));
-        nonGenericFunctions.add(new TemporalArithmeticFunction<>(StandardFunction.DATE_SUBTRACT_YEARMONTHDURATION.id, StandardDatatypes.DATE, StandardDatatypes.YEARMONTHDURATION,
+        nonGenericFunctions.add(new TemporalArithmeticFunction<>(DATE_SUBTRACT_YEARMONTHDURATION.id, StandardDatatypes.DATE, StandardDatatypes.YEARMONTHDURATION,
                 new TimeSubtractDurationOperator<>()));
 
         /*
@@ -788,12 +788,12 @@ public enum StandardFunction
             nonGenericFunctions.add(new ComparisonFunction<>(StandardDatatypes.DATETIME, condition));
         }
 
-        nonGenericFunctions.add(new TimeRangeComparisonFunction(StandardFunction.TIME_IN_RANGE.id));
+        nonGenericFunctions.add(new TimeRangeComparisonFunction(TIME_IN_RANGE.id));
 
         /*
          * String-concatenate function (start of A.3.9, other parts addressed above by DatatypeConversionFunction, and below by NonEqualTypeMatchFunction and SubstringFunction)
          */
-        nonGenericFunctions.add(new StringConcatenateFunction(StandardFunction.STRING_CONCATENATE.id));
+        nonGenericFunctions.add(new StringConcatenateFunction(STRING_CONCATENATE.id));
 
         /*
          * Match functions taking parameters of possibly different types, i.e. *-contains / *-starts-with / *-ends-with (second before last part of A.3.9, other parts addressed above by
@@ -801,29 +801,29 @@ public enum StandardFunction
          * above by EqualTypeMatchFunction)
          */
         nonGenericFunctions
-                .add(new NonEqualTypeMatchFunction<>(StandardFunction.RFC822NAME_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.RFC822NAME, StandardNonEqualTypeMatchers.RFC822NAME_MATCHER));
+                .add(new NonEqualTypeMatchFunction<>(RFC822NAME_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.RFC822NAME, StandardNonEqualTypeMatchers.RFC822NAME_MATCHER));
         nonGenericFunctions.add(
-                new NonEqualTypeMatchFunction<>(StandardFunction.ANYURI_STARTS_WITH.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI, StandardNonEqualTypeMatchers.ANYURI_STARTS_WITH_MATCHER));
+                new NonEqualTypeMatchFunction<>(ANYURI_STARTS_WITH.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI, StandardNonEqualTypeMatchers.ANYURI_STARTS_WITH_MATCHER));
         nonGenericFunctions
-                .add(new NonEqualTypeMatchFunction<>(StandardFunction.ANYURI_ENDS_WITH.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI, StandardNonEqualTypeMatchers.ANYURI_ENDS_WITH_MATCHER));
+                .add(new NonEqualTypeMatchFunction<>(ANYURI_ENDS_WITH.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI, StandardNonEqualTypeMatchers.ANYURI_ENDS_WITH_MATCHER));
         nonGenericFunctions
-                .add(new NonEqualTypeMatchFunction<>(StandardFunction.ANYURI_CONTAINS.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI, StandardNonEqualTypeMatchers.ANYURI_CONTAINS_MATCHER));
+                .add(new NonEqualTypeMatchFunction<>(ANYURI_CONTAINS.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI, StandardNonEqualTypeMatchers.ANYURI_CONTAINS_MATCHER));
         nonGenericFunctions
-                .add(new NonEqualTypeMatchFunction<>(StandardFunction.ANYURI_REGEXP_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI, new RegexpMatchCallFactoryBuilder<>()));
-        nonGenericFunctions.add(new NonEqualTypeMatchFunction<>(StandardFunction.IPADDRESS_REGEXP_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.IPADDRESS,
+                .add(new NonEqualTypeMatchFunction<>(ANYURI_REGEXP_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI, new RegexpMatchCallFactoryBuilder<>()));
+        nonGenericFunctions.add(new NonEqualTypeMatchFunction<>(IPADDRESS_REGEXP_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.IPADDRESS,
                 new RegexpMatchCallFactoryBuilder<>()));
-        nonGenericFunctions.add(new NonEqualTypeMatchFunction<>(StandardFunction.DNSNAME_REGEXP_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.DNSNAME,
+        nonGenericFunctions.add(new NonEqualTypeMatchFunction<>(DNSNAME_REGEXP_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.DNSNAME,
                 new RegexpMatchCallFactoryBuilder<>()));
-        nonGenericFunctions.add(new NonEqualTypeMatchFunction<>(StandardFunction.RFC822NAME_REGEXP_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.RFC822NAME,
+        nonGenericFunctions.add(new NonEqualTypeMatchFunction<>(RFC822NAME_REGEXP_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.RFC822NAME,
                 new RegexpMatchCallFactoryBuilder<>()));
         nonGenericFunctions.add(
-                new NonEqualTypeMatchFunction<>(StandardFunction.X500NAME_REGEXP_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.X500NAME, new RegexpMatchCallFactoryBuilder<>()));
+                new NonEqualTypeMatchFunction<>(X500NAME_REGEXP_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.X500NAME, new RegexpMatchCallFactoryBuilder<>()));
 
         /*
          * Substring functions (last part of A.3.9, other parts addressed above by DatatypeConversionFunction, StringConcatenateFunction, NonEqualTypeMatchFunction)
          */
-        nonGenericFunctions.add(new SubstringFunction<>(StandardFunction.STRING_SUBSTRING.id, StandardDatatypes.STRING));
-        nonGenericFunctions.add(new SubstringFunction<>(StandardFunction.ANYURI_SUBSTRING.id, StandardDatatypes.ANYURI));
+        nonGenericFunctions.add(new SubstringFunction<>(STRING_SUBSTRING.id, StandardDatatypes.STRING));
+        nonGenericFunctions.add(new SubstringFunction<>(ANYURI_SUBSTRING.id, StandardDatatypes.ANYURI));
 
         /*
          * First-order bag functions (A.3.10, A.3.11)
@@ -836,12 +836,12 @@ public enum StandardFunction
         /*
          * Higher-order bag functions (A.3.12)
          */
-        nonGenericFunctions.add(new BooleanOneBagOnlyFunction(StandardFunction.ANY_OF.id, StandardHigherOrderBagFunctions.ANY_OF_CALL_FACTORY));
-        nonGenericFunctions.add(new BooleanOneBagOnlyFunction(StandardFunction.ALL_OF.id, StandardHigherOrderBagFunctions.ALL_OF_CALL_FACTORY));
-        nonGenericFunctions.add(new AnyOfAny(StandardFunction.ANY_OF_ANY.id));
-        nonGenericFunctions.add(new AllOfAny(StandardFunction.ALL_OF_ANY.id));
-        nonGenericFunctions.add(new AnyOfAll(StandardFunction.ANY_OF_ALL.id));
-        nonGenericFunctions.add(new AllOfAll(StandardFunction.ALL_OF_ALL.id));
+        nonGenericFunctions.add(new BooleanOneBagOnlyFunction(ANY_OF.id, StandardHigherOrderBagFunctions.ANY_OF_CALL_FACTORY));
+        nonGenericFunctions.add(new BooleanOneBagOnlyFunction(ALL_OF.id, StandardHigherOrderBagFunctions.ALL_OF_CALL_FACTORY));
+        nonGenericFunctions.add(new AnyOfAny(ANY_OF_ANY.id));
+        nonGenericFunctions.add(new AllOfAny(ALL_OF_ANY.id));
+        nonGenericFunctions.add(new AnyOfAll(ANY_OF_ALL.id));
+        nonGenericFunctions.add(new AllOfAll(ALL_OF_ALL.id));
 
         /*
          * A.3.13 already addressed above by NonEqualTypeMatchFunction
@@ -851,7 +851,7 @@ public enum StandardFunction
          */
 
         // Generic functions, e.g. map function
-        final Set<GenericHigherOrderFunctionFactory> genericFuncFactories = Collections.singleton(new MapFunctionFactory(StandardFunction.MAP.id));
+        final Set<GenericHigherOrderFunctionFactory> genericFuncFactories = Collections.singleton(new MapFunctionFactory(MAP.id));
 
         /*
          * A.3.16. Optional function(s) not supported

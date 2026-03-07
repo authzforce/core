@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 THALES.
+ * Copyright 2012-2026 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -168,7 +168,7 @@ public final class PdpEngineAdapters
 
 		final DecisionResultPostprocessor<?, ?> finalResultProc = rawResultPostproc == null ? defaultResultPostprocSupplier.get() : rawResultPostproc;
 		final DecisionRequestPreprocessor<?, ?> finalReqProc = rawReqPreproc == null ? defaultReqPreprocSupplier.get(finalResultProc.getFeatures()) : rawReqPreproc;
-		return PdpEngineAdapters.newInoutAdapter(adapterInputClass, adapterOutputClass, adaptee, finalReqProc, finalResultProc);
+		return newInoutAdapter(adapterInputClass, adapterOutputClass, adaptee, finalReqProc, finalResultProc);
 	}
 
 	/**

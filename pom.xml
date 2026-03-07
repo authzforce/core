@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.ow2.authzforce</groupId>
 		<artifactId>authzforce-ce-parent</artifactId>
-		<version>9.0.0</version>
+		<version>9.2.0</version>
 	</parent>
 	<artifactId>authzforce-ce-core</artifactId>
 	<version>21.0.2-SNAPSHOT</version>
@@ -33,22 +33,9 @@
 			<dependency>
 				<groupId>org.ow2.authzforce</groupId>
 				<artifactId>authzforce-ce-core-pdp-api</artifactId>
-				<version>22.0.0</version>
+				<version>22.1.1</version>
 			</dependency>
 			<!-- /AuthzForce dependencies -->
-			<!-- Fix  CVE-2023-34053 -->
-			<dependency>
-				<!-- Needed for org.springframework.util.ResourceUtils,SystemPropertyUtils,FileCopyUtils, etc. -->
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-core</artifactId>
-				<version>6.0.18</version>
-			</dependency>
-			<!-- FIX CVE-2023-6378 -->
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-classic</artifactId>
-				<version>1.4.14</version>
-			</dependency>
 			<!-- Test dependencies -->
 			<!-- /Test dependencies -->
 		</dependencies>
@@ -58,7 +45,7 @@
 			<plugins>
 				<plugin>
 					<artifactId>maven-resources-plugin</artifactId>
-					<version>3.3.1</version>
+					<version>3.4.0</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>

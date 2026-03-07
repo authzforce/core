@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 THALES.
+ * Copyright 2012-2026 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -20,7 +20,7 @@ package org.ow2.authzforce.core.pdp.impl;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.*;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.value.*;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
@@ -321,7 +321,7 @@ public final class CloseableNamedAttributeProviderRegistry implements Closeable
 	 */
 	public List<NamedAttributeProvider> getProviders(final AttributeFqn attributeName) {
 		/*
-		If there is no provider for the full attribute name (Category/Issuer/Id), try to get providers for the same attribute category (category-wide, i.e. any attribute in the category)
+		If there is no provider for the full attribute name (Category/Issuer/ID), try to get providers for the same attribute category (category-wide, i.e. any attribute in the category)
 		 */
 		final List<NamedAttributeProvider> attNameMatchingProviders = this.namedAttProvidersByAttFqn.get(attributeName);
 		return attNameMatchingProviders.isEmpty()? this.categoryWideNamedAttProvidersByCategory.get(attributeName.getCategory()): attNameMatchingProviders;

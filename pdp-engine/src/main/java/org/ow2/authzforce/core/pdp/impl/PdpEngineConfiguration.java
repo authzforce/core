@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 THALES.
+ * Copyright 2012-2026 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -453,7 +453,7 @@ public final class PdpEngineConfiguration
 		/*
 		 * XACML element (Policies, etc.) parser factory
 		 */
-		final XmlnsFilteringParserFactory xacmlParserFactory = enableXPath && (xpathNamespaceContexts != null && !xpathNamespaceContexts.isEmpty())? new XmlnsFilteringParserFactoryWithDefaultXmlnsContext(xpathNamespaceContexts): XacmlJaxbParsingUtils.getXacmlParserFactory(enableXPath);
+		final XmlnsFilteringParserFactory xacmlParserFactory = enableXPath && xpathNamespaceContexts != null && !xpathNamespaceContexts.isEmpty()? new XmlnsFilteringParserFactoryWithDefaultXmlnsContext(xpathNamespaceContexts): XacmlJaxbParsingUtils.getXacmlParserFactory(enableXPath);
 
 		/*
 		 * Strict Attribute Issuer match

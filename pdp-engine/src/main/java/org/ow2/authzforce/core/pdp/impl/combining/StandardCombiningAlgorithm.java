@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 THALES.
+ * Copyright 2012-2026 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -182,49 +182,49 @@ public enum StandardCombiningAlgorithm
 
 	static
 	{
-		final Set<CombiningAlg<?>> standardAlgorithms = HashCollections.newUpdatableSet(StandardCombiningAlgorithm.values().length);
+		final Set<CombiningAlg<?>> standardAlgorithms = HashCollections.newUpdatableSet(values().length);
 		// XACML 3.0 algorithms
 		// deny-overrides and ordered-deny-overrides
-		standardAlgorithms.add(new DPOverridesCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_DENY_OVERRIDES.id, PolicyEvaluator.class, EffectType.DENY));
-		standardAlgorithms.add(new DPOverridesCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_DENY_OVERRIDES.id, RuleEvaluator.class, EffectType.DENY));
+		standardAlgorithms.add(new DPOverridesCombiningAlg<>(XACML_3_0_POLICY_COMBINING_DENY_OVERRIDES.id, PolicyEvaluator.class, EffectType.DENY));
+		standardAlgorithms.add(new DPOverridesCombiningAlg<>(XACML_3_0_RULE_COMBINING_DENY_OVERRIDES.id, RuleEvaluator.class, EffectType.DENY));
 
 		standardAlgorithms.add(new DPOverridesCombiningAlg<>(XACML_3_0_POLICY_COMBINING_ORDERED_DENY_OVERRIDES.id, PolicyEvaluator.class, EffectType.DENY));
 		standardAlgorithms.add(new DPOverridesCombiningAlg<>(XACML_3_0_RULE_COMBINING_ORDERED_DENY_OVERRIDES.id, RuleEvaluator.class, EffectType.DENY));
 
 		// permit-overrides and ordered-permit-overrides
-		standardAlgorithms.add(new DPOverridesCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_PERMIT_OVERRIDES.id, PolicyEvaluator.class, EffectType.PERMIT));
-		standardAlgorithms.add(new DPOverridesCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_PERMIT_OVERRIDES.id, RuleEvaluator.class, EffectType.PERMIT));
+		standardAlgorithms.add(new DPOverridesCombiningAlg<>(XACML_3_0_POLICY_COMBINING_PERMIT_OVERRIDES.id, PolicyEvaluator.class, EffectType.PERMIT));
+		standardAlgorithms.add(new DPOverridesCombiningAlg<>(XACML_3_0_RULE_COMBINING_PERMIT_OVERRIDES.id, RuleEvaluator.class, EffectType.PERMIT));
 
-		standardAlgorithms.add(new DPOverridesCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_ORDERED_PERMIT_OVERRIDES.id, PolicyEvaluator.class, EffectType.PERMIT));
-		standardAlgorithms.add(new DPOverridesCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_ORDERED_PERMIT_OVERRIDES.id, RuleEvaluator.class, EffectType.PERMIT));
+		standardAlgorithms.add(new DPOverridesCombiningAlg<>(XACML_3_0_POLICY_COMBINING_ORDERED_PERMIT_OVERRIDES.id, PolicyEvaluator.class, EffectType.PERMIT));
+		standardAlgorithms.add(new DPOverridesCombiningAlg<>(XACML_3_0_RULE_COMBINING_ORDERED_PERMIT_OVERRIDES.id, RuleEvaluator.class, EffectType.PERMIT));
 
 		// deny-unless-permit
-		standardAlgorithms.add(new DPUnlessPDCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_DENY_UNLESS_PERMIT.id, PolicyEvaluator.class, EffectType.PERMIT));
-		standardAlgorithms.add(new DPUnlessPDCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_DENY_UNLESS_PERMIT.id, RuleEvaluator.class, EffectType.PERMIT));
+		standardAlgorithms.add(new DPUnlessPDCombiningAlg<>(XACML_3_0_POLICY_COMBINING_DENY_UNLESS_PERMIT.id, PolicyEvaluator.class, EffectType.PERMIT));
+		standardAlgorithms.add(new DPUnlessPDCombiningAlg<>(XACML_3_0_RULE_COMBINING_DENY_UNLESS_PERMIT.id, RuleEvaluator.class, EffectType.PERMIT));
 
 		// permit-unless-deny
-		standardAlgorithms.add(new DPUnlessPDCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_PERMIT_UNLESS_DENY.id, PolicyEvaluator.class, EffectType.DENY));
-		standardAlgorithms.add(new DPUnlessPDCombiningAlg<>(StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_PERMIT_UNLESS_DENY.id, RuleEvaluator.class, EffectType.DENY));
+		standardAlgorithms.add(new DPUnlessPDCombiningAlg<>(XACML_3_0_POLICY_COMBINING_PERMIT_UNLESS_DENY.id, PolicyEvaluator.class, EffectType.DENY));
+		standardAlgorithms.add(new DPUnlessPDCombiningAlg<>(XACML_3_0_RULE_COMBINING_PERMIT_UNLESS_DENY.id, RuleEvaluator.class, EffectType.DENY));
 
 		// first-applicable
-		standardAlgorithms.add(new FirstApplicableCombiningAlg<>(StandardCombiningAlgorithm.XACML_1_0_POLICY_COMBINING_FIRST_APPLICABLE.id, PolicyEvaluator.class));
-		standardAlgorithms.add(new FirstApplicableCombiningAlg<>(StandardCombiningAlgorithm.XACML_1_0_RULE_COMBINING_FIRST_APPLICABLE.id, RuleEvaluator.class));
+		standardAlgorithms.add(new FirstApplicableCombiningAlg<>(XACML_1_0_POLICY_COMBINING_FIRST_APPLICABLE.id, PolicyEvaluator.class));
+		standardAlgorithms.add(new FirstApplicableCombiningAlg<>(XACML_1_0_RULE_COMBINING_FIRST_APPLICABLE.id, RuleEvaluator.class));
 
 		// only-one-applicable
-		standardAlgorithms.add(new OnlyOneApplicableCombiningAlg(StandardCombiningAlgorithm.XACML_1_0_POLICY_COMBINING_ONLY_ONE_APPLICABLE.id));
+		standardAlgorithms.add(new OnlyOneApplicableCombiningAlg(XACML_1_0_POLICY_COMBINING_ONLY_ONE_APPLICABLE.id));
 
 		//
 		// Legacy
 		// (ordered-)deny-overrides
-		for (final StandardCombiningAlgorithm alg : EnumSet.range(StandardCombiningAlgorithm.XACML_1_0_POLICY_COMBINING_DENY_OVERRIDES,
-				StandardCombiningAlgorithm.XACML_1_1_RULE_COMBINING_ORDERED_DENY_OVERRIDES))
+		for (final StandardCombiningAlgorithm alg : EnumSet.range(XACML_1_0_POLICY_COMBINING_DENY_OVERRIDES,
+				XACML_1_1_RULE_COMBINING_ORDERED_DENY_OVERRIDES))
 		{
 			standardAlgorithms.add(new LegacyDenyOverridesCombiningAlg(alg.id));
 		}
 
 		// (ordered-)permit-overrides
-		for (final StandardCombiningAlgorithm alg : EnumSet.range(StandardCombiningAlgorithm.XACML_1_0_POLICY_COMBINING_PERMIT_OVERRIDES,
-				StandardCombiningAlgorithm.XACML_1_1_RULE_COMBINING_ORDERED_PERMIT_OVERRIDES))
+		for (final StandardCombiningAlgorithm alg : EnumSet.range(XACML_1_0_POLICY_COMBINING_PERMIT_OVERRIDES,
+				XACML_1_1_RULE_COMBINING_ORDERED_PERMIT_OVERRIDES))
 		{
 			standardAlgorithms.add(new LegacyPermitOverridesCombiningAlg(alg.id));
 		}
@@ -238,7 +238,7 @@ public enum StandardCombiningAlgorithm
 		}
 	}
 
-	private static final Map<String, StandardCombiningAlgorithm> ID_TO_STD_ALG_MAP = Maps.uniqueIndex(Arrays.asList(StandardCombiningAlgorithm.values()),
+	private static final Map<String, StandardCombiningAlgorithm> ID_TO_STD_ALG_MAP = Maps.uniqueIndex(Arrays.asList(values()),
 			input ->
 			{
 				assert input != null;

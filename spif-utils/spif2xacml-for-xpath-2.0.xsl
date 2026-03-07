@@ -26,8 +26,7 @@ limitations under the License.
 
     <!-- Start with root element... -->
     <xsl:template match="/spif:SPIF">
-        <PolicySet xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" PolicySetId="{spif:securityPolicyId/@id}"
-                   Version="{@version}"
+		<PolicySet xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" PolicySetId="{spif:securityPolicyId/@id}" Version="{@version}"
                    PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit">
             <Description>
                 <xsl:text>Generated from SPIF: </xsl:text><xsl:value-of select="spif:securityPolicyId/@name"/><xsl:text> v</xsl:text><xsl:value-of

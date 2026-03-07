@@ -17,7 +17,14 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<beans xmlns="http://www.springframework.org/schema/beans" xmlns:cxf="http://cxf.apache.org/core" xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:sec="http://cxf.apache.org/configuration/security" xmlns:httpj="http://cxf.apache.org/transports/http-jetty/configuration" xmlns:test="http://apache.org/hello_world_soap_http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="         http://cxf.apache.org/core         http://cxf.apache.org/schemas/core.xsd         http://www.springframework.org/schema/beans         http://www.springframework.org/schema/beans/spring-beans-2.0.xsd         http://cxf.apache.org/jaxws                                              http://cxf.apache.org/schemas/jaxws.xsd         http://cxf.apache.org/configuration/security         http://cxf.apache.org/schemas/configuration/security.xsd         http://cxf.apache.org/transports/http-jetty/configuration         http://cxf.apache.org/schemas/configuration/http-jetty.xsd         http://www.springframework.org/schema/util         http://www.springframework.org/schema/util/spring-util-2.0.xsd">
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:cxf="http://cxf.apache.org/core" xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:sec="http://cxf.apache.org/configuration/security" xmlns:httpj="http://cxf.apache.org/transports/http-jetty/configuration"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+       http://cxf.apache.org/core         http://cxf.apache.org/schemas/core.xsd
+       http://www.springframework.org/schema/beans         http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://cxf.apache.org/jaxws                                              http://cxf.apache.org/schemas/jaxws.xsd
+       http://cxf.apache.org/configuration/security         http://cxf.apache.org/schemas/configuration/security.xsd
+       http://cxf.apache.org/transports/http-jetty/configuration         http://cxf.apache.org/schemas/configuration/http-jetty.xsd
+       http://www.springframework.org/schema/util         http://www.springframework.org/schema/util/spring-util-4.2.xsd">
     <import resource="classpath:META-INF/cxf/cxf.xml"/>
     
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
@@ -28,25 +35,16 @@
     </cxf:bus>
     <bean id="transportIssueDelegate" class="org.apache.cxf.sts.operation.TokenIssueOperation">
         <property name="tokenProviders" ref="transportTokenProviders"/>
-        <property name="tokenValidators" ref="transportTokenValidators"/>
+        <!--<property name="tokenValidators" ref="transportTokenValidators"/>-->
         <property name="services" ref="transportService"/>
         <property name="stsProperties" ref="transportSTSProperties"/>
         <property name="claimsManager" ref="claimsManager" />
     </bean>
     <bean id="transportValidateDelegate" class="org.apache.cxf.sts.operation.TokenValidateOperation">
-        <property name="tokenValidators" ref="transportTokenValidators"/>
+        <property name="tokenValidators" ref="transportSamlTokenValidator"/>
         <property name="stsProperties" ref="transportSTSProperties"/>
     </bean>
-    <util:list id="transportTokenValidators">
-        <ref bean="transportSamlTokenValidator"/>
-    </util:list>
-    <util:list id="transportTokenProviders">
-        <ref bean="transportSamlTokenProvider"/>
-    </util:list>
-    <bean id="transportSamlTokenValidator" class="org.apache.cxf.sts.token.validator.SAMLTokenValidator">
-    </bean>
-    <bean id="transportSamlTokenProvider" class="org.apache.cxf.sts.token.provider.SAMLTokenProvider">
-    </bean>
+    <bean id="transportSamlTokenValidator" class="org.apache.cxf.sts.token.validator.SAMLTokenValidator"/>
     <bean id="transportSTSProviderBean" class="org.apache.cxf.ws.security.sts.provider.SecurityTokenServiceProvider">
         <property name="issueOperation" ref="transportIssueDelegate"/>
         <property name="validateOperation" ref="transportValidateDelegate"/>

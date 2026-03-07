@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 THALES.
+ * Copyright 2012-2026 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -122,7 +122,7 @@ public enum StandardSubjectAttribute
 		return this.attributeDatatype;
 	}
 
-	private static final Map<AttributeFqn, StandardSubjectAttribute> ID_TO_STD_ATTR_MAP = Maps.uniqueIndex(Arrays.asList(StandardSubjectAttribute.values()),
+	private static final Map<AttributeFqn, StandardSubjectAttribute> ID_TO_STD_ATTR_MAP = Maps.uniqueIndex(Arrays.asList(values()),
 			input ->
 			{
 				assert input != null;
