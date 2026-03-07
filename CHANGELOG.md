@@ -6,6 +6,27 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 21.1.0
+### Changed
+- Upgraded authzforce-ce-parent: 9.2.0
+- Upgraded dependencies:
+  - authzforce-ce-xacml-model / authzforce-ce-pdp-ext-model: 9.2.0
+  - authzforce-ce-xacml-json-model: 4.2.0: what's changed?
+  - authzforce-ce-core-pdp-api: 22.1.1:
+  - logback: 1.5.32
+  - slf4j: 2.0.17
+  - jaxb-runtime: 4.0.6
+  - spring-core: 6.2.15
+  - mongodb-driver-sync: 4.11.5
+- XACML datatype 'xpathExpression' (XPathValue class) support modified to support the 'attribute-selector' function from the XACML v3.0 Related and Nested Entities Profile Version 1.0
+  - 'XPathCategory' attribute made optional
+  - Added evaluate(xml, variables) method without an EvaluationContext parameter, for XPath expression evaluation
+
+### Fixed
+- Bugfix: AttributeSelectors in a Target are rejected (error) even if Policy(Set)Defaults/XPathVersion properly declared before the Target
+- Bad regex for validating XACML dnsName values with a wildcard
+
+
 ## 21.0.1
 ### Fixed
 - [GH-92] Deny-overrides rule combining algorithm - Missing obligations in case of multiple Permit Rules and no Deny Rule (only the Obligations from the first Permit Rule were returned).
