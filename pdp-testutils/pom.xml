@@ -23,12 +23,12 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>authzforce-ce-core-pdp-engine</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.ow2.authzforce</groupId>
             <artifactId>authzforce-ce-core-pdp-io-xacml-json</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
