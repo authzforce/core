@@ -224,6 +224,7 @@
             <version>0.9.0</version>
             <extensions>true</extensions>
             <configuration>
+               <!-- Maven Central does not support executable bundles anymore, therefore skip publishing to Maven Central -->
                <skipPublishing>true</skipPublishing>
             </configuration>
          </plugin>
