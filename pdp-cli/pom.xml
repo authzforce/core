@@ -30,12 +30,12 @@
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-engine</artifactId>
-         <version>21.1.1-SNAPSHOT</version>
+         <version>${project.parent.version}</version>
       </dependency>
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-io-xacml-json</artifactId>
-         <version>21.1.1-SNAPSHOT</version>
+         <version>${project.parent.version}</version>
       </dependency>
       <dependency>
          <groupId>junit</groupId>
@@ -54,7 +54,7 @@
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-testutils</artifactId>
-         <version>21.1.1-SNAPSHOT</version>
+         <version>${project.parent.version}</version>
          <scope>test</scope>
       </dependency>
    </dependencies>
@@ -217,6 +217,15 @@
                   </goals>
                </execution>
             </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.9.0</version>
+            <extensions>true</extensions>
+            <configuration>
+               <skipPublishing>true</skipPublishing>
+            </configuration>
          </plugin>
       </plugins>
    </build>

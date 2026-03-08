@@ -11,6 +11,19 @@
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>AuthzForce - XACML-compliant Core PDP Engine and associated test modules</description>
 	<url>${project.url}</url>
+	<licenses>
+		<license>
+			<name>Apache License Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+	<developers>
+		<developer>
+			<name>The AuthzForce Team</name>
+			<organization>THALES</organization>
+			<organizationUrl>http://thalesgroup.com</organizationUrl>
+		</developer>
+	</developers>
 	<scm>
 		<!-- Used by Jenkins - Maven release plugin -->
 		<connection>scm:git:${git.url.base}/core.git</connection>
