@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.ow2.authzforce</groupId>
         <artifactId>authzforce-ce-core</artifactId>
-        <version>21.0.1</version>
+        <version>21.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>authzforce-ce-core-pdp-engine</artifactId>
@@ -45,6 +45,11 @@
             <artifactId>jaxb-runtime</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>3.0.2</version>
+        </dependency>
         <!-- /Third-party dependencies -->
 
         <!-- Authzforce dependencies -->
@@ -73,7 +78,7 @@
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
                 <configuration>
-                    <cveValidForHours>24</cveValidForHours>
+                    <nvdValidForHours>24</nvdValidForHours>
                     <!-- The plugin has numerous issues with version matching, which triggers false positives, so we need a "suppression" file for those. More info: https://github.com/jeremylong/DependencyCheck/issues -->
                     <suppressionFile>owasp-dependency-check-suppression.xml</suppressionFile>
                     <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 THALES.
+ * Copyright 2012-2026 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -405,7 +405,7 @@ public class TestUtils
     public static PdpEngineConfiguration newPdpEngineConfiguration(final Path rootPolicyFile, final boolean enableXPath, final Optional<Path> attributeProviderConfFile, final String requestPreprocId,
                                                                    final String resultPostprocId) throws IllegalArgumentException, IOException, JAXBException
     {
-        final TopLevelPolicyElementRef rootPolicyRef = TestUtils.getPolicyRef(rootPolicyFile);
+        final TopLevelPolicyElementRef rootPolicyRef = getPolicyRef(rootPolicyFile);
         return newPdpEngineConfiguration(rootPolicyRef, Collections.singletonList(rootPolicyFile.toString()), enableXPath, attributeProviderConfFile, requestPreprocId, resultPostprocId);
     }
 
@@ -501,8 +501,8 @@ public class TestUtils
                     /*
              StatusDetail comparison already taken care of, remove it else assertEquals will fail to compare StatusDetail content for the reason above.
              */
-        final Response normalizedExpectedResponse = TestUtils.normalizeForComparison(expectedResponse, removeStatusMessage, true);
-        final Response normalizedActualResponse = TestUtils.normalizeForComparison(actualResponseFromPDP, removeStatusMessage, true);
+        final Response normalizedExpectedResponse = normalizeForComparison(expectedResponse, removeStatusMessage, true);
+        final Response normalizedActualResponse = normalizeForComparison(actualResponseFromPDP, removeStatusMessage, true);
         final Marshaller marshaller = Xacml3JaxbHelper.createXacml3Marshaller();
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         final MarshallableWithToString expectedMarshallableResponse = new MarshallableWithToString(normalizedExpectedResponse, marshaller);

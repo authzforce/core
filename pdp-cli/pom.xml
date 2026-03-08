@@ -3,7 +3,7 @@
    <parent>
       <groupId>org.ow2.authzforce</groupId>
       <artifactId>authzforce-ce-core</artifactId>
-      <version>21.0.1</version>
+      <version>21.1.0</version>
       <relativePath>../pom.xml</relativePath>
    </parent>
    <artifactId>authzforce-ce-core-pdp-cli</artifactId>
@@ -30,12 +30,12 @@
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-engine</artifactId>
-         <version>21.0.1</version>
+         <version>${project.parent.version}</version>
       </dependency>
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-io-xacml-json</artifactId>
-         <version>21.0.1</version>
+         <version>${project.parent.version}</version>
       </dependency>
       <dependency>
          <groupId>junit</groupId>
@@ -54,7 +54,7 @@
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-testutils</artifactId>
-         <version>21.0.1</version>
+         <version>${project.parent.version}</version>
          <scope>test</scope>
       </dependency>
    </dependencies>
@@ -100,7 +100,7 @@
             <groupId>org.owasp</groupId>
             <artifactId>dependency-check-maven</artifactId>
             <configuration>
-               <cveValidForHours>24</cveValidForHours>
+               <nvdValidForHours>24</nvdValidForHours>
                <!-- The plugin has numerous issues with version matching, which triggers false positives, so we need a "suppression" file for those. More info: https://github.com/jeremylong/DependencyCheck/issues -->
                <suppressionFile>owasp-dependency-check-suppression.xml</suppressionFile>
                <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
@@ -198,7 +198,6 @@
                </properties>
             </configuration>
          </plugin>
-
          <plugin>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
@@ -217,6 +216,15 @@
                   </goals>
                </execution>
             </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.9.0</version>
+            <extensions>true</extensions>
+            <configuration>
+               <skipPublishing>true</skipPublishing>
+            </configuration>
          </plugin>
       </plugins>
    </build>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 THALES.
+ * Copyright 2012-2026 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -1392,7 +1392,65 @@ public final class PolicyEvaluators
         final String policyId = policyElement.getPolicyId();
         final PolicyVersion policyVersion = new PolicyVersion(policyElement.getVersion());
         final PrimaryPolicyMetadata policyMetadata = new BasePrimaryPolicyMetadata(TopLevelPolicyElementType.POLICY, policyId, policyVersion);
-        final BooleanEvaluator targetEvaluator = TargetEvaluators.getInstance(policyElement.getTarget(), expressionFactory, parentDefaultXPathCompiler);
+        final DefaultsType policyDefaults = policyElement.getPolicyDefaults();
+        Optional<XPathCompilerProxy> newLocalXpathCompiler;
+        /*
+         * Leave newLocalXpathCompiler undefined if XPath support disabled globally.
+         *
+         * Else (XPath support enabled globally, but may be disabled locally for this specific Policy if XPathVersion undefined in it and any enclosing PolicySet)...
+         * Reminder: According to the XACML standard, the Policy(Set)Defaults/XPathVersion must be specified (non-null) in the current Policy(Set) or any of its enclosing/ancestor PolicySet for XPath expressions to be allowed (therefore a need for a XPathCompiler), e.g. in AttributeSelectors, XPath functions, etc.
+         */
+        if(expressionFactory.isXPathEnabled())
+        {
+                /*
+                If both policyDefaults and parentDefaultXPathCompiler undefined, it means no Policy(Set)Defaults/XPathVersion defined (in current Policy and any enclosing PolicySet), i.e. XPath support is disabled for this Policy, so leave newLocalXpathCompiler undefined like parentDefaultXPathCompiler.
+
+                We may reuse parentDefaultXPathCompiler if:
+                 - parentDefaultXPathCompiler is defined
+                 - AND policyDefaults/XPathVersion is undefined OR the XPath version matches the policyDefaults/XPathVersion
+                 - AND namespacePrefixToUriMap is empty (i.e. only the ones from parentDefaultXPathCompiler apply)
+                 */
+            if (policyDefaults == null)
+            {
+                if(parentDefaultXPathCompiler.isEmpty() || namespacePrefixToUriMap.isEmpty()) {
+                    newLocalXpathCompiler = parentDefaultXPathCompiler;
+                } else {
+                    // parentDefaultXPathCompiler defined AND namespacePrefixToUriMap not empty -> new XPathCompiler to handle these new namespacePrefixToUriMap map
+                    newLocalXpathCompiler = Optional.of(new ImmutableXPathCompiler(parentDefaultXPathCompiler.get().getXPathVersion(), namespacePrefixToUriMap, List.of()));
+                }
+            } else {
+                // policyDefaults defined
+                final String xpathVersionUri = policyDefaults.getXPathVersion();
+                assert xpathVersionUri != null : "PolicyDefaults(non-null)/XPathVersion = null, which violates the XACML schema! Fix: enforce XACML schema validation.";
+
+                try
+                {
+                    final XPathVersion xPathVersion = XPathVersion.fromURI(xpathVersionUri);
+                    if(parentDefaultXPathCompiler.isEmpty()) {
+                        newLocalXpathCompiler = Optional.of(new ImmutableXPathCompiler(xPathVersion, namespacePrefixToUriMap, List.of()));
+                    } else
+                        // parentDefaultXPathCompiler defined, re-use it only if XPath version matches policyDefaults and namespacePrefixToUriMap empty
+                        if(parentDefaultXPathCompiler.get().getXPathVersion().equals(xPathVersion) && namespacePrefixToUriMap.isEmpty())
+                        {
+                            newLocalXpathCompiler = parentDefaultXPathCompiler;
+                        } else {
+                            newLocalXpathCompiler = Optional.of(new ImmutableXPathCompiler(xPathVersion, namespacePrefixToUriMap, List.of()));
+                        }
+
+                } catch (final IllegalArgumentException e)
+                {
+                    throw new IllegalArgumentException(policyMetadata + ": Invalid PolicySetDefaults/XPathVersion or XML namespace prefix/URI undefined", e);
+                }
+            }
+        } else {
+            // XPath support disabled globally
+            newLocalXpathCompiler = Optional.empty();
+        }
+
+        /*
+        newLocalXpathCompiler is empty iff XPath support disabled globally (!expressionFactory.isXPathEnabled()) OR (policyDefaults ==null AND parentDefaultXPathCompiler.isEmpty()), in other words iff XPath support disabled for this Policy
+         */
+        final BooleanEvaluator targetEvaluator = TargetEvaluators.getInstance(policyElement.getTarget(), expressionFactory, newLocalXpathCompiler.isPresent()? newLocalXpathCompiler: parentDefaultXPathCompiler);
 
         /*
          * Elements defined in xs:choice of XACML schema type PolicyType: Rules/(Rule)CombinerParameters/VariableDefinitions
@@ -1408,65 +1466,6 @@ public final class PolicyEvaluators
          * this policy. There are at most as many VariableDefinitions as policyChoiceElements.size().
          */
         final List<VariableReference<?>> localVariables = new ArrayList<>(policyChoiceElements.size());
-
-        final DefaultsType policyDefaults = policyElement.getPolicyDefaults();
-        Optional<XPathCompilerProxy> childXpathCompiler;
-        /*
-         * Leave childXpathCompiler undefined if XPath support disabled globally.
-         *
-         * Else (XPath support enabled globally, but may be disabled locally for this specific Policy if XPathVersion undefined in it and any enclosing PolicySet)...
-         * Reminder: According to the XACML standard, the Policy(Set)Defaults/XPathVersion must be specified (non-null) in the current Policy(Set) or any of its enclosing/ancestor PolicySet for XPath expressions to be allowed (therefore a need for a XPathCompiler), e.g. in AttributeSelectors, XPath functions, etc.
-         */
-        if(expressionFactory.isXPathEnabled())
-        {
-                /*
-                If both policyDefaults and parentDefaultXPathCompiler undefined, it means no Policy(Set)Defaults/XPathVersion defined (in current Policy and any enclosing PolicySet), i.e. XPath support is disabled for this Policy, so leave childXpathCompiler undefined like parentDefaultXPathCompiler.
-
-                We may reuse parentDefaultXPathCompiler if:
-                 - parentDefaultXPathCompiler is defined
-                 - AND policyDefaults/XPathVersion is undefined OR the XPath version matches the policyDefaults/XPathVersion
-                 - AND namespacePrefixToUriMap is empty (i.e. only the ones from parentDefaultXPathCompiler apply)
-                 */
-            if (policyDefaults == null)
-            {
-                if(parentDefaultXPathCompiler.isEmpty() || namespacePrefixToUriMap.isEmpty()) {
-                    childXpathCompiler = parentDefaultXPathCompiler;
-                } else {
-                    // parentDefaultXPathCompiler defined AND namespacePrefixToUriMap not empty -> new XPathCompiler to handle these new namespacePrefixToUriMap map
-                    childXpathCompiler = Optional.of(new ImmutableXPathCompiler(parentDefaultXPathCompiler.get().getXPathVersion(), namespacePrefixToUriMap, List.of()));
-                }
-            } else {
-                // policyDefaults defined
-                final String xpathVersionUri = policyDefaults.getXPathVersion();
-                assert xpathVersionUri != null : "PolicyDefaults(non-null)/XPathVersion = null, which violates the XACML schema! Fix: enforce XACML schema validation.";
-
-                try
-                {
-                    final XPathVersion xPathVersion = XPathVersion.fromURI(xpathVersionUri);
-                    if(parentDefaultXPathCompiler.isEmpty()) {
-                        childXpathCompiler = Optional.of(new ImmutableXPathCompiler(xPathVersion, namespacePrefixToUriMap, List.of()));
-                    } else
-                        // parentDefaultXPathCompiler defined, re-use it only if XPath version matches policyDefaults and namespacePrefixToUriMap empty
-                        if(parentDefaultXPathCompiler.get().getXPathVersion().equals(xPathVersion) && namespacePrefixToUriMap.isEmpty())
-                        {
-                            childXpathCompiler = parentDefaultXPathCompiler;
-                        } else {
-                            childXpathCompiler = Optional.of(new ImmutableXPathCompiler(xPathVersion, namespacePrefixToUriMap, List.of()));
-                        }
-
-                } catch (final IllegalArgumentException e)
-                {
-                    throw new IllegalArgumentException(policyMetadata + ": Invalid PolicySetDefaults/XPathVersion or XML namespace prefix/URI undefined", e);
-                }
-            }
-        } else {
-            // XPath support disabled globally
-            childXpathCompiler = Optional.empty();
-        }
-
-        /*
-        childXpathCompiler is empty iff XPath support disabled globally (!expressionFactory.isXPathEnabled()) OR (policyDefaults ==null AND parentDefaultXPathCompiler.isEmpty()), in other words iff XPath support disabled for this Policy
-         */
 
 		/*
 		 If XPath support enabled, we can reuse the same XPathCompiler as long as there is no new VariableDefinition
@@ -1486,14 +1485,14 @@ public final class PolicyEvaluators
         for (final Serializable policyChildElt : policyChoiceElements)
         {
 			/*
-				 If and only if XPath enabled for this Policy (childXpathCompiler.isPresent()), XPath compiler needed for each child, can we reuse the same one as last time (it was used to create a child element evaluator) ?
+				 If and only if XPath enabled for this Policy (newLocalXpathCompiler.isPresent()), XPath compiler needed for each child, can we reuse the same one as last time (it was used to create a child element evaluator) ?
 				 */
-            if (childXpathCompiler.isPresent() && isNewChildXpathCompilerRequired)
+            if (newLocalXpathCompiler.isPresent() && isNewChildXpathCompilerRequired)
             {
 					/*
 					 New Variables defined since last XPath compiler created -> we need to use a new one to handle the new XACML Variables as XPath variables
 					 */
-                childXpathCompiler = Optional.of(new ImmutableXPathCompiler(childXpathCompiler.get().getXPathVersion(), namespacePrefixToUriMap, localVariables));
+                newLocalXpathCompiler = Optional.of(new ImmutableXPathCompiler(newLocalXpathCompiler.get().getXPathVersion(), namespacePrefixToUriMap, localVariables));
                 isNewChildXpathCompilerRequired = false;
             }
 
@@ -1510,7 +1509,7 @@ public final class PolicyEvaluators
                 final BaseCombiningAlgParameter<RuleEvaluator> combiningAlgParameter;
                 try
                 {
-                    combiningAlgParameter = new BaseCombiningAlgParameter<>(ruleEvaluator, ((CombinerParametersType) policyChildElt).getCombinerParameters(), expressionFactory, childXpathCompiler);
+                    combiningAlgParameter = new BaseCombiningAlgParameter<>(ruleEvaluator, ((CombinerParametersType) policyChildElt).getCombinerParameters(), expressionFactory, newLocalXpathCompiler);
                 } catch (final IllegalArgumentException e)
                 {
                     throw new IllegalArgumentException(policyMetadata + ": invalid child #" + childIndex + " (RuleCombinerParameters)", e);
@@ -1525,7 +1524,7 @@ public final class PolicyEvaluators
                 final BaseCombiningAlgParameter<RuleEvaluator> combiningAlgParameter;
                 try
                 {
-                    combiningAlgParameter = new BaseCombiningAlgParameter<>(null, ((CombinerParametersType) policyChildElt).getCombinerParameters(), expressionFactory, childXpathCompiler);
+                    combiningAlgParameter = new BaseCombiningAlgParameter<>(null, ((CombinerParametersType) policyChildElt).getCombinerParameters(), expressionFactory, newLocalXpathCompiler);
                 } catch (final IllegalArgumentException e)
                 {
                     throw new IllegalArgumentException(policyMetadata + ": invalid child #" + childIndex + " (CombinerParameters)", e);
@@ -1538,7 +1537,7 @@ public final class PolicyEvaluators
                 final VariableReference<?> var;
                 try
                 {
-                    var = expressionFactory.addVariable(varDef, varDefLongestVarRefChain, childXpathCompiler);
+                    var = expressionFactory.addVariable(varDef, varDefLongestVarRefChain, newLocalXpathCompiler);
                 } catch (final IllegalArgumentException e)
                 {
                     throw new IllegalArgumentException(policyMetadata + ": invalid child #" + childIndex + " (VariableDefinition)", e);
@@ -1571,7 +1570,7 @@ public final class PolicyEvaluators
                 final RuleEvaluator ruleEvaluator;
                 try
                 {
-                    ruleEvaluator = RuleEvaluators.getInstance((Rule) policyChildElt, expressionFactory, childXpathCompiler);
+                    ruleEvaluator = RuleEvaluators.getInstance((Rule) policyChildElt, expressionFactory, newLocalXpathCompiler);
                 } catch (final IllegalArgumentException e)
                 {
                     throw new IllegalArgumentException(policyMetadata + ": Error parsing child #" + childIndex + " (Rule)", e);
@@ -1611,7 +1610,7 @@ public final class PolicyEvaluators
         final StaticTopLevelPolicyElementEvaluator policyEvaluator = new StaticBaseTopLevelPolicyElementEvaluator<>(RuleEvaluator.class, policyMetadata, Optional.empty(),
                 targetEvaluator, ImmutableList.copyOf(localVariables), policyElement.getRuleCombiningAlgId(), ImmutableList.copyOf(ruleEvaluatorsByRuleIdInOrderOfDeclaration.values()), ImmutableList.copyOf(combiningAlgParameters),
                 obligationExps == null ? null : obligationExps.getObligationExpressions(), adviceExps == null ? null : adviceExps.getAdviceExpressions(),
-                expressionFactory, combiningAlgRegistry, childXpathCompiler);
+                expressionFactory, combiningAlgRegistry, newLocalXpathCompiler);
 
         /*
          * We are done parsing expressions in this policy, including VariableReferences, it's time to remove variables scoped to this policy from the variable manager
@@ -1961,7 +1960,7 @@ public final class PolicyEvaluators
             final StaticPolicyEvaluator childElement;
             try
             {
-                childElement = PolicyEvaluators.getInstanceStatic(policySetChildElt, expressionFactory, combiningAlgorithmRegistry, refPolicyProvider,
+                childElement = getInstanceStatic(policySetChildElt, expressionFactory, combiningAlgorithmRegistry, refPolicyProvider,
                         policySetRefChain == null ? null : new ArrayDeque<>(policySetRefChain), defaultXPathCompiler, namespacePrefixToUriMap);
             } catch (final IllegalArgumentException e)
             {
@@ -1987,7 +1986,7 @@ public final class PolicyEvaluators
                         + " (PolicyIdReference): no refPolicyProvider (module responsible for resolving Policy(Set)IdReferences) defined to support it.");
             }
 
-            final StaticPolicyRefEvaluator childElement = PolicyEvaluators.getInstanceStatic(refPolicyType, idRef, refPolicyProvider, ancestorPolicySetRefChain);
+            final StaticPolicyRefEvaluator childElement = getInstanceStatic(refPolicyType, idRef, refPolicyProvider, ancestorPolicySetRefChain);
             final Optional<PolicyRefsMetadata> childPolicyRefsMetadata = childElement.getPolicyRefsMetadata();
             childPolicyRefsMetadata.ifPresent(extraMetadataProvider::updateMetadata);
 

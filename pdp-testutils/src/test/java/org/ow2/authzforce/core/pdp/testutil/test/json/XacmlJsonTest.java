@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 THALES.
+ * Copyright 2012-2026 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -46,10 +46,10 @@ import java.util.Optional;
 
 /**
  * XACML JSON Profile conformance testing class. For tests testing validation of XACML policy syntax, the PDP is expected to reject the policy before receiving any Request. For these tests, the
- * Request.xml and Response.xml test class are absent, to indicate that an invalid policy syntax is expected.
+ * Request.xml and Response.xml test files are absent, to indicate that an invalid policy syntax is expected.
  * <p>
  * For tests testing validation of XACML Request syntax, the PDP is expected to reject the request before evaluation. For these tests, the original Policy.xml and Response.xml must be renamed to
- * Policy.xml.ignore and Response.xml.ignore to indicate to this test class, that an invalid Request syntax is expected.
+ * Policy.xml.ignore and Response.xml.ignore to indicate that an invalid Request syntax is expected.
  */
 public abstract class XacmlJsonTest
 {

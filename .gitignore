@@ -8,6 +8,7 @@
 /.project
 /.checkstyle
 /bin/
+/.mvn/
 **/.idea
 *.iml
 **/.vscode

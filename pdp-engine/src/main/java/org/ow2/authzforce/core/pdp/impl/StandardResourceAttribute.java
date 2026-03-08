@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 THALES.
+ * Copyright 2012-2026 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -67,7 +67,7 @@ public enum StandardResourceAttribute
 		return this.attributeDatatype;
 	}
 
-	private static final Map<AttributeFqn, StandardResourceAttribute> ID_TO_STD_ATTR_MAP = Maps.uniqueIndex(Arrays.asList(StandardResourceAttribute.values()),
+	private static final Map<AttributeFqn, StandardResourceAttribute> ID_TO_STD_ATTR_MAP = Maps.uniqueIndex(Arrays.asList(values()),
 			input ->
 			{
 				assert input != null;

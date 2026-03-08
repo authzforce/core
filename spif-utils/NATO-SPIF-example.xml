@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <spif:SPIF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:spif="http://www.xmlspif.org/spif" xsi:schemaLocation="http://www.xmlspif.org/spif http://www.xmlspif.org/schema/xmlspif.xsd" schemaVersion="1.0" version="3" creationDate="20060120120000Z" originatorDN="CN=Graeme Lunt,O=SMHS Ltd,C=GB" keyIdentifier="6AA4BA9F66BFCD44" privilegeId="2.16.840.1.101.2.1.8.3" rbacId="2.16.840.1.101.2.1.8.3">
-	<spif:securityPolicyId name="NATO " id="1.3.26.1.3.1"/>
+	<spif:securityPolicyId name="NATO" id="1.3.26.1.3.1"/>
 	<spif:securityClassifications>
 	<spif:securityClassification name="NATO UNCLASSIFIED" lacv="1" hierarchy="1"/>
 	<spif:securityClassification name="NATO RESTRICTED" lacv="2" hierarchy="2"/>

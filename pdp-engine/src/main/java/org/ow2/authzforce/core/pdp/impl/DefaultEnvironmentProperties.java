@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 THALES.
+ * Copyright 2012-2026 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -41,7 +41,7 @@ public final class DefaultEnvironmentProperties implements EnvironmentProperties
 	private static final String PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR = "!";
 
 	private static final PropertyPlaceholderHelper PROPERTY_PLACEHOLDER_HELPER = new PropertyPlaceholderHelper(PROPERTY_PLACEHOLDER_PREFIX, PROPERTY_PLACEHOLDER_SUFFIX,
-	        PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR, false);
+	        PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR, null, false);
 
 	private final Properties props = new Properties();
 

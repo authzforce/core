@@ -17,13 +17,13 @@
  under the License.
 -->
 <wsdl:definitions name="DoubleIt"
-	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
-	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:di="http://www.example.org/schema/DoubleIt"
-	xmlns:tns="http://www.example.org/contract/DoubleIt" xmlns:wsp="http://www.w3.org/ns/ws-policy"
-	xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
-	xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702"
-	xmlns:t="http://docs.oasis-open.org/ws-sx/ws-trust/200512" xmlns:wsaw="http://www.w3.org/2005/08/addressing"
-	xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" targetNamespace="http://www.example.org/contract/DoubleIt">
+				  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+				  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+				  xmlns:tns="http://www.example.org/contract/DoubleIt" xmlns:wsp="http://www.w3.org/ns/ws-policy"
+				  xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+				  xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702"
+				  xmlns:t="http://docs.oasis-open.org/ws-sx/ws-trust/200512"
+				  targetNamespace="http://www.example.org/contract/DoubleIt">
 
     <wsdl:import location="src/test/resources/org/apache/coheigea/cxf/sts/xacml/common/DoubleItLogical.wsdl" 
                  namespace="http://www.example.org/contract/DoubleIt"/>

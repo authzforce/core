@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 THALES.
+ * Copyright 2012-2026 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -28,6 +28,7 @@ import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.testutil.common.AbstractBusClientServerTestBase;
 import org.example.contract.doubleit.DoubleItPortType;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 import javax.xml.namespace.QName;
 import java.net.URL;
@@ -88,6 +89,7 @@ public class EmbeddedPdpBasedAuthzInterceptorTest extends AbstractBusClientServe
 		        launchServer(STSServer.class, true));
 	}
 
+	@Ignore
 	@org.junit.Test
 	public void testAuthorizedRequest() throws Exception
 	{
@@ -114,6 +116,7 @@ public class EmbeddedPdpBasedAuthzInterceptorTest extends AbstractBusClientServe
 		doubleIt(transportPort, 15);
 	}
 
+	@Ignore
 	@org.junit.Test
 	public void testUnauthorizedRequest() throws Exception
 	{

@@ -17,7 +17,7 @@ AuthzForce Core may be used in the following ways:
 
 ## Features
 ### Compliance with the following OASIS XACML 3.0 standards
-* [XACML v3.0 - Core standard](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html) 
+* [XACML v3.0 - Core standard](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html)
 * [XACML v3.0 - Core and Hierarchical Role Based Access Control (RBAC) Profile Version 1.0](http://docs.oasis-open.org/xacml/3.0/rbac/v1.0/xacml-3.0-rbac-v1.0.html)
 * [XACML v3.0 - Multiple Decision Profile Version 1.0 - Repeated attribute categories](http://docs.oasis-open.org/xacml/3.0/multiple/v1.0/cs02/xacml-3.0-multiple-v1.0-cs02.html#_Toc388943334)  (`urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories`).
 * [XACML v3.0 - JSON Profile Version 1.0](http://docs.oasis-open.org/xacml/xacml-json-http/v1.0/xacml-json-http-v1.0.html), with extra security features:
@@ -308,8 +308,10 @@ If you are using the Java API with extensions configured by XML (Policy Provider
 
 For full support of XACML, you may use any XML editor supporting XML Schema. Make sure you import the XACML 3.0 schema into the tool and enable XML schema validation.
 
-### Using ALFA plugin for VScode - ALFA to XACML
+### Using ALFA plugins for VScode - ALFA to XACML
 Axiomatics provides an [VScode plugin](https://marketplace.visualstudio.com/items?itemName=Axiomatics.alfa) to edit policies in [ALFA](https://axiomatics.github.io/alfa-vscode-doc/docs/alfa-introduction/introduction/) (Abbreviated Language for Authorization) and generate XACML 3.0 policies from it automatically. Beware of the [Axiomatics license](https://marketplace.visualstudio.com/items/Axiomatics.alfa/license) and [limitations of ALFA with respect to XACML](https://axiomatics.github.io/alfa-vscode-doc/docs/xacml/limitations-with-respect-to-xacml/).
+
+*Note: Rock Solid Knowledge provides a [VScode plugin for ALFA](https://marketplace.visualstudio.com/items?itemName=RockSolidKnowledgeLtd.alfa) as well but does not convert to XACML. Also beware of the [license](https://marketplace.visualstudio.com/items/RockSolidKnowledgeLtd.alfa/license).*
 
 ### From XACML 2.0 policies - XACML 2.0 to 3.0
 
@@ -322,17 +324,11 @@ A SPIF (Security Policy Information File) defines a security labeling policy in 
 [NATO ADatP-4774.1](https://nso.nato.int/nso/nsdd/main/standards/srd-details/222/EN) - related to [STANAG 4774](https://nso.nato.int/nso/nsdd/main/standards/stanag-details/8612/EN) - gives implementation guidance on how to generate a XACML policy from a SPIF, including an example of XSLT stylesheet. We made a few improvements to that stylesheet, using the latest XACML 3.0 enhancements and AuthzForce optimizations, and differentiating READ and WRITE actions in accordance to the Bell-Lapadula model. The enhanced stylesheet is available in the [spif-utils](spif-utils) folder in two versions:
 
 - `spif2xacml-for-xpath-1.0.xsl`: SPIF-to-XACML policy transformation XSLT using XPath 1.0, more verbose and less efficient than the XPath 2.0 version below, available mostly for historical reasons (no longer maintained except bug fixing).
-- `spif2xacml-for-xpath-2.0.xsl`: SPIF-to-XACML policy transformation XSLT using XPath 2.0 features (not available in 1.0), with the option to enable AuthzForce optimizations (XSLT parameter `authzforce_optimized`) for further enhancements. Disable this option if you want strict XACML 3.0 compliance (less optimized).
+- `spif2xacml-for-xpath-2.0.xsl`: SPIF-to-XACML policy transformation XSLT using XPath 2.0 features (not available in 1.0).
 
-For example, you may generate the XACML policy from the sample [ACME SPIF](spif-utils/ACME-SPIF-example.xml) (from ADatP-4774.1) using XSLT engine of [SAXON-HE 9.x or later](https://www.saxonica.com/download/java.xml) on the command line as follows
-
+For example, you may generate the XACML policy from the sample [ACME SPIF](spif-utils/ACME-SPIF-example.xml) (from ADatP-4774.1) using XSLT engine of [SAXON-HE 9.x or later](https://www.saxonica.com/download/java.xml) on the command line as follows:
 ```shell
 $ java -jar Saxon-HE-10.3.jar -xsl:spif-utils/spif2xacml-for-xpath-2.0.xsl -s:spif-utils/ACME-SPIF-example.xml -o:/tmp/ACME-XACML-policy.xml
-```
-
-Same example but without AuthzForce optimizations:
-```shell
-$ java -jar Saxon-HE-10.3.jar authzforce_optimized=false -xsl:spif-utils/spif2xacml-for-xpath-2.0.xsl -s:spif-utils/ACME-SPIF-example.xml -o:/tmp/ACME-XACML-policy.xml
 ```
 
 In both cases, **the generated XACML policy makes use of `AttributeSelectors`**, so make sure your XACML engine supports those. In the case of AuthzForce, you need to set `xPathEnabled="true"` in the PDP configuration (`pdp.xml`) to enable support for `AttributeSelectors`, like in the [XacmlVariableUsedAsXPathVariable test](pdp-testutils/src/test/resources/custom/XacmlVariableUsedAsXPathVariable).
@@ -351,7 +347,7 @@ Please include as much information as possible; the more we know, the better the
 * Your code & configuration files are often useful.
 
 ## Security - Vulnerability reporting
-If you want to report a vulnerability, you must do so on the [OW2 Issue Tracker](https://gitlab.ow2.org/authzforce/core/issues) and **make sure the checkbox** *This issue is confidential and should only be visible to team members with at least Reporter access* **is checked when creating the issue**. Then, if the AuthzForce team can confirm it, they will uncheck it to make the issue public.
+See [SECURITY.md](SECURITY.md).
 
 ## Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md).

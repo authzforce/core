@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.ow2.authzforce</groupId>
         <artifactId>authzforce-ce-core</artifactId>
-        <version>21.0.1</version>
+        <version>21.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>authzforce-ce-core-pdp-testutils</artifactId>
@@ -22,19 +22,19 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>${artifactId.prefix}-core-pdp-engine</artifactId>
-            <version>21.0.1</version>
+            <artifactId>authzforce-ce-core-pdp-engine</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.ow2.authzforce</groupId>
             <artifactId>authzforce-ce-core-pdp-io-xacml-json</artifactId>
-            <version>21.0.1</version>
+            <version>${project.parent.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-sync</artifactId>
-            <version>4.11.0</version>
+            <version>4.11.5</version>
         </dependency>
         <dependency>
             <groupId>com.github.spotbugs</groupId>
@@ -64,18 +64,20 @@
             <version>${spring.version}</version>
             <scope>test</scope>
         </dependency>
+        <!--
         <dependency>
-            <!-- Same version as in cxf-rt-frontend-jaxws/cxf-rt-bindings-soap dependencies -->
+            Same version as in cxf-rt-frontend-jaxws/cxf-rt-bindings-soap dependencies
             <groupId>jakarta.jws</groupId>
             <artifactId>jakarta.jws-api</artifactId>
             <version>3.0.0</version>
             <scope>provided</scope>
         </dependency>
+    -->
         <dependency>
             <!-- Same version as in cxf-rt-frontend-jaxws/cxf-rt-bindings-soap dependencies -->
             <groupId>jakarta.xml.ws</groupId>
             <artifactId>jakarta.xml.ws-api</artifactId>
-            <version>3.0.1</version>
+            <version>4.0.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -117,7 +119,7 @@
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
                 <configuration>
-                    <cveValidForHours>24</cveValidForHours>
+                    <nvdValidForHours>24</nvdValidForHours>
                     <!-- The plugin has numerous issues with version matching, which triggers false positives, so we need a "suppression" file for those. More info: https://github.com/jeremylong/DependencyCheck/issues -->
                     <suppressionFile>owasp-dependency-check-suppression.xml</suppressionFile>
                     <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
