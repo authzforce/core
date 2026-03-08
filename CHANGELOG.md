@@ -11,8 +11,8 @@ All notable changes to this project are documented in this file following the [K
 - Upgraded authzforce-ce-parent: 9.2.0
 - Upgraded dependencies:
   - authzforce-ce-xacml-model / authzforce-ce-pdp-ext-model: 9.2.0
-  - authzforce-ce-xacml-json-model: 4.2.0: what's changed?
-  - authzforce-ce-core-pdp-api: 22.1.1:
+  - authzforce-ce-xacml-json-model: 4.2.0
+  - authzforce-ce-core-pdp-api: 22.1.1
   - logback: 1.5.32
   - slf4j: 2.0.17
   - jaxb-runtime: 4.0.6
