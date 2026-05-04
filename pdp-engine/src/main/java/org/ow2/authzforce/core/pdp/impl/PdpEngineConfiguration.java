@@ -668,7 +668,21 @@ public final class PdpEngineConfiguration
 		this(pdpJaxbConf, envProps, Map.of());
 	}
 
-	private static PdpEngineConfiguration getInstance(final Source confXmlSrc, final PdpModelHandler modelHandler, final EnvironmentProperties envProps) throws IOException, IllegalArgumentException
+	/**
+	 * Create PDP instance
+	 *
+	 * @param confXmlSrc
+	 *            input PDP XML configuration
+	 * @param modelHandler
+	 *            PDP configuration model handler
+	 * @param envProps environment properties that can be used in file paths as part of the PDP configuration ({@code confXmlSrc}). Occurrences of ${ENV_VAR} in file paths will be replaced with the value of the environment properties in {@code envProps} if it exists.
+	 * @return PDP instance
+	 * @throws java.io.IOException
+	 *             I/O error reading XML from {@code confXmlSrc}
+	 * @throws java.lang.IllegalArgumentException
+	 *             Invalid PDP configuration in {@code confXmlSrc}
+	 */
+	public static PdpEngineConfiguration getInstance(final Source confXmlSrc, final PdpModelHandler modelHandler, final EnvironmentProperties envProps) throws IOException, IllegalArgumentException
 	{
 		assert confXmlSrc != null && modelHandler != null;
 
