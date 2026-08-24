@@ -9,7 +9,7 @@
 	<artifactId>authzforce-ce-core-pdp-io-xacml-json</artifactId>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>AuthzForce - Core PDP Extension implementing standard JSON Profile of XACML for JSON Input/Output</description>
-	<url>${project.url}</url>
+	<url>${homepage.url}</url>
 	<scm>
 		<connection>scm:git:${git.url.base}/core.git/pdp-io-xacml-json</connection>
 		<developerConnection>scm:git:${git.url.base}/core.git/pdp-io-xacml-json</developerConnection>
@@ -37,7 +37,7 @@
 					<nvdValidForHours>24</nvdValidForHours>
 					<!-- The plugin has numerous issues with version matching, which triggers false positives, so we need a "suppression" file for those. More info: https://github.com/jeremylong/DependencyCheck/issues -->
 					<suppressionFile>owasp-dependency-check-suppression.xml</suppressionFile>
-					<failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
+					<failBuildOnCVSS>0</failBuildOnCVSS>
 				</configuration>
 				<executions>
 					<execution>

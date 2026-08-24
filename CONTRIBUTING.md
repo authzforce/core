@@ -31,7 +31,7 @@ No SNAPSHOT dependencies allowed on "develop" and "master" branches.
     $ mvn -Dhttps.proxyHost=proxyhostname -Dhttps.proxyPort=80 jgitflow:release-start
 </code></pre>
 1. Update the CHANGELOG according to keepachangelog.com.
-2. To perform the release (example using an HTTP proxy):
+1To perform the release (example using an HTTP proxy):
    <pre><code>
     $ mvn -Dhttps.proxyHost=proxyhostname -Dhttps.proxyPort=80 jgitflow:release-finish
    </code></pre>
@@ -40,11 +40,11 @@ No SNAPSHOT dependencies allowed on "develop" and "master" branches.
     $ mvn -Dhttps.proxyHost=proxyhostname -Dhttps.proxyPort=80 -DnoDeploy=true jgitflow:release-finish
    </code></pre>
    More info on jgitflow: http://jgitflow.bitbucket.org/
-3. Connect and log in to the OSS Nexus Repository Manager: https://oss.sonatype.org/
-4. Go to Staging Profiles and select the pending repository authzforce-*... you just uploaded with `jgitflow:release-finish`
-5. Click the Release button to release to Maven Central.
-6. Create a new Release on GitHub (copy-paste the description from previous releases and update the versions)
-7. If the [PDP configuration XSD](pdp-engine/src/main/resources/pdp.xsd) has changed with the new release, publish the new schema document in HTML form on https://authzforce.github.io (example for XSD version 8.1) by following the instructions in the section below.
+1. Connect and log in to the Maven Central Repository: https://central.sonatype.com/publishing/deployments
+1. Go to Deployments and select the pending Deployment
+1. Click the Publish button to release to Maven Central.
+1. Create a new Release on GitHub (copy-paste the description from previous releases and update the versions)
+1. If the [PDP configuration XSD](pdp-engine/src/main/resources/pdp.xsd) has changed with the new release, publish the new schema document in HTML form on https://authzforce.github.io (example for XSD version 8.1) by following the instructions in the section below.
 
 ### Updating the HTML documentation for the PDP configuration after updating the XSD 
 Install FlexDoc/XML (tested with v1.12.2). 

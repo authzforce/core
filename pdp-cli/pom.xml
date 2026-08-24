@@ -9,7 +9,7 @@
    <artifactId>authzforce-ce-core-pdp-cli</artifactId>
    <name>${project.groupId}:${project.artifactId}</name>
    <description>AuthzForce - Core PDP Command-Line Interface</description>
-   <url>${project.url}</url>
+   <url>${homepage.url}</url>
    <scm>
       <connection>scm:git:${git.url.base}/core.git/pdp-cli</connection>
       <developerConnection>scm:git:${git.url.base}/core.git/pdp-cli</developerConnection>
@@ -103,7 +103,7 @@
                <nvdValidForHours>24</nvdValidForHours>
                <!-- The plugin has numerous issues with version matching, which triggers false positives, so we need a "suppression" file for those. More info: https://github.com/jeremylong/DependencyCheck/issues -->
                <suppressionFile>owasp-dependency-check-suppression.xml</suppressionFile>
-               <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
+               <failBuildOnCVSS>0</failBuildOnCVSS>
             </configuration>
             <executions>
                <execution>
@@ -204,11 +204,7 @@
             <artifactId>spring-boot-maven-plugin</artifactId>
             <version>${spring-boot.version}</version>
             <configuration>
-               <executable>true</executable>
                <layout>ZIP</layout>
-               <embeddedLaunchScriptProperties>
-                  <inlinedConfScript>${basedir}/src/setenv.sh</inlinedConfScript>
-               </embeddedLaunchScriptProperties>
             </configuration>
             <executions>
                <execution>
