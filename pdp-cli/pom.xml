@@ -26,6 +26,8 @@
       <dependency>
          <groupId>ch.qos.logback</groupId>
          <artifactId>logback-classic</artifactId>
+         <!-- Temporary fix for CVE-2026-19880 on logback. TODO: upgrade and use the parent managed version. -->
+         <version>1.6.3</version>
       </dependency>
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
