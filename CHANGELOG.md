@@ -6,6 +6,24 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 21.2.0
+### Added
+- New public static method: `PdpEngineConfiguration#getInstance(Source, PdpModelHandler, EnvironmentProperties)`. Enables loading the PDP configuration from other kinds of sources than files (e.g. String)
+
+### Changed
+- Upgraded parent project: 9.3.0
+- Upgraded dependencies:
+  * logback-classic: 1.5.38
+  * authzforce-ce-core-pdp-api: 22.2.0
+    - authzforce-ce-xacml-model: 9.3.0
+    - authzforce-ce-pdp-ext-model: 9.3.0
+    - Saxon HE: 12.10
+  * Spring core: 7.0.9
+  * logback-classic: 1.5.38
+  * (Module pdp-testutils only) mongodb-driver-sync: 5.10.0
+  * (Module pdp-testutils only) Jakarta XML WS API: 4.0.3
+
+
 ## 21.1.0
 ### Changed
 - Upgraded authzforce-ce-parent: 9.2.0
