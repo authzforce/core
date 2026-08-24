@@ -3,13 +3,13 @@
     <parent>
         <groupId>org.ow2.authzforce</groupId>
         <artifactId>authzforce-ce-core</artifactId>
-        <version>21.1.0</version>
+        <version>21.2.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>authzforce-ce-core-pdp-engine</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>AuthzForce - XACML-compliant Core PDP Engine</description>
-    <url>${project.url}</url>
+    <url>${homepage.url}</url>
     <scm>
         <!-- Used by Jenkins - Maven release plugin -->
         <connection>scm:git:${git.url.base}/core.git/pdp-engine</connection>
@@ -81,7 +81,7 @@
                     <nvdValidForHours>24</nvdValidForHours>
                     <!-- The plugin has numerous issues with version matching, which triggers false positives, so we need a "suppression" file for those. More info: https://github.com/jeremylong/DependencyCheck/issues -->
                     <suppressionFile>owasp-dependency-check-suppression.xml</suppressionFile>
-                    <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
+                    <failBuildOnCVSS>0</failBuildOnCVSS>
                 </configuration>
                 <executions>
                     <execution>

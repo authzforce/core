@@ -120,22 +120,23 @@ Java (JRE) version: 17 LTS or later.
 #### CLI
 Get the latest executable jar from Maven Central by following the `authzforce-ce-core-pdp-cli` link on [the latest release page](https://github.com/authzforce/core/releases/latest), and make sure you are allowed to run it (it is a fully executable JAR), e.g. with the following command (replace `X.Y.Z` with the current version):
 
-```
+```shell
 $ chmod a+x authzforce-ce-core-pdp-cli-X.Y.Z.jar
 ```
 
 To give you an example on how to test a XACML Policy (or PolicySet) and Request, you may copy the content of [that folder](pdp-cli/src/test/resources/conformance/xacml-3.0-core/mandatory) to the same directory as the executable, and run the executable as follows:
 
-```
-$ ./authzforce-ce-core-pdp-cli-X.Y.Z.jar pdp.xml IIA001/Request.xml
+```shell
+$ export JAVA_OPTS=-Djavax.xml.accessExternalSchema=http
+$ java -jar ./authzforce-ce-core-pdp-cli-X.Y.Z.jar pdp.xml IIA001/Request.xml
 ```
 
 * `pdp.xml`: PDP configuration file in XML format, that defines the location(s) of XACML policy(ies) and more; for more information about PDP configuration parameters, the configuration format is fully specified and documented in the [XML schema `pdp.xsd`](pdp-engine/src/main/resources/pdp.xsd), also available in a [more user-friendly HTML form](https://authzforce.github.io/pdp.xsd/8.1) (start with the `pdp` element as the root element in a PDP configuration). **Feel free to change the policy location to point to your own for testing.**
 * `Request.xml`: XACML request in XACML 3.0/XML (core specification) format. **Feel free to replace with your own for testing.**
 
 If you want to test the JSON Profile of XACML 3.0, run it with extra option `-t XACML_JSON`:
-```
-$ ./authzforce-ce-core-pdp-cli-X.Y.Z.jar -t XACML_JSON pdp.xml IIA001/Request.json
+```shell
+$ java -jar ./authzforce-ce-core-pdp-cli-X.Y.Z.jar -t XACML_JSON pdp.xml IIA001/Request.json
 ```
 * `Request.json`: XACML request in XACML 3.0/JSON (Profile) format. **Feel free to replace with your own for testing.**
 

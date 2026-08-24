@@ -67,10 +67,20 @@
 		<mkdir dir="${target.sub.dir.path}" />
 		<!-- Policy.xml not converted because no JSON mapping defined in JSON Profile -->
 		<!-- Policy.xml may be replaced with a Policies directory -->
-		<copy verbose="true" failonerror="false" file="${src.sub.dir.path}/Policy.xml" tofile="${target.sub.dir.path}/Policy.xml"/>
-		<copy verbose="true" failonerror="false" todir="${target.sub.dir.path}/Policies">
-				<fileset dir="${src.sub.dir.path}/Policies"/>
-		</copy>
+		<if>
+			<available file="${src.sub.dir.path}/Policy.xml" type="file"/>
+			<then>
+				<copy verbose="true" failonerror="false" file="${src.sub.dir.path}/Policy.xml" tofile="${target.sub.dir.path}/Policy.xml"/>
+			</then>
+		</if>
+		<if>
+			<available file="${src.sub.dir.path}/Policies" type="dir"/>
+			<then>
+				<copy verbose="true" failonerror="false" todir="${target.sub.dir.path}/Policies">
+					<fileset dir="${src.sub.dir.path}/Policies"/>
+				</copy>
+			</then>
+		</if>
 
 		<!-- Convert Request.xml -->
 		<saxon-xslt basedir="${src.sub.dir.path}" destdir="${target.sub.dir.path}" includes="Request.xml" style="xacml-request-xml-to-json.xsl" />

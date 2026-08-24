@@ -3,13 +3,13 @@
    <parent>
       <groupId>org.ow2.authzforce</groupId>
       <artifactId>authzforce-ce-core</artifactId>
-      <version>21.1.0</version>
+      <version>21.2.0</version>
       <relativePath>../pom.xml</relativePath>
    </parent>
    <artifactId>authzforce-ce-core-pdp-cli</artifactId>
    <name>${project.groupId}:${project.artifactId}</name>
    <description>AuthzForce - Core PDP Command-Line Interface</description>
-   <url>${project.url}</url>
+   <url>${homepage.url}</url>
    <scm>
       <connection>scm:git:${git.url.base}/core.git/pdp-cli</connection>
       <developerConnection>scm:git:${git.url.base}/core.git/pdp-cli</developerConnection>
@@ -26,6 +26,8 @@
       <dependency>
          <groupId>ch.qos.logback</groupId>
          <artifactId>logback-classic</artifactId>
+         <!-- Temporary fix for CVE-2026-19880 on logback. TODO: upgrade and use the parent managed version. -->
+         <version>1.6.3</version>
       </dependency>
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
@@ -103,7 +105,7 @@
                <nvdValidForHours>24</nvdValidForHours>
                <!-- The plugin has numerous issues with version matching, which triggers false positives, so we need a "suppression" file for those. More info: https://github.com/jeremylong/DependencyCheck/issues -->
                <suppressionFile>owasp-dependency-check-suppression.xml</suppressionFile>
-               <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
+               <failBuildOnCVSS>0</failBuildOnCVSS>
             </configuration>
             <executions>
                <execution>
@@ -198,16 +200,13 @@
                </properties>
             </configuration>
          </plugin>
+
          <plugin>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
             <version>${spring-boot.version}</version>
             <configuration>
-               <executable>true</executable>
                <layout>ZIP</layout>
-               <embeddedLaunchScriptProperties>
-                  <inlinedConfScript>${basedir}/src/setenv.sh</inlinedConfScript>
-               </embeddedLaunchScriptProperties>
             </configuration>
             <executions>
                <execution>
@@ -223,6 +222,7 @@
             <version>0.9.0</version>
             <extensions>true</extensions>
             <configuration>
+               <!-- Maven Central does not support executable bundles anymore, therefore skip publishing to Maven Central -->
                <skipPublishing>true</skipPublishing>
             </configuration>
          </plugin>

@@ -3,13 +3,13 @@
     <parent>
         <groupId>org.ow2.authzforce</groupId>
         <artifactId>authzforce-ce-core</artifactId>
-        <version>21.1.0</version>
+        <version>21.2.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>authzforce-ce-core-pdp-testutils</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>AuthzForce - XACML-compliant Core PDP Test Utilities</description>
-    <url>${project.url}</url>
+    <url>${homepage.url}</url>
     <scm>
         <!-- Used by Jenkins - Maven release plugin -->
         <connection>scm:git:${git.url.base}/core.git/pdp-testutils</connection>
@@ -34,7 +34,7 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-sync</artifactId>
-            <version>4.11.5</version>
+            <version>5.10.0</version>
         </dependency>
         <dependency>
             <groupId>com.github.spotbugs</groupId>
@@ -64,20 +64,11 @@
             <version>${spring.version}</version>
             <scope>test</scope>
         </dependency>
-        <!--
-        <dependency>
-            Same version as in cxf-rt-frontend-jaxws/cxf-rt-bindings-soap dependencies
-            <groupId>jakarta.jws</groupId>
-            <artifactId>jakarta.jws-api</artifactId>
-            <version>3.0.0</version>
-            <scope>provided</scope>
-        </dependency>
-    -->
         <dependency>
             <!-- Same version as in cxf-rt-frontend-jaxws/cxf-rt-bindings-soap dependencies -->
             <groupId>jakarta.xml.ws</groupId>
             <artifactId>jakarta.xml.ws-api</artifactId>
-            <version>4.0.2</version>
+            <version>4.0.3</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -101,7 +92,7 @@
         <dependency>
             <groupId>de.bwaldvogel</groupId>
             <artifactId>mongo-java-server</artifactId>
-            <version>1.44.0</version>
+            <version>1.47.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -122,7 +113,7 @@
                     <nvdValidForHours>24</nvdValidForHours>
                     <!-- The plugin has numerous issues with version matching, which triggers false positives, so we need a "suppression" file for those. More info: https://github.com/jeremylong/DependencyCheck/issues -->
                     <suppressionFile>owasp-dependency-check-suppression.xml</suppressionFile>
-                    <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
+                    <failBuildOnCVSS>0</failBuildOnCVSS>
                 </configuration>
                 <executions>
                     <execution>
