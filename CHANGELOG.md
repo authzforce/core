@@ -13,13 +13,12 @@ All notable changes to this project are documented in this file following the [K
 ### Changed
 - Upgraded parent project: 9.3.0
 - Upgraded dependencies:
-  * logback-classic: 1.5.38
   * authzforce-ce-core-pdp-api: 22.2.0
     - authzforce-ce-xacml-model: 9.3.0
     - authzforce-ce-pdp-ext-model: 9.3.0
     - Saxon HE: 12.10
+  * logback-classic: 1.6.3
   * Spring core: 7.0.9
-  * logback-classic: 1.5.38
   * (Module pdp-testutils only) mongodb-driver-sync: 5.10.0
   * (Module pdp-testutils only) Jakarta XML WS API: 4.0.3
 
