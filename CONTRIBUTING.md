@@ -15,12 +15,64 @@ You may run the tests as follows from your local copy of the repository:
 
 ### Building the project
 
-You may build the project and generate the JAR as follows from your local copy of the repository:
-<pre><code>
-    $ mvn package
-</code></pre>
+#### Prerequisites
 
-Note that you must use Java 8 to run Maven when building the project.
+Building AuthzForce Core requires:
+
+* JDK 17 or later;
+* [Apache Maven](https://maven.apache.org/);
+* an [NVD API key](https://nvd.nist.gov/developers/request-an-api-key) for the OWASP Dependency-Check vulnerability scan;
+* a [Sonatype Guide personal access token](https://help.sonatype.com/en/manage-guide-user-tokens.html) for the OSS Index vulnerability scan.
+
+The API key and personal access token are required only for the complete verification lifecycle. They are not required for a regular `mvn package` build.
+
+#### Environment setup
+
+Configure the NVD API key and Sonatype Guide token in your Maven `~/.m2/settings.xml`:
+
+```xml
+<settings>
+  <servers>
+    <server>
+      <id>nvd-api</id>
+      <password>YOUR_NVD_API_KEY</password>
+    </server>
+    <server>
+      <id>sonatype-guide</id>
+      <password>YOUR_SONATYPE_GUIDE_TOKEN</password>
+    </server>
+  </servers>
+  <profiles>
+    <profile>
+      <id>dependency-check-credentials</id>
+      <properties>
+        <nvdApiServerId>nvd-api</nvdApiServerId>
+      </properties>
+    </profile>
+  </profiles>
+  <activeProfiles>
+    <activeProfile>dependency-check-credentials</activeProfile>
+  </activeProfiles>
+</settings>
+```
+
+Both credentials are stored as `password`; no `username` is required. The `sonatype-guide` token is used by the OSS Index analyzer configured in the parent POM. Do not commit either credential to this repository or pass it directly on the Maven command line, where it may be exposed in build logs.
+
+#### Build commands
+
+From the root of the cloned repository, run a regular build with:
+
+```shell
+mvn package
+```
+
+This compiles all modules, runs the tests, and creates the artifacts in each module's `target` directory.
+
+To run the complete verification lifecycle, including the dependency vulnerability checks, run:
+
+```shell
+mvn verify
+```
 
 ### Dependency management
 No SNAPSHOT dependencies allowed on "develop" and "master" branches.
