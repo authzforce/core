@@ -49,7 +49,7 @@ import org.ow2.authzforce.core.pdp.testutil.TestUtils;
 import org.ow2.authzforce.xacml.Xacml3JaxbHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.ResourceUtils;
+import org.ow2.authzforce.core.pdp.impl.ResourceLocationResolver;
 import org.wso2.balana.ConfigurationStore;
 import org.wso2.balana.PDP;
 import org.wso2.balana.PDPConfig;
@@ -358,7 +358,7 @@ public class ComparativePdpTest
 		/*
 		 * Each sub-directory of the root directory is data for a specific test. So we configure a test for each directory
 		 */
-		final URL testRootDir = ResourceUtils.getURL(TEST_RESOURCES_ROOT_DIRECTORY_LOCATION);
+		final URL testRootDir = ResourceLocationResolver.getUrl(TEST_RESOURCES_ROOT_DIRECTORY_LOCATION);
 		final Path testRootPath = Paths.get(testRootDir.toURI());
 
 		final PdpEngineInvoker authzforcePdpEngineInvoker = new AuthzForcePdpEngineInvoker(testRootPath.resolve(AUTHZFORCE_CE_PDP_CONF_DIRNAME));

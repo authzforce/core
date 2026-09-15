@@ -48,7 +48,6 @@ import org.ow2.authzforce.xmlns.pdp.ext.AbstractDecisionCache;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.ResourceUtils;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
@@ -748,8 +747,7 @@ public final class PdpEngineConfiguration
 	}
 
 	/**
-	 * Create PDP instance. Locations here can be any resource string supported by Spring ResourceLoader. More info: <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/html">Spring documentation</a>
-	 * /resources.html.
+	 * Create PDP instance. Locations may be classpath resources, URLs or file-system paths.
 	 * <p>
 	 * To allow using file paths relative to the parent folder of the configuration file (located at confLocation) anywhere in this configuration file (including in PDP extensions'), we define a
 	 * property 'PARENT_DIR', so that the placeholder ${PARENT_DIR} can be used as prefix for file paths in the configuration file. E.g. if confLocation = 'file:///path/to/configurationfile', then
@@ -775,7 +773,7 @@ public final class PdpEngineConfiguration
 
 		try
 		{
-			final File confFile = ResourceUtils.getFile(confLocation);
+			final File confFile = ResourceLocationResolver.getFile(confLocation);
 			return getInstance(confFile, modelHandler);
 		}
 		catch (final FileNotFoundException e)
@@ -794,7 +792,7 @@ public final class PdpEngineConfiguration
 		final URL confUrl;
 		try
 		{
-			confUrl = ResourceUtils.getURL(confLocation);
+			confUrl = ResourceLocationResolver.getUrl(confLocation);
 		}
 		catch (final FileNotFoundException e)
 		{
@@ -811,8 +809,7 @@ public final class PdpEngineConfiguration
 
 	/**
 	 * <p>
-	 * Create PDP instance. Locations here can be any resource string supported by Spring ResourceLoader. More info: <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/html">Spring documentation</a>
-	 * /resources.html
+	 * Create PDP instance. Locations may be classpath resources, URLs or file-system paths.
 	 *</p>
 	 * <p>
 	 * For example: <code>classpath:com/myapp/aaa.xsd</code>, <code>file:///data/bbb.xsd</code>, <code>http://myserver/ccc.xsd</code>...
@@ -867,8 +864,7 @@ public final class PdpEngineConfiguration
 
 	/**
 	 * <p>
-	 * Create PDP instance. Locations here may be any resource string supported by Spring ResourceLoader. More info: <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/html">Spring documentation</a>
-	 * /resources.html
+	 * Create PDP instance. Locations may be classpath resources, URLs or file-system paths.
 	 *</p>
 	 * <p>
 	 * For example: <code>classpath:com/myapp/aaa.xsd</code>, <code>file:///data/bbb.xsd</code>, <code>http://myserver/ccc.xsd</code>...
@@ -923,8 +919,8 @@ public final class PdpEngineConfiguration
 	 * Create PDP instance.
 	 *
 	 * @param confLocation
-	 *            location of PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd). This location may be any resource string supported by Spring ResourceLoader. For example:
-	 *            <code>classpath:com/myapp/aaa.xsd</code>, <code>file:///data/bbb.xsd</code>, <code>http://myserver/ccc.xsd</code>... More info: <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html">Spring documentation</a>
+	 *            location of PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd). It may be a classpath resource, URL or file-system path. For example:
+	 *            <code>classpath:com/myapp/aaa.xsd</code>, <code>file:///data/bbb.xsd</code>, <code>http://myserver/ccc.xsd</code>.
 	 * @return PDP instance
 	 * @throws IOException
 	 *             I/O error reading from {@code confLocation}

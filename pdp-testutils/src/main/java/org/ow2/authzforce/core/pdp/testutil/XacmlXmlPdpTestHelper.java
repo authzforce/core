@@ -28,7 +28,7 @@ import org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration;
 import org.ow2.authzforce.core.pdp.impl.io.PdpEngineAdapters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.ResourceUtils;
+import org.ow2.authzforce.core.pdp.impl.ResourceLocationResolver;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -245,7 +245,7 @@ public final class XacmlXmlPdpTestHelper
 				File pdpExtXsdFile = null;
 				try
 				{
-					pdpExtXsdFile = ResourceUtils.getFile(PDP_EXTENSION_XSD_LOCATION);
+					pdpExtXsdFile = ResourceLocationResolver.getFile(PDP_EXTENSION_XSD_LOCATION);
 				}
 				catch (final FileNotFoundException e)
 				{

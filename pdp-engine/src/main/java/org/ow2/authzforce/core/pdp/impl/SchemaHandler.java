@@ -22,7 +22,6 @@ import org.apache.xml.resolver.CatalogManager;
 import org.apache.xml.resolver.tools.CatalogResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.ResourceUtils;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.*;
@@ -46,7 +45,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  *
- * XML schema handler that can load schema file(s) from location(s) supported by {@link ResourceUtils} using any OASIS catalog at any location supported by {@link ResourceUtils} as well.
+ * XML schema handler that can load schema files and OASIS catalogs from classpath resources, URLs or file-system paths.
  *
  * @version $Id: $
  */
@@ -90,9 +89,8 @@ public final class SchemaHandler
 				}
 				if (resolvedLocation != null)
 				{
-					// Fails with ResourceUtils.getFile(...)
-					// final File resourceFile = ResourceUtils.getFile(resolvedLocation);
-					final URL resourceURL = ResourceUtils.getURL(resolvedLocation);
+					// The resolved resource may be inside a JAR, so it cannot necessarily be converted to a File.
+					final URL resourceURL = ResourceLocationResolver.getUrl(resolvedLocation);
 					return new LSInputImpl(publicId, systemId, new BufferedInputStream(resourceURL.openStream()));
 				}
 			}
@@ -167,7 +165,7 @@ public final class SchemaHandler
 						{
 							try
 							{
-								final URL resourceURL = ResourceUtils.getURL(s);
+								final URL resourceURL = ResourceLocationResolver.getUrl(s);
 								return resourceURL.toExternalForm();
 							}
 							catch (final IOException e)
@@ -398,7 +396,7 @@ public final class SchemaHandler
 	private String catalogLocation;
 
 	/**
-	 * Sets (Spring-supported) locations to XML schema files
+	 * Sets locations to XML schema files. Locations may be classpath resources, URLs or file-system paths.
 	 *
 	 * @param locations
 	 *            XML schema locations
@@ -409,7 +407,7 @@ public final class SchemaHandler
 	}
 
 	/**
-	 * Sets (Spring-supported) locations to XML catalog files
+	 * Sets locations to XML catalog files. Locations may be classpath resources, URLs or file-system paths.
 	 *
 	 * @param location
 	 *            XML catalog location
@@ -441,7 +439,7 @@ public final class SchemaHandler
 	public static Schema createSchema(final List<String> schemaLocations, final String catalogLocation)
 	{
 		/*
-		 * This is mostly similar to org.apache.cxf.jaxrs.utils.schemas.SchemaHandler#createSchema(), except we are using Spring ResourceUtils class to get Resource URLs, and we don't use any Bus
+		 * This is mostly similar to org.apache.cxf.jaxrs.utils.schemas.SchemaHandler#createSchema(), except we resolve resource URLs directly, and we don't use any Bus
 		 * object. We are not using CXF's SchemaHandler class directly because it is part of cxf-rt-frontend-jaxrs which drags many dependencies on CXF we don't need, since it drags the full CXF JAX-RS framework actually. It would make more sense if SchemaHandler was part of some cxf common utility package, but it is not the case as of writing (December 2014).
 		 */
 
@@ -466,9 +464,9 @@ public final class SchemaHandler
 				try
 				{
 					/*
-					Fails with ResourceUtils.getFile(...)
+					The schema may be inside a JAR and therefore not resolvable to a File.
 					 */
-					schemaURL = ResourceUtils.getURL(schemaLocation);
+					schemaURL = ResourceLocationResolver.getUrl(schemaLocation);
 				}
 				catch (final FileNotFoundException e)
 				{
@@ -498,7 +496,7 @@ public final class SchemaHandler
 			final URL catalogURL;
 			try
 			{
-				catalogURL = ResourceUtils.getURL(catalogLocation);
+				catalogURL = ResourceLocationResolver.getUrl(catalogLocation);
 			}
 			catch (final FileNotFoundException e)
 			{

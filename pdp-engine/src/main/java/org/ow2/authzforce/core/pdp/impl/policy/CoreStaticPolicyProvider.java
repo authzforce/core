@@ -32,7 +32,7 @@ import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.policy.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.ResourceUtils;
+import org.ow2.authzforce.core.pdp.impl.ResourceLocationResolver;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -50,7 +50,7 @@ import java.util.stream.Stream;
 
 /**
  * This is the core implementation of {@link BaseStaticPolicyProvider} that supports static retrieval of the policies referenced by Policy(Set)IdReference. It is configured by a list of locations that
- * represent Spring-compatible resource URLs, corresponding to XACML Policy(Set) files - each file content is expected to be a XACML Policy(Set) document - when the module is initialized. Beyond this,
+ * represent classpath resources, URLs or file-system paths corresponding to XACML Policy(Set) files - each file content is expected to be a XACML Policy(Set) document - when the module is initialized. Beyond this,
  * there is no modifying or re-loading of the policies.
  * <p>
  * A policy location may also be a file pattern in the following form: "file://DIRECTORY_PATH/*SUFFIX" using wilcard character '*'; in which case the location is expanded to all regular files (not
@@ -173,7 +173,7 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
                     policyLocationPattern is handled like a URL pattern, e.g. file://path/to/policy(ies)
                      Check whether the location is a file path pattern
                      */
-                    if (policyLocationPattern.startsWith(ResourceUtils.FILE_URL_PREFIX))
+					if (policyLocationPattern.startsWith(ResourceLocationResolver.FILE_URL_PREFIX))
                     {
                         if (policyLocationPattern.endsWith("/"))
                         {
@@ -265,15 +265,15 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
                     final URL policyURL;
                     try
                     {
-                        // try to load the policy location as a Spring resource
-                        policyURL = ResourceUtils.getURL(policyLocationPattern);
+						// Try classpath resources, URLs and file-system paths.
+						policyURL = ResourceLocationResolver.getUrl(policyLocationPattern);
                     } catch (final FileNotFoundException e)
                     {
-                        throw new IllegalArgumentException("Error loading policy (as Spring resource) from the following URL: " + policyLocationPattern, e);
+						throw new IllegalArgumentException("Error loading policy from the following location: " + policyLocationPattern, e);
                     }
 
 					/*
-					If no exception occurred, ResourceUtils#getURL() returns non-null value
+					If no exception occurred, the resolver returns a non-null URL.
 					 */
                     providerParams.add(new PolicyLocationParam(policyURL));
                 } else
