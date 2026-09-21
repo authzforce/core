@@ -28,7 +28,7 @@ import org.ow2.authzforce.xacml.json.model.LimitsCheckingJSONObject;
 import org.ow2.authzforce.xacml.json.model.XacmlJsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.ResourceUtils;
+import org.ow2.authzforce.core.pdp.impl.ResourceLocationResolver;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -127,7 +127,7 @@ public abstract class XacmlJsonTest
         /*
          * Each sub-directory of the root directory is data for a specific test. So we configure a test for each directory
          */
-        final URL testRootDirLocation = ResourceUtils.getURL(testRootDir);
+        final URL testRootDirLocation = ResourceLocationResolver.getUrl(testRootDir);
         final Path testRootDirPath = Paths.get(testRootDirLocation.toURI());
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(testRootDirPath, Files::isDirectory))
         {
@@ -293,7 +293,7 @@ public abstract class XacmlJsonTest
             File pdpExtXsdFile = null;
             try
             {
-                pdpExtXsdFile = ResourceUtils.getFile(PDP_EXTENSION_XSD_LOCATION);
+                pdpExtXsdFile = ResourceLocationResolver.getFile(PDP_EXTENSION_XSD_LOCATION);
             } catch (final FileNotFoundException e)
             {
                 LOGGER.debug("No PDP extension configuration file '{}' found -> JAXB-bound PDP extensions not allowed.", PDP_EXTENSION_XSD_LOCATION);

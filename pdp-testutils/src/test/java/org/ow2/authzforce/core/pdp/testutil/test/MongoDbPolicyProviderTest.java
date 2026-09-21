@@ -60,7 +60,7 @@ import org.ow2.authzforce.core.pdp.testutil.ext.xmlns.MongoDBBasedPolicyProvider
 import org.ow2.authzforce.core.xmlns.pdp.Pdp;
 import org.ow2.authzforce.xacml.Xacml3JaxbHelper;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
-import org.springframework.util.ResourceUtils;
+import org.ow2.authzforce.core.pdp.impl.ResourceLocationResolver;
 
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
@@ -138,7 +138,7 @@ public class MongoDbPolicyProviderTest
 			db.listCollectionNames().forEach(s -> System.out.println("collection " + s));
 
 			// Load the JSON schema for policy documents in the MongoDB
-			final File mongodbDocumentSchemaFile = ResourceUtils.getFile("classpath:mongodb_policy_provider_doc_schema.json");
+			final File mongodbDocumentSchemaFile = ResourceLocationResolver.getFile("classpath:mongodb_policy_provider_doc_schema.json");
 			final JsonObject mongodbDocumentSchema = new JsonObject(Files.readString(mongodbDocumentSchemaFile.toPath()));
 
 			// Create the MongoDB collection of policy documents

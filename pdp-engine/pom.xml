@@ -22,18 +22,8 @@
     <dependencies>
         <!-- Third-party dependencies -->
         <dependency>
-            <!-- For redirecting Spring logs to slf4j -->
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.eclipse.angus</groupId>
             <artifactId>jakarta.mail</artifactId>
-        </dependency>
-        <dependency>
-            <!-- Needed for org.springframework.util.ResourceUtils,SystemPropertyUtils,FileCopyUtils, etc. -->
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
         </dependency>
         <dependency>
             <!-- For loading XML schemas with OASIS catalog (CatalogManager) -->

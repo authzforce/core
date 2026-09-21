@@ -74,6 +74,9 @@ public class DefaultEnvironmentPropertiesTest
 		         */
 		        { "${PARENT_DIR!/opt/driver-testbed-sec-authz-service/data}/a", null, null, "/opt/driver-testbed-sec-authz-service/data/a" },
 
+		        /* Nested placeholder name and recursively expanded value. */
+		        { "${${PARENT_DIR}}", ImmutableMap.of(EnvironmentPropertyName.PARENT_DIR, "sys.prop"), ImmutableMap.of("sys.prop", "${nested}", "nested", "resolved"), "resolved" },
+
 				/*
 				 * 
 				 */

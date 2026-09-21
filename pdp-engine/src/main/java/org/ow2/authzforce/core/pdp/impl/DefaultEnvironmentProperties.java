@@ -19,7 +19,6 @@ package org.ow2.authzforce.core.pdp.impl;
 
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.EnvironmentPropertyName;
-import org.springframework.util.PropertyPlaceholderHelper;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -33,15 +32,10 @@ import java.util.Properties;
 public final class DefaultEnvironmentProperties implements EnvironmentProperties
 {
 
-	private static final String PROPERTY_PLACEHOLDER_PREFIX = "${";
-	private static final String PROPERTY_PLACEHOLDER_SUFFIX = "}";
 	/*
 	 * We cannot use ':' as default value separator because not valid in XML anyURI
 	 */
 	private static final String PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR = "!";
-
-	private static final PropertyPlaceholderHelper PROPERTY_PLACEHOLDER_HELPER = new PropertyPlaceholderHelper(PROPERTY_PLACEHOLDER_PREFIX, PROPERTY_PLACEHOLDER_SUFFIX,
-	        PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR, null, false);
 
 	private final Properties props = new Properties();
 
@@ -85,7 +79,7 @@ public final class DefaultEnvironmentProperties implements EnvironmentProperties
 			return null;
 		}
 
-		return PROPERTY_PLACEHOLDER_HELPER.replacePlaceholders(input, placeholderName -> {
+		return PlaceholderResolver.replace(input, PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR, placeholderName -> {
 
 			final String userDefinedPropVal = props.getProperty(placeholderName);
 			if (userDefinedPropVal != null)

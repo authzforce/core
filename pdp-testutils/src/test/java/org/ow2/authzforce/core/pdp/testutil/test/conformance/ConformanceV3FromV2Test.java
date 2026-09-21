@@ -33,7 +33,7 @@ import org.ow2.authzforce.core.pdp.impl.io.PdpEngineAdapters;
 import org.ow2.authzforce.core.pdp.testutil.TestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.ResourceUtils;
+import org.ow2.authzforce.core.pdp.impl.ResourceLocationResolver;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -256,7 +256,7 @@ public class ConformanceV3FromV2Test
 			File pdpExtXsdFile = null;
 			try
 			{
-				pdpExtXsdFile = ResourceUtils.getFile(PDP_EXTENSION_XSD_LOCATION);
+				pdpExtXsdFile = ResourceLocationResolver.getFile(PDP_EXTENSION_XSD_LOCATION);
 			} catch (final FileNotFoundException e)
 			{
 				LOGGER.debug("No PDP extension configuration file '{}' found -> JAXB-bound PDP extensions not allowed.", PDP_EXTENSION_XSD_LOCATION);

@@ -62,8 +62,7 @@ public final class PdpModelHandler
 	private final JAXBContext confJaxbCtx;
 
 	/**
-	 * Load Configuration model handler. Parameters here are locations to XSD files. Locations can be any resource string supported by Spring ResourceLoader.
-	 * <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html">More info</a>.
+	 * Load Configuration model handler. Parameters here are locations to XSD files. Locations may be classpath resources, URLs or file-system paths.
 	 * <p>
 	 * For example: <code>classpath:com/myapp/aaa.xsd</code>, <code>file:///data/bbb.xsd</code>, <code>http://myserver/ccc.xsd</code>...
 	 *

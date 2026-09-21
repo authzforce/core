@@ -21,7 +21,6 @@ import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.SystemPropertyUtils;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -56,14 +55,14 @@ public final class PdpBean implements PdpEngine
 	 * Configuration file. Only the 'defaultPDP' configuration will be loaded, i.e. 'pdp' element with 'name' matching the 'defaultPDP' attribute of the root 'config' element
 	 *
 	 * @param filePath
-	 *            configuration file path used as argument to {@link org.springframework.core.io.DefaultResourceLoader#getResource(String)} to resolve the resource; any placeholder ${...} in the path
+	 *            configuration file path (classpath resource, URL or file-system path); any placeholder ${...} in the path
 	 *            will be replaced with the corresponding system property value
 	 * @throws java.lang.IllegalArgumentException
 	 *             if there is an unresolvable placeholder in {@code filePath}
 	 */
 	public void setConfigFile(final String filePath) throws IllegalArgumentException
 	{
-		confLocation = SystemPropertyUtils.resolvePlaceholders(filePath);
+		confLocation = resolveSystemPropertyPlaceholders(filePath);
 		init();
 	}
 
@@ -71,14 +70,14 @@ public final class PdpBean implements PdpEngine
 	 * Configuration schema file. Used only for validating XML configurations (enclosed with 'xml' tag) of PDP extension modules in PDP configuration file set with {@link #setConfigFile(String)}
 	 *
 	 * @param filePath
-	 *            configuration file path used as argument to {@link org.springframework.core.io.DefaultResourceLoader#getResource(String)} to resolve the resource; any placeholder ${...} in the path
+	 *            configuration schema path (classpath resource, URL or file-system path); any placeholder ${...} in the path
 	 *            will be replaced with the corresponding system property value
 	 * @throws java.lang.IllegalArgumentException
 	 *             if there is an unresolvable placeholder in {@code filePath}
 	 */
 	public void setSchemaFile(final String filePath) throws IllegalArgumentException
 	{
-		extSchemaLocation = SystemPropertyUtils.resolvePlaceholders(filePath);
+		extSchemaLocation = resolveSystemPropertyPlaceholders(filePath);
 		init();
 	}
 
@@ -86,14 +85,14 @@ public final class PdpBean implements PdpEngine
 	 * Set XML catalog for resolving XML entities used in XML schema
 	 *
 	 * @param filePath
-	 *            configuration file path used as argument to {@link org.springframework.core.io.DefaultResourceLoader#getResource(String)} to resolve the resource; any placeholder ${...} in the path
+	 *            XML catalog path (classpath resource, URL or file-system path); any placeholder ${...} in the path
 	 *            will be replaced with the corresponding system property value
 	 * @throws java.lang.IllegalArgumentException
 	 *             if there is an unresolvable placeholder in {@code filePath}
 	 */
 	public void setCatalogFile(final String filePath) throws IllegalArgumentException
 	{
-		catalogLocation = SystemPropertyUtils.resolvePlaceholders(filePath);
+		catalogLocation = resolveSystemPropertyPlaceholders(filePath);
 		init();
 	}
 
@@ -115,6 +114,14 @@ public final class PdpBean implements PdpEngine
 			initialized = true;
 		}
 
+	}
+
+	private static String resolveSystemPropertyPlaceholders(final String value)
+	{
+		return PlaceholderResolver.replace(value, ":", placeholderName -> {
+			final String systemProperty = System.getProperty(placeholderName);
+			return systemProperty == null ? System.getenv(placeholderName) : systemProperty;
+		});
 	}
 
 	@Override
